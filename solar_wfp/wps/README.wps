@@ -1,0 +1,16 @@
+This file describes how this WPS directory is set up to run WPS specifically for the case of running WRF under the ONE-meteorology power systems framework. 
+===================================================================
+set_up_links_and_cp_files
+This script links the geogrid, metgrid, and ungrib execuables as 
+well as the Vtable for NAM data.
+
+namelist.wps, nam1.template, nam2.template
+This is the namelist distributed with WPS. This is the script used
+by the WPS programs where parameters are specified. nam1.template
+and nam2.template were written by ICF and they overwrite the
+origional namelist file. Therefore, changes should be made to 
+these template files and not namelist.wps. 
+
+ungrib_and_metgrid.csh
+This script runs ungrib and metgrid for a date range, spanning 
+one month, which must be specified in the script. 

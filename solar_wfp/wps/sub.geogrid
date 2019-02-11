@@ -1,0 +1,19 @@
+# Unix submit description file for GEOGRID
+# geogrid.sub -- submits a job to run geogrid.
+# You only have to run geogrid if you have changed the WRF domain.
+
+# Set the universe, define the executable, and specify computer resource requirements
+universe 		= vanilla
+executable              = /share/mzhang/jas983/wrf_data/solar_wfp/wps/geogrid.csh  
+request_cpus		= 1
+request_memory		= 8 GB
+
+# Define output files and options
+#log                     = log.geogrid
+output			= output_geogrid.txt
+error                   = errors_geogrid.txt
+should_transfer_files   = No 
+#+ParallelShutdownPolicy = "WAIT_FOR_ALL"
+
+# Add the job to the condor queue
+queue

@@ -48,12 +48,12 @@ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/jas983/models/wrf/LIBRARIES/grib2
 export PATH="$PATH:$DIR/netcdf/bin"
 
 echo Starting ungrib and metgrid
-verbose
+#verbose
 
 # Set the start date/time in day_start and end date/time in day_end
 
-day_start = "2010-12-26_00:00:00"
-day_end = "2010-12-31_21:00:00"
+export day_start="2010-12-26_00:00:00"
+export day_end="2010-12-31_21:00:00"
 #set day_start = "2011-01-01_00:00:00"
 #set day_end = "2011-01-05_21:00:00"
 #set day_start = "2011-01-06_00:00:00"
@@ -97,7 +97,7 @@ echo $day_end
 
 #  set the prefix to the NAMANL files
 #  (Here is a sample name /hp1/npl/wrf/data_ds608/NARR/merged_AWIP32.2008012915.3D )
-namprfx = "/share/mzhang/jas983/wrf_data/raw_data/NAMANL/nam_218_201012"
+export namprfx="/share/mzhang/jas983/wrf_data/raw_data/NAMANL/nam_218_201012"
 #set namprfx = "/share/mzhang/jas983/wrf_data/raw_data/NAMANL/nam_218_201101"
 #set namprfx = "/share/mzhang/jas983/wrf_data/raw_data/NAMANL/nam_218_201102"
 #set namprfx = "/share/mzhang/jas983/wrf_data/raw_data/NAMANL/nam_218_201106"
@@ -130,7 +130,7 @@ cat nam2.template >> namelist.wps
 
 #---------------  get rid of links to raw grib file----
 
-rm GRIBFILE.*
+#rm GRIBFILE.*
 
 #---------------  run metgrid  ------------------------
 

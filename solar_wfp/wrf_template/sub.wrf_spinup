@@ -1,0 +1,18 @@
+# Unix submit description file for WRF
+# wrf_spinup.sub -- submits a wrf job
+
+# Set the universe, define the executable, and specify computer resource requirements
+universe 		= vanilla
+executable              = ./wrf_spinup.bash
+request_cpus		= 16
+request_memory		= 2 GB
+
+# Define output files and options
+log                     = log.wrf
+#output			 = output.cctm
+error                   = errors.wrf
+should_transfer_files   = No 
+#+ParallelShutdownPolicy = "WAIT_FOR_ALL"
+
+# Add the job to the condor queue
+queue
