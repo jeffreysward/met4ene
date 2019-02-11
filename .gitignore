@@ -3,6 +3,8 @@
 *.pdf
 *.nc
 wrfout*
+wrfrst*
 *.jpeg
 *.swp
 *.pptx
+*.exe
