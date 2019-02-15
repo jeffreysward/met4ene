@@ -7,6 +7,7 @@ wrfrst*
 wrfbdy*
 wrfinput*
 wrffdda*
+oa*
 *.jpeg
 *.swp
 *.pptx
@@ -18,5 +19,6 @@ output*
 errors*
 **/wpsprd*
 **/wrfprd*
+**/obsgrid_20*
 geogrid/
 metgrid/

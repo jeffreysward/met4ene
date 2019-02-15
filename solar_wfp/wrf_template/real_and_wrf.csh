@@ -18,7 +18,7 @@ set m = (12 1)
 set d = (31 6)
 
 # directory in which met_em files are located
-set mdir = "/share/mzhang/jas983/wrf_data/nyserda_12-4-133/wpsprd_NAMANL"
+set mdir = "/share/mzhang/jas983/wrf_data/eas5555/solar_wfp/wps"
 
 set digits  = (01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
 set hdig = (00 03 06 09 12 15 18 21)

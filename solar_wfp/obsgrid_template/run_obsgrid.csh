@@ -1,4 +1,7 @@
 #!/bin/csh
+#Note that I don't think I can submit this via condor because I 
+#wont be able to source the bash profiles on the compute nodes
+#without rewriting this script in bash.
 set verbose
 date
 unlimit

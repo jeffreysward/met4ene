@@ -4,12 +4,14 @@
 
 # Set the universe, define the executable, and specify computer resource requirements
 universe 		= vanilla
+getenv			= True
 executable              = /share/mzhang/jas983/wrf_data/eas5555/solar_wfp/wps/ungrib_and_metgrid.csh  
+#request_machines	= 1
 request_cpus		= 1
 request_memory		= 8 GB
 
 # Define output files and options
-#log                     = log.ungrib_metgrid.dec2010
+log                     = /dev/null 
 output			= output.ungrib_metgrid.txt
 error                   = errors.ungrib_metgrid.txt
 should_transfer_files   = No 

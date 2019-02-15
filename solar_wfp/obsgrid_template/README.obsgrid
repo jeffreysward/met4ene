@@ -1,0 +1,3 @@
+This template directory was adapted from it original form by Jeff Sward in February 2019. All the scripts were initially developed by ICF, and have been adapted for running on the Magma cluster, which EERL pays for access to. This directory is also tracked by a git repository, so any overarching script changes should be made in the obsgrid_template directory. 
+
+To run obsgrid for a specific case, copy this directory to obsgrid_<date>, change the date in the nam.template scripts and run script on the NAS for now. 
