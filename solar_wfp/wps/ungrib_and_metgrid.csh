@@ -19,11 +19,11 @@ set verbose
 #set day_start = "2010-12-26_00:00:00"
 #set day_end = "2010-12-31_21:00:00"
 set day_start = "2011-01-01_00:00:00"
-set day_end = "2011-01-05_21:00:00"
+#set day_end = "2011-01-05_21:00:00"
 #set day_start = "2011-01-06_00:00:00"
 #set day_end = "2011-01-15_21:00:00"
 #set day_start = "2011-01-16_00:00:00"
-#set day_end = "2011-01-31_21:00:00"
+set day_end = "2011-01-31_21:00:00"
 #set day_start = "2011-02-01_00:00:00"
 #set day_end = "2011-02-05_21:00:00"
 #set day_start = "2011-02-06_00:00:00"
@@ -85,8 +85,8 @@ set namprfx = "nam_218_201101"
 #set namprfx = "nam_218_201108"
 #set namprfx = "nam_218_201109"
 #set namprfx = "nam_218_201110"
-#set namprfx = "/nam_218_201111"
-#set namprfx = "/nam_218_201112"
+#set namprfx = "nam_218_201111"
+#set namprfx = "nam_218_201112"
 
 # -------------      create namelist file -------------
 
@@ -98,8 +98,14 @@ end_date   = '$day_end','$day_end','$day_end',
 -eof-
 
 cat nam2.template >> namelist.wps
-# -------------      unzip the grib files -------------
 
+# -------------      unzip the grib files -------------
+if ( -f $dir$namprfx* ) then
+	echo These grib 2 files have already been unacrchived.
+else
+	echo Unarchiving grib 2 data...
+	cat $dir$fileprfx* | tar -xzvf - -i -C $dir
+endif
 
 #---------------  link in the grib files --------------
 
