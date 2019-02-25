@@ -2,22 +2,16 @@
 set verbose
 limit stacksize unlimited
 
-hostname
 date
 
-# for hp350 running gfortran version
-# setenv LD_LIBRARY_PATH /usr/local/lib
-
-#  this will create namelist.input, link in met_em files, and
+#  This will create namelist.input, link in met_em files, and
 #  run real and then wrf
-
-# setenv OMP_NUM_THREADS 12
 
 set y = (2010 2011)
 set m = (12 1)
 set d = (31 6)
 
-# directory in which met_em files are located
+# Directory in which met_em files are located
 set mdir = "/share/mzhang/jas983/wrf_data/eas5555/solar_wfp/wps"
 
 set digits  = (01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
@@ -70,10 +64,6 @@ ln -sf $mdir/met_em.d02.${iy}-$digits[$im]-$digits[$id]_$hdig[$hour]*.nc .
 ln -sf $mdir/met_em.d03.${iy}-$digits[$im]-$digits[$id]_$hdig[$hour]*.nc .
 
 end
-
-#cat /bt1/nyc_2017/raw_data/ds472/output/${iy}$digits[$im]$digits[$id].obs >> OBS_DOMAIN201-1
-#cat /bt1/nyc_2017/raw_data/ds472/output/${iy}$digits[$im]$digits[$id].obs >> OBS_DOMAIN301-1
-
 end
 
 set iy = $y[2]
@@ -86,10 +76,10 @@ ln -sf $mdir/met_em.d01.${iy}-$digits[$im]-$digits[$id]_00*.nc .
 ln -sf $mdir/met_em.d02.${iy}-$digits[$im]-$digits[$id]_00*.nc .
 ln -sf $mdir/met_em.d03.${iy}-$digits[$im]-$digits[$id]_00*.nc .
 
-cat ../../nyserda_12-4-133/obsgrid_2010dec27-31/OBS_DOMAIN2* >> OBS_DOMAIN201
-cat ../../nyserda_12-4-133/obsgrid_2010dec27-31/OBS_DOMAIN3* >> OBS_DOMAIN301
-cat ../../nyserda_12-4-133/obsgrid_jan01-05/OBS_DOMAIN2* >> OBS_DOMAIN201-1
-cat ../../nyserda_12-4-133/obsgrid_jan01-05/OBS_DOMAIN3* >> OBS_DOMAIN301-1
+cat ../obsgrid_2010dec27-31/OBS_DOMAIN2* >> OBS_DOMAIN201
+cat ../obsgrid_2010dec27-31/OBS_DOMAIN3* >> OBS_DOMAIN301
+cat ../obsgrid_2011jan01-05/OBS_DOMAIN2* >> OBS_DOMAIN201-1
+cat ../obsgrid_2011jan01-05/OBS_DOMAIN3* >> OBS_DOMAIN301-1
 
 # -----------  create namelist for spinup ----------------------------
 
@@ -131,25 +121,20 @@ set mm = $m[1]
 set dd = $d[1]
 #ln -s /bt1/nyc_2017/raw_data/ds472/output/$y[1]$digits[$mm]$digits[$dd].obs OBS_DOMAIN201
 #ln -s /bt1/nyc_2017/raw_data/ds472/output/$y[1]$digits[$mm]$digits[$dd].obs OBS_DOMAIN301
-ln -s ../../nyserda_12-4-133/obsgrid_2010dec27-31/wrfsfdda_d01_$y[1]-12-27 wrfsfdda_d01
-ln -s ../../nyserda_12-4-133/obsgrid_2010dec27-31/wrfsfdda_d02_$y[1]-12-27 wrfsfdda_d02
-ln -s ../../nyserda_12-4-133/obsgrid_2010dec27-31/wrfsfdda_d03_$y[1]-12-27 wrfsfdda_d03
+ln -s ../obsgrid_2010dec27-31/wrfsfdda_d01_$y[1]-12-27 wrfsfdda_d01
+ln -s ../obsgrid_2010dec27-31/wrfsfdda_d02_$y[1]-12-27 wrfsfdda_d02
+ln -s ../obsgrid_2010dec27-31/wrfsfdda_d03_$y[1]-12-27 wrfsfdda_d03
 
 
 echo Starting real for spin up
 date
 
-real.exe
-#/hp6/models/WRFV3.8.1/WRFV3_smpar/main/real.exe
-#/hp1/models/WRFV3.8.1/WRFV3/main/real.exe
-
+mpirun ./real.exe
 
 echo Starting wrf for spin up
 date
 
-wrf.exe
-#/hp6/models/WRFV3.8.1/WRFV3_smpar/main/wrf.exe
-#/hp1/models/WRFV3.8.1/WRFV3/main/wrf.exe
+mpirun ./wrf.exe
 
 mv namelist.input namelist.input-0
 mv wrfinput_d03 wrfinput_d03-0
@@ -161,12 +146,11 @@ mv wrfinput_d01 wrfinput_d01-0
 rm wrfsfdda_d01
 rm wrfsfdda_d02
 rm wrfsfdda_d03
-#rm OBS_DOMAIN101
+#rm OBS_DOMAIN101 #Why is this commented out?????
 rm OBS_DOMAIN201
 rm OBS_DOMAIN301
 
-echo Done  with spin up
-
+echo Done running spin up
 
 #5dayonly:
 rm OBS_DOMAIN201
@@ -196,31 +180,24 @@ cat nam2.template >> namelist.input
 # link OBS_DOMAIN301 for fdda
 ln -s OBS_DOMAIN201-1 OBS_DOMAIN201
 ln -s OBS_DOMAIN301-1 OBS_DOMAIN301
-ln -s /bt1/nyc_2017/wrf/domains/nyserda_12-4-133/obsgrid_jan01-05/wrfsfdda_d01_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d01
-ln -s /bt1/nyc_2017/wrf/domains/nyserda_12-4-133/obsgrid_jan01-05/wrfsfdda_d02_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d02
-ln -s /bt1/nyc_2017/wrf/domains/nyserda_12-4-133/obsgrid_jan01-05/wrfsfdda_d03_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d03
-
+ln -s ../obsgrid_2011jan01-05/wrfsfdda_d01_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d01
+ln -s ../obsgrid_2011jan01-05/wrfsfdda_d02_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d02
+ln -s ../obsgrid_2011jan01-05/wrfsfdda_d03_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d03
 
 echo Starting real
 date
 
-real.exe
-#/hp6/models/WRFV3.8.1/WRFV3_smpar/main/real.exe
-#/hp1/models/WRFV3.8.1/WRFV3/main/real.exe
+mpirun ./real.exe
 
-
-echo Starting wrf
+echo Starting WRF
 date
 
-wrf.exe
-#/hp6/models/WRFV3.8.1/WRFV3_smpar/main/wrf.exe
-#/hp1/models/WRFV3.8.1/WRFV3/main/wrf.exe
+mpirun ./wrf.exe
 
-echo Done  clean up
+echo Done running WRF. Cleaning up...
 date
 
 rm met_em.d*
-
 rm OBS_DOMAIN201
 rm OBS_DOMAIN201-1
 rm OBS_DOMAIN301
@@ -228,3 +205,5 @@ rm OBS_DOMAIN301-1
 rm wrfsfdda_d01
 rm wrfsfdda_d02
 rm wrfsfdda_d03
+
+echo Done cleaning up.

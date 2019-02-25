@@ -1,0 +1,20 @@
+# Unix submit description file for OBSGRID
+# sub.obsgrid -- submits a job to run OBSGRID on Magma via condor.
+
+# Set the universe, define the executable, and specify computer resource requirements
+universe 		= vanilla
+getenv			= True
+executable              = ./run_obsgrid.csh  
+#request_machines	= 1
+request_cpus		= 1
+request_memory		= 8 GB
+
+# Define output files and options
+log                     = /dev/null 
+output			= output.obsgrid.txt
+error                   = errors.obsgrid.txt
+should_transfer_files   = No 
+#+ParallelShutdownPolicy = "WAIT_FOR_ALL"
+
+# Add the job to the condor queue
+queue

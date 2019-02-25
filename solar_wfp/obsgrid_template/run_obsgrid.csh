@@ -13,6 +13,7 @@ ln -s ../wps/met_em.*2010-12-28* .
 ln -s ../wps/met_em.*2010-12-29* .
 ln -s ../wps/met_em.*2010-12-30* .
 ln -s ../wps/met_em.*2010-12-31* .
+ln -s ../wps/met_em.*2011-01-01* .
  
 #Set the days that you intend to run and link observational data
 set hours = ('00' '06' '12' '18')
