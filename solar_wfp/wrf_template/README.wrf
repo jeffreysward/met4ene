@@ -10,12 +10,11 @@ wind-turbine-1.tbl: wind turbine table giving the power curve and thrust coeffic
 
 windturbines-ij.txt: gives coordinates for the grid cell locations of the wind turbines.
 
-real_and_wrf.csh: sets up the runs both the spin up and wrf simulation. THIS IS THE ONLY SCRIPT THAT YOU SHOULD NEED TO HABITUALLY CHANGE IN THIS DIRECTORY for running the same case across different days.
+real_and_wrf.csh: sets up the runs both the spin up and wrf simulation. THIS IS THE ONLY SCRIPT THAT YOU SHOULD NEED TO HABITUALLY CHANGE IN THIS DIRECTORY for running the same case across different 5-day periods as long as you keep the total length of the run period consistent.
 
-sub.wrf: submit scrip for the real_and_wrf.csh script to Magma via condor.
+sub.wrf: submit scrip for the real_and_wrf.csh script to Magma via condor. This is where you may set the number of computer resources that you're requesting. 
 
-nam1-0.template, nam2-0.template: WRF namelist template that overwrites namelist.input as specified in real_and_wrf.csh for the SPIN-UP simulation. Everything in these templates dictate how the WRF model runs for the spin up period. 
+nam1-0.template, nam2-0.template: WRF namelist template that overwrites namelist.input as specified in real_and_wrf.csh for the SPIN-UP simulation. Everything in these templates dictate how the WRF model runs during the spin up period. These must be changed for a change in domain. 
 
-nam1.template, nam2.template: WRF namelist template that overwrtes namelist.input as specified in real_and_wrf.csh for the ACTUAL simulation. Everything in these templates dictate how the WRF model runs for the spin up perio
-d.
+nam1.template, nam2.template: WRF namelist template that overwrtes namelist.input as specified in real_and_wrf.csh for the ACTUAL simulation. Everything in these templates dictate how the WRF model runs during the simulation. These must be changed for a change in domain.
  
