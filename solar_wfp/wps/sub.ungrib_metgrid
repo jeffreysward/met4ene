@@ -6,7 +6,7 @@
 universe 		= vanilla
 getenv			= True
 executable              = /share/mzhang/jas983/wrf_data/eas5555/solar_wfp/wps/ungrib_and_metgrid.csh  
-#request_machines	= 1
+#machine_count		= 1
 request_cpus		= 1
 request_memory		= 8 GB
 
