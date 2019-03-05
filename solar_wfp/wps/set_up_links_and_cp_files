@@ -1,12 +1,15 @@
-ln -s /home/jas983/models/wrf/WPS-4.0.3/metgrid.exe .
-ln -s /home/jas983/models/wrf/WPS-4.0.3/geogrid.exe .
-ln -s /home/jas983/models/wrf/WPS-4.0.3/ungrib.exe .
-ln -s /home/jas983/models/wrf/WPS-4.0.3/ungrib/Variable_Tables/Vtable.NAM Vtable 
-cp /home/jas983/models/wrf/WPS-4.0.3/geogrid/GEOGRID.TBL.ARW ./geogrid/
+#!/bin/csh
+#set wpsv="WPS-4.0.3"
+set wpsv="WPS-3.8.1"
+ln -s /home/jas983/models/wrf/$wpsv/metgrid.exe .
+ln -s /home/jas983/models/wrf/$wpsv/geogrid.exe .
+ln -s /home/jas983/models/wrf/$wpsv/ungrib.exe .
+ln -s /home/jas983/models/wrf/$wpsv/ungrib/Variable_Tables/Vtable.NAM Vtable 
+cp /home/jas983/models/wrf/$wpsv/geogrid/GEOGRID.TBL.ARW ./geogrid/
 cd geogrid
 ln -s GEOGRID.TBL.ARW GEOGRID.TBL
 cd ..
-cp /home/jas983/models/wrf/WPS-4.0.3/metgrid/METGRID.TBL.ARW ./metgrid/
+cp /home/jas983/models/wrf/$wpsv/metgrid/METGRID.TBL.ARW ./metgrid/
 cd metgrid
 ln -s METGRID.TBL.ARW METGRID.TBL
 cd ..

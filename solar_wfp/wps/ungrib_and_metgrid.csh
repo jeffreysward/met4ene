@@ -34,8 +34,9 @@ module load scl-3
 #set day_end = "2011-03-02_21:00:00"
 #set day_start = "2011-03-07_00:00:00"
 #set day_end = "2011-03-31_21:00:00"
-set day_start = "2011-04-01_00:00:00"
-set day_end = "2011-04-30_21:00:00"
+#set day_start = "2011-04-01_00:00:00"
+#set day_end = "2011-04-01_21:00:00"
+#set day_end = "2011-04-30_21:00:00"
 #set day_start = "2011-05-01_00:00:00"
 #set day_end = "2011-05-31_21:00:00"
 #set day_start = "2011-06-01_00:00:00"
@@ -54,8 +55,8 @@ set day_end = "2011-04-30_21:00:00"
 #set day_end = "2011-08-31_21:00:00"
 #set day_start = "2011-09-01_00:00:00"
 #set day_end = "2011-09-30_21:00:00"
-#set day_start = "2011-10-01_00:00:00"
-#set day_end = "2011-10-31_21:00:00"
+set day_start = "2011-10-01_00:00:00"
+set day_end = "2011-10-31_21:00:00"
 #set day_start = "2011-11-01_00:00:00"
 #set day_end = "2011-11-30_21:00:00"
 #set day_start = "2011-12-01_00:00:00"
@@ -67,13 +68,13 @@ set dir = "/share/mzhang/jas983/wrf_data/raw_data/NAMANL/"
 #set fileprfx = "namanl_218_201101"
 #set fileprfx = "namanl_218_201102"
 #set fileprfx = "namanl_218_201103"
-set fileprfx = "namanl_218_201104"
+#set fileprfx = "namanl_218_201104"
 #set fileprfx = "namanl_218_201105"
 #set fileprfx = "namanl_218_201106"
 #set fileprfx = "namanl_218_201107"
 #set fileprfx = "namanl_218_201108"
 #set fileprfx = "namanl_218_201109"
-#set fileprfx = "namanl_218_201110"
+set fileprfx = "namanl_218_201110"
 #set fileprfx = "namanl_218_201111"
 #set fileprfx = "namanl_218_201112"
 
@@ -82,13 +83,13 @@ set fileprfx = "namanl_218_201104"
 #set namprfx = "nam_218_201101"
 #set namprfx = "nam_218_201102"
 #set namprfx = "nam_218_201103"
-set namprfx = "nam_218_201104"
+#set namprfx = "nam_218_201104"
 #set namprfx = "nam_218_201105"
 #set namprfx = "nam_218_201106"
 #set namprfx = "nam_218_201107"
 #set namprfx = "nam_218_201108"
 #set namprfx = "nam_218_201109"
-#set namprfx = "nam_218_201110"
+set namprfx = "nam_218_201110"
 #set namprfx = "nam_218_201111"
 #set namprfx = "nam_218_201112"
 
@@ -104,7 +105,7 @@ end_date   = '$day_end','$day_end','$day_end',
 cat nam2.template >> namelist.wps
 
 # -------------      unzip the grib files -------------
-if ( -f $dir$namprfx"01_0000_000.grib2" ) then
+if ( -f $dir$namprfx"01_0000_000.grb2" ) then
 	echo These grib 2 files have already been unacrchived.
 else
 	echo Unarchiving grib 2 data...
@@ -127,6 +128,9 @@ rm GRIBFILE.*
 
 ./metgrid.exe
 
+#---------------  get rid of ungrib intermediate files-
+
 rm FILE*
+rm PFILE*
 
 echo Done
