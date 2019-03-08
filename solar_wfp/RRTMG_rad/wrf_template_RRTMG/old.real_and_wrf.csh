@@ -7,26 +7,20 @@ date
 #  This will create namelist.input, link in met_em files, and
 #  run real and then wrf
 
-################### BEGIN USER INPUT SECTION ####################
-
-# Set the total number of processors
-set nprocs = 24
+# Set the number of processors 
+set nprocs = 48
 
 # Set the start and end date separately below
-set y = (2011 2011)
-set m = (7 7)
-set d = (9 15)
+set y = (2010 2011)
+set m = (12 1)
+set d = (31 6)
 
 # Directory in which met_em files are located
 set mdir = "/share/mzhang/jas983/wrf_data/eas5555/solar_wfp/wps"
-set obsdir = "/share/mzhang/jas983/wrf_data/eas5555/solar_wfp"
-
 # Set current and former directory strings
-set lastdst = 05
-set lastdir = "2011jul05-09"
-set thisdir = "2011jul10-15"
-
-################### END USER INPUT SECTION ######################
+set lastdir = "2010dec27-31"
+set lastdst = 27
+set thisdir = "2011jan01-05"
 
 set digits  = (01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31)
 set hdig = (00 03 06 09 12 15 18 21)
@@ -90,10 +84,10 @@ ln -sf $mdir/met_em.d01.${iy}-$digits[$im]-$digits[$id]_00*.nc .
 ln -sf $mdir/met_em.d02.${iy}-$digits[$im]-$digits[$id]_00*.nc .
 ln -sf $mdir/met_em.d03.${iy}-$digits[$im]-$digits[$id]_00*.nc .
 
-cat $obsdir/obsgrid_$lastdir/OBS_DOMAIN2* >> OBS_DOMAIN201
-cat $obsdir/obsgrid_$lastdir/OBS_DOMAIN3* >> OBS_DOMAIN301
-cat $obsdir/obsgrid_$thisdir/OBS_DOMAIN2* >> OBS_DOMAIN201-1
-cat $obsdir/obsgrid_$thisdir/OBS_DOMAIN3* >> OBS_DOMAIN301-1
+cat ../obsgrid_$lastdir/OBS_DOMAIN2* >> OBS_DOMAIN201
+cat ../obsgrid_$lastdir/OBS_DOMAIN3* >> OBS_DOMAIN301
+cat ../obsgrid_$thisdir/OBS_DOMAIN2* >> OBS_DOMAIN201-1
+cat ../obsgrid_$thisdir/OBS_DOMAIN3* >> OBS_DOMAIN301-1
 
 # -----------  create namelist for spinup ----------------------------
 
@@ -133,9 +127,12 @@ cat nam2-0.template >> namelist.input
 # link OBS_DOMAIN301 for fdda
 set mm = $m[1]
 set dd = $d[1]
-ln -s $obsdir/obsgrid_$lastdir/wrfsfdda_d01_$y[1]-$digits[$m[1]]-$lastdst wrfsfdda_d01
-ln -s $obsdir/obsgrid_$lastdir/wrfsfdda_d02_$y[1]-$digits[$m[1]]-$lastdst wrfsfdda_d01
-ln -s $obsdir/obsgrid_$lastdir/wrfsfdda_d03_$y[1]-$digits[$m[1]]-$lastdst wrfsfdda_d01
+#ln -s /bt1/nyc_2017/raw_data/ds472/output/$y[1]$digits[$mm]$digits[$dd].obs OBS_DOMAIN201
+#ln -s /bt1/nyc_2017/raw_data/ds472/output/$y[1]$digits[$mm]$digits[$dd].obs OBS_DOMAIN301
+ln -s ../obsgrid_$lastdir/wrfsfdda_d01_$y[1]-$m[1]-$lastdst wrfsfdda_d01
+ln -s ../obsgrid_$lastdir/wrfsfdda_d02_$y[1]-$m[1]-$lastdst wrfsfdda_d02
+ln -s ../obsgrid_$lastdir/wrfsfdda_d03_$y[1]-$m[1]-$lastdst wrfsfdda_d03
+
 
 echo Starting real for spin up
 date
@@ -191,9 +188,9 @@ cat nam2.template >> namelist.input
 # link OBS_DOMAIN301 for fdda
 ln -s OBS_DOMAIN201-1 OBS_DOMAIN201
 ln -s OBS_DOMAIN301-1 OBS_DOMAIN301
-ln -s $obsdir/obsgrid_${thisdir}/wrfsfdda_d01_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d01
-ln -s $obsdir/obsgrid_${thisdir}/wrfsfdda_d02_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d02
-ln -s $obsdir/obsgrid_${thisdir}/wrfsfdda_d03_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d03
+ln -s ../obsgrid_${thisdir}/wrfsfdda_d01_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d01
+ln -s ../obsgrid_${thisdir}/wrfsfdda_d02_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d02
+ln -s ../obsgrid_${thisdir}/wrfsfdda_d03_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d03
 
 echo Starting real
 date
