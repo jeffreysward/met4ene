@@ -1,3 +1,4 @@
+#!/bin/csh
 # This script copies all the stuff we need into this run directory for WRF
 
 ln -s $WRF/main/ndown.exe .

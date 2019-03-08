@@ -22,7 +22,9 @@ output*
 errors*
 **/wpsprd*
 **/wrfprd*
+wrfprd*
 **/old.wrfprd*
+old.wrfprd*
 **/obsgrid_20*
 geogrid/
 metgrid/
