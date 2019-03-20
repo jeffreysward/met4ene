@@ -1,22 +1,32 @@
 ;-----------------------------------------------------------------
-;  GHI time series plot - outputs a png for displaying the GHI for 
-;  across the entire domain for each time slice contained withinin
-;  the given wrfout file.
+;  GHI time series comparison plot - outputs a png displaying the 
+;  diffeerence in GHI across the entire domain for each time slice 
+;  contained within the given wrfout file.
 ;
-;  JAS 2.25.2018
+;  JAS 3.11.2018
 ;-----------------------------------------------------------------
 
 begin
 
-; Load the WRF input file.  
-WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/solar_wfp/newGoddard_rad/wrfprd_2011jan01-05/"
+; Load the WRF input files.  
+WRFdir1 = "/magma-dirs/jas983/wrf_data/eas5555/solar_wfp/dudia_rad/wrfprd_2011jan01-05/"
+WRFdir2 = "/magma-dirs/jas983/wrf_data/eas5555/solar_wfp/newGoddard_rad/wrfprd_2011jan01-05/"
 WRFfile = "wrfout_d03_2011-01-01_01:00:00"
   
-if (fileexists(WRFdir+WRFfile)) then
-   a = addfile(WRFdir+WRFfile, "r")
+if (fileexists(WRFdir1+WRFfile)) then
+   a = addfile(WRFdir1+WRFfile, "r")
 else
    print("")
-   print("The wrfout file "+WRFdir+WRFfile+" does not exist. Check your path.")
+   print("The wrfout file "+WRFdir1+WRFfile+" does not exist. Check your path.")
+   print("")
+   exit
+end if
+
+if (fileexists(WRFdir1+WRFfile)) then
+   b = addfile(WRFdir2+WRFfile, "r")
+else
+   print("")
+   print("The wrfout file "+WRFdir2+WRFfile+" does not exist. Check your path.")
    print("")
    exit
 end if
@@ -45,26 +55,33 @@ do it = 0,ntimes-1,1             ; TIME LOOP
   ;it = 0
 
    print("Working on time: " + times(it) )
-   outfile = "./met_plots/2011jan01-05/GHI_ts_newG."+sprinti("%0.3i", n)
+   outfile = "./met_plots/2011jan01-05/GHI_Compare."+sprinti("%0.3i", n)
 
    ;---Variables from wrfout file
-   DNI  = a->SWDDNI(it,:,:)      
-   DHI  = a->SWDDIF(it,:,:)    
-   GHI = DNI+DHI
-   GHI@long_name = "Global Horizontal Irradiance"
-   ;printVarSummary(GHI)
+   DNI1  = a->SWDDNI(it,:,:)      
+   DHI1  = a->SWDDIF(it,:,:)    
+   GHI1 = DNI1+DHI1
+   GHI1@long_name = "Global Horizontal Irradiance"
+   ;printVarSummary(GHI1)
 
+   DNI2  = b->SWDDNI(it,:,:)      
+   DHI2  = b->SWDDIF(it,:,:)    
+   GHI2 = DNI2+DHI2
+   GHI2@long_name = "Global Horizontal Irradiance"
+   ;printVarSummary(GHI2)
+
+   GHI_diff = GHI1-GHI2
 
    ;---Set the workstation (x11, png, eps, ps, pdf, ncgm)
    wks  = gsn_open_wks("png",outfile)              ;-- open a workstation
-   cmap = read_colormap_file("MPL_YlOrRd")         ;-- so we can subset later
+   cmap = read_colormap_file("MPL_seismic")        ;-- so we can subset later
 
    ;---Set plot resources
    res                        = True               ;-- plot mods desired
    res@cnFillOn               = True               ;-- color fill  
    res@cnSpanFillPalette      = True
    res@cnLevelSelectionMode   = "ManualLevels"
-   res@cnMinLevelValF         = 40.                ;-- set min contour level
+   res@cnMinLevelValF         = -400.              ;-- set min contour level
    res@cnMaxLevelValF         = 400.               ;-- set max contour level
    res@cnLevelSpacingF        = 40.
    ;res@cnMaxLevelCount        = 30                ;-- maximum contour level count  
@@ -73,7 +90,7 @@ do it = 0,ntimes-1,1             ; TIME LOOP
    res@cnLinesOn              = False              ;-- no contour lines
    res@cnLineLabelsOn         = False              ;-- no contour labels
    res@cnInfoLabelOn          = False              ;-- no contour info label
-   res@lbTitleString          = "Irradiance (W/m~S~2~N~)"
+   res@lbTitleString          = "Irradiance Difference (W/m~S~2~N~)"
    res@lbTitleOffsetF         = -0.2
    res@lbTitleFontHeightF     = 0.02
    res@lbLabelFontHeightF     = 0.015
@@ -116,7 +133,7 @@ do it = 0,ntimes-1,1             ; TIME LOOP
    res@tfDoNDCOverlay = "NDCViewport"
 
 ;---Creat the plot       
-   plot = gsn_csm_contour_map(wks,GHI(:,:),res)     ; Draw contours over a map.
+   plot = gsn_csm_contour_map(wks,GHI_diff(:,:),res)     ; Draw contours over a map.
 
 
    n := n + 1
