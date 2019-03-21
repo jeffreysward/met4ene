@@ -1,0 +1,33 @@
+#!/bin/csh
+# This script sets up a directory in which you can run WPS
+
+# Create a working directory for wps
+set wkdir="/glade/scratch/$USER/wps"
+if ( ! -d $wkdir ) then
+	mkdir $wkdir
+endif
+cd $wkdir
+
+# Copy/link necessary file to WPS working directory	
+set wrfdir = /glade/u/home/wrfhelp/PRE_COMPILED_CODE 
+#set wpsv="WPSV4.0.3_intel_serial_large-file"
+set wpsv="WPSV3.8.1_intel_serial_large-file"
+ln -s $wrfdir/$wpsv/metgrid.exe .
+ln -s $wrfdir/$wpsv/geogrid.exe .
+ln -s $wrfdir/$wpsv/ungrib.exe .
+ln -s $wrfdir/$wpsv/ungrib/Variable_Tables/Vtable.NAM Vtable 
+if ( ! -d geogrid ) then
+        mkdir geogrid
+endif
+cp $wrfdir/$wpsv/geogrid/GEOGRID.TBL.ARW ./geogrid/
+cd geogrid
+ln -s GEOGRID.TBL.ARW GEOGRID.TBL
+cd ..
+if ( ! -d metgrid ) then
+        mkdir metgrid
+endif
+cp $wrfdir/$wpsv/metgrid/METGRID.TBL.ARW ./metgrid/
+cd metgrid
+ln -s METGRID.TBL.ARW METGRID.TBL
+cd ..
+echo Done...
