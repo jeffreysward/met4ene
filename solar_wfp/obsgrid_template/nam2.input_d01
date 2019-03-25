@@ -1,12 +1,3 @@
- &record1
- start_year                  =  2011
- start_month                 =    01
- start_day                   =    01
- start_hour                  =    00
- end_year                    =  2011
- end_month                   =    01
- end_day                     =    06
- end_hour                    =    00
  interval                    = 21600
  /
 

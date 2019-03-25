@@ -3,12 +3,13 @@
 
 # Set the universe, define the executable, and specify computer resource requirements
 universe 		= vanilla
+getenv			= True
 executable              = ./run_obsgrid.csh 
 request_cpus		= 1
 request_memory		= 8 GB
 
 # Define output files and options
-#log                     = log.geogrid
+log                     = \dev\null
 output			= output.obsgrid
 error                   = errors.obsgrid
 should_transfer_files   = No 

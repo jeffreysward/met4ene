@@ -1,17 +1,8 @@
- &record1
- start_year                  =  2011
- start_month                 =    01
- start_day                   =    01
- start_hour                  =    00
- end_year                    =  2011
- end_month                   =    01
- end_day                     =    06
- end_hour                    =    00
  interval                    = 21600
  /
 
  &record2
- grid_id                     = 2
+ grid_id                     = 3
  obs_filename                = './SURFACE_OBS',
  remove_data_above_qc_flag   = 32768
  remove_unverified_data      = .TRUE.
@@ -84,7 +75,7 @@
  &plot_sounding
  file_type                   = 'useful'
  read_metoa                  = .TRUE.
- grid_id                     = 2
+ grid_id                     = 3
  /
  file_type                   = 'qc'
  file_type                   = 'results'
@@ -92,7 +83,7 @@
 
  &plot_level
  file_type                   = '3D'
- grid_id                     = 2
+ grid_id                     = 3
  /
  file_type                   = 'sfc_fdda'
 
