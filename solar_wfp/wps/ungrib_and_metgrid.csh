@@ -105,7 +105,7 @@ end_date   = '$day_end','$day_end','$day_end',
 cat nam2.template >> namelist.wps
 
 # -------------      unzip the grib files -------------
-if ( -f $dir$namprfx"01_0000_000.grb2" ) then
+if ( -f $dir$namprfx"_0000_000.grb2" ) then
 	echo These grib 2 files have already been unacrchived.
 else
 	echo Unarchiving grib 2 data...

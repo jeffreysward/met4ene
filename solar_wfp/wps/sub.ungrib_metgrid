@@ -6,16 +6,14 @@
 universe 		= vanilla
 getenv			= True
 executable              = /share/mzhang/jas983/wrf_data/eas5555/solar_wfp/wps/ungrib_and_metgrid.csh  
-#machine_count		= 1
 request_cpus		= 1
 request_memory		= 8 GB
 
 # Define output files and options
 log                     = /dev/null 
-output			= output.ungrib_metgrid.txt
-error                   = errors.ungrib_metgrid.txt
+output			= output.ungrib_metgrid
+error                   = errors.ungrib_metgrid
 should_transfer_files   = No 
-#+ParallelShutdownPolicy = "WAIT_FOR_ALL"
 
 # Add the job to the condor queue
 queue
