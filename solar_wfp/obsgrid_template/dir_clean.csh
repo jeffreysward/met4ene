@@ -9,4 +9,7 @@ rm qc_obs_used_earth_relative.*
 rm SURFACE_OBS*
 rm wrfsfdda*
 rm log*
+rm output*
+rm errors*
+rm obsgrid.exe
 echo Directory Clean.

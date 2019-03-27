@@ -1,5 +1,5 @@
  &time_control
  run_days                            = 0,
- run_hours                           = 120,
+ run_hours                           = 24, 
  run_minutes                         = 0,
  run_seconds                         = 0,

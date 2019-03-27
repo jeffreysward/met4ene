@@ -62,13 +62,14 @@
  icloud                              = 1,
  surface_input_source                = 1,
  num_soil_layers                     = 4,
+ num_land_cat			     = 24,
  sf_urban_physics                    = 0,     0,     0,
  maxiens                             = 1,
  maxens                              = 3,
  maxens2                             = 3,
  maxens3                             = 16,
  ensdim                              = 144,
- windfarm_opt                        = 0,     0,     1
+ windfarm_opt                        = 0,     0,     0
  windfarm_ij                         = 1
  /
 

@@ -4,8 +4,8 @@
 universe 		= vanilla
 getenv			= True
 executable              = ./real_and_wrf.csh
-request_cpus		= 48 
-request_memory		= 30 GB
+request_cpus		= 32 
+request_memory		= 100 GB
 
 # Define output files and options
 log                     = /dev/null

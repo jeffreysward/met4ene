@@ -10,21 +10,21 @@ date
 ################### BEGIN USER INPUT SECTION ####################
 
 # Set the total number of processors
-set nprocs = 48
+set nprocs = 32
 
 # Set the start and end date separately below
 set y = (2011 2011)
-set m = (7 7)
-set d = (9 15)
+set m = (5 6)
+set d = (30 1)
 
-# Directory in which met_em files are located
+# Directory in which met_em files and met_oa files are located
 set mdir = "/share/mzhang/jas983/wrf_data/eas5555/solar_wfp/wps"
 set obsdir = "/share/mzhang/jas983/wrf_data/eas5555/solar_wfp"
 
 # Set current and former directory strings
-set lastdst = 05
-set lastdir = "2011jul05-09"
-set thisdir = "2011jul10-15"
+set lastdst = 30
+set lastdir = "2011may30-31"
+set thisdir = "2011may30-31"
 
 ################### END USER INPUT SECTION ######################
 
@@ -135,12 +135,18 @@ ln -s $obsdir/obsgrid_$lastdir/wrfsfdda_d01_$y[1]-$digits[$m[1]]-$lastdst wrfsfd
 ln -s $obsdir/obsgrid_$lastdir/wrfsfdda_d02_$y[1]-$digits[$m[1]]-$lastdst wrfsfdda_d01
 ln -s $obsdir/obsgrid_$lastdir/wrfsfdda_d03_$y[1]-$digits[$m[1]]-$lastdst wrfsfdda_d01
 
-echo Starting real for spin up
+echo Starting real for spin up...
 date
 
 mpirun -np $nprocs ./real.exe
 
-echo Starting wrf for spin up
+if (-f wrfinput_d03) then
+	echo Done running real for spin up
+else
+	echo ERROR: wrfinputs were not created
+	exit
+endif
+echo Starting wrf for spin up...
 date
 
 mpirun -np $nprocs ./wrf.exe
@@ -158,7 +164,12 @@ rm wrfsfdda_d03
 rm OBS_DOMAIN201
 rm OBS_DOMAIN301
 
-echo Done running spin up
+if (-f wrfout_d03_$y[2]-$m[2]-$d[2]_12:00:00) then
+	echo Done running spin up
+else
+	echo ERROR: wrfout for spin-up was not created
+	exit
+endif
 
 # -----------     create namelist for model run  ----------------------------
 
@@ -184,9 +195,9 @@ cat nam2.template >> namelist.input
 # link OBS_DOMAIN301 for fdda
 ln -s OBS_DOMAIN201-1 OBS_DOMAIN201
 ln -s OBS_DOMAIN301-1 OBS_DOMAIN301
-ln -s $obsdir/obsgrid_${thisdir}/wrfsfdda_d01_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d01
-ln -s $obsdir/obsgrid_${thisdir}/wrfsfdda_d02_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d02
-ln -s $obsdir/obsgrid_${thisdir}/wrfsfdda_d03_${begyr}-$digits[$begmo]-$digits[$begdy] wrfsfdda_d03
+ln -s $obsdir/obsgrid_${thisdir}/wrfsfdda_d01_${begyr}-$digits[$begmo]-$lastdst wrfsfdda_d01
+ln -s $obsdir/obsgrid_${thisdir}/wrfsfdda_d02_${begyr}-$digits[$begmo]-$lastdst wrfsfdda_d02
+ln -s $obsdir/obsgrid_${thisdir}/wrfsfdda_d03_${begyr}-$digits[$begmo]-$lastdst wrfsfdda_d03
 
 echo Starting real
 date
