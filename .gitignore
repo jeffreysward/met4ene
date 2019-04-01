@@ -25,6 +25,8 @@ errors*
 wrfprd*
 **/old.wrfprd*
 old.wrfprd*
+**/wrfrun*
+wrfrun*
 **/obsgrid_20*
 geogrid/
 metgrid/
