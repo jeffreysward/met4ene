@@ -28,6 +28,9 @@ old.wrfprd*
 **/wrfrun*
 wrfrun*
 **/obsgrid_20*
+obsgrid_20*
 geogrid/
 metgrid/
 FILE*
+NYpvow*
+**/NYpvow*
