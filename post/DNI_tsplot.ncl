@@ -1,16 +1,19 @@
 ;-----------------------------------------------------------------
-;  DNI time series plot - outputs a png for displaying the DNI     
+;  GHI time series plot - outputs a png for displaying the GHI for 
 ;  across the entire domain for each time slice contained withinin
 ;  the given wrfout file.
 ;
 ;  JAS 2.25.2018
 ;-----------------------------------------------------------------
 
+loadscript("./cd_inv_string.ncl")
+loadscript("./cd_string.ncl")
+
 begin
 
 ; Load the WRF input file.  
-WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/solar_wfp/wrfprd_jan01-05/"
-WRFfile = "wrfout_d03_2010-12-31_12:00:00"
+WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/wrfwrk/ARW/NYpvow_A5Dx3D/2011jan23-24/wrfrun_r1bl5cu300ls2/"
+WRFfile = "wrfout_NYpvow_A5Dx3D_d02_2011-01-24_01:00:00"
   
 if (fileexists(WRFdir+WRFfile)) then
    a = addfile(WRFdir+WRFfile, "r")
@@ -45,7 +48,7 @@ do it = 0,ntimes-1,1             ; TIME LOOP
   ;it = 0
 
    print("Working on time: " + times(it) )
-   outfile = "./pwr_plots/2010dec31/DNI_Time_Series."+sprinti("%0.3i", n)
+   outfile = "./met_plots/NYpvow_A5Dx3D/2011jan23-24/wrfrun_r1bl5cu300ls2/DNI_ts."+sprinti("%0.3i", n)
 
    ;---Variables from wrfout file
    DNI  = a->SWDDNI(it,:,:)      
@@ -53,7 +56,10 @@ do it = 0,ntimes-1,1             ; TIME LOOP
    GHI = DNI+DHI
    GHI@long_name = "Global Horizontal Irradiance"
    ;printVarSummary(GHI)
-
+   time_numeric = cd_inv_string( times(it), "%Y-%N-%D_%H:%M:%S")  ;; will return in hours since 1800-01-01 unless specified otherwise
+   offset = 5    			       ; hours
+   time_numeric = time_numeric - offset
+   time_str = cd_string( time_numeric, "%c %D, %Y %H:%M")
 
    ;---Set the workstation (x11, png, eps, ps, pdf, ncgm)
    wks  = gsn_open_wks("png",outfile)              ;-- open a workstation
@@ -64,9 +70,9 @@ do it = 0,ntimes-1,1             ; TIME LOOP
    res@cnFillOn               = True               ;-- color fill  
    res@cnSpanFillPalette      = True
    res@cnLevelSelectionMode   = "ManualLevels"
-   res@cnMinLevelValF         = 40.                ;-- set min contour level
-   res@cnMaxLevelValF         = 400.               ;-- set max contour level
-   res@cnLevelSpacingF        = 40.
+   res@cnMinLevelValF         = 100.               ;-- set min contour level
+   res@cnMaxLevelValF         = 1000.              ;-- set max contour level
+   res@cnLevelSpacingF        = 100.
    ;res@cnMaxLevelCount        = 30                ;-- maximum contour level count  
    ;res@cnLevelSelectionMode   = "EqualSpacedLevels"  ;-- color fill  
    res@cnFillPalette          = cmap(:,:)          ;-- subset the color map
@@ -79,13 +85,13 @@ do it = 0,ntimes-1,1             ; TIME LOOP
    res@lbLabelFontHeightF     = 0.015
    res@gsnLeftString          = ""                 ;-- do not draw the left sub-title (otherwise automatically set)
    res@gsnRightString         = ""                 ;-- do not draw the right sub-title (otherwise automatically set)
-   res@gsnCenterString        = times(it)          ;-- write time to center string
+   res@gsnCenterString        = time_str	   ;-- write time to center string
    res@gsnCenterStringOrthogonalPosF = 0.02        ;-- move center string upwards
           
-   res@mpDataBaseVersion      = "HighRes"          ;-- better map outlines
+   res@mpDataBaseVersion      = "MediumRes"        ;-- better map outlines
    res@pmTickMarkDisplayMode  = "Always"           ;-- turn on tickmarks
    res@mpOutlineOn           = True                ;-- turn on map outline 
-   res@mpOutlineBoundarySets = "USStates"          ;-- turn on state boundaries
+   res@mpOutlineBoundarySets = "USStates"          ;-- turn on state boundaries (but only in MediumRes)
          
    res@tiMainString           = "Direct Normal Irradiance"
    res@tiMainFontHeightF      = 0.025              ;-- smaller title

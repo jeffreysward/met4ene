@@ -2,12 +2,14 @@
 ;   This script outputs a graphic depicting wind farm power output 
 ;   for each time included in the wrfout file.
 
+loadscript("./cd_inv_string.ncl")
+loadscript("./cd_string.ncl")
+
 begin
 ;
 ; The WRF WFP input file.  
-  WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/solar_wfp/wrfprd_jan01-05/"
-  WRFfile = "wrfout_d03_2010-12-31_12:00:00"
-  
+  WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/wrfwrk/ARW/NYpvow_A5Dx3D/2011jul21-22/wrfrun_r1bl5cu300ls2/"
+  WRFfile = "wrfout_NYpvow_A5Dx3D_d03_2011-07-22_01:00:00" 
   if (fileexists(WRFdir+WRFfile)) then
         a = addfile(WRFdir+WRFfile, "r")
   else
@@ -37,18 +39,23 @@ begin
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   n = 1
-  do it = 0,ntimes-1,1             ; TIME LOOP
+  do it = 0,ntimes-1,1            ; TIME LOOP
   ;it = 0
 
     print("Working on time: " + times(it) )
-    outfile = "./pwr_plots/2010dec31/WFP_Power_Time_Series."+sprinti("%0.3i", n)
+    outfile = "./pwr_plots/NYpvow_A5Dx3D/2011jul21-22/wrfrun_r1bl5cu300ls2/WFP_Pwr_ts."+sprinti("%0.3i", n)
+
+    time_numeric = cd_inv_string( times(it), "%Y-%N-%D_%H:%M:%S")  ;; will return in hours since 1800-01-01 unless specified otherwise
+    offset = 5                                  ; hours
+    time_numeric = time_numeric - offset
+    time_str = cd_string( time_numeric, "%c %D, %Y %H:%M")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; First get the variables we will need        
 
   ; We generate plots, but what kind do we prefer?
-    type = "x11"
-  ;  type = "png"
+  ;  type = "x11"
+    type = "png"
   ;  type = "pdf"
   ;  type = "ps"
   ;  type = "ncgm"
@@ -120,19 +127,19 @@ begin
       cnres@cnFillPalette        = cmap          ; subset the color map if you like
       cnres@gsnLeftString        = ""            ; leave left string blank
       cnres@gsnRightString       = ""            ; leave right string blank
-      cnres@gsnCenterString      = times(it)     ; write time to center string
+      cnres@gsnCenterString      = time_str      ; write time to center string
       cnres@gsnCenterStringOrthogonalPosF = 0.02 ; move center string upwards
       cnres@cnLinesOn            = False         ; turn off contour lines
       cnres@cnLineLabelsOn       = False         ; turn off contour line labels               
       cnres@lbTitleString        = "Power Output (MW)"
-      cnres@lbTitleOffsetF	     = -0.2          ; move colorbar title down 
+      cnres@lbTitleOffsetF	 = -0.2          ; move colorbar title down 
       cnres@lbTitleFontHeightF   = 0.02          ; set colorbar title font height
       cnres@lbLabelFontHeightF   = 0.015         ; set colorbar labels font height
     ; Define contour levels
       cnres@cnLevelSelectionMode = "ManualLevels"; use manual colorbar levels
-      cnres@cnMinLevelValF       = 0.1
-      cnres@cnMaxLevelValF       = 1.9
-      cnres@cnLevelSpacingF      = 0.1
+      cnres@cnMinLevelValF       = 1
+      cnres@cnMaxLevelValF       = 19
+      cnres@cnLevelSpacingF      = 1
       cnres@cnFillDrawOrder      = "Predraw"     ; draw contours in "Predraw" phase
       contour_pwr = gsn_csm_contour(wks,pwr,cnres)
       delete(cnres)

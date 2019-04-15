@@ -4,10 +4,11 @@
 ;  JAS 11.07.2018
 ;-----------------------------------------------------------------
 
+loadscript("cd_inv_string.ncl")
 begin
 ;Open MAP and ACONC files (do not append with .nc) 
-   WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/solar_wfp/wrfprd_jan01-05/"
-   WRFfile = "wrfout_d03_2010-12-31_12:00:00"
+   WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/wrfwrk/ARW/NYpvow_A5Dx3D/2011jan23-24/wrfrun_r1bl5cu300ls2/"
+   WRFfile = "wrfout_d03_2011-01-24_01:00:00"
   
    if (fileexists(WRFdir+WRFfile)) then
 	   fwrf = addfile(WRFdir+WRFfile, "r")
@@ -30,8 +31,8 @@ begin
 ;   lon2d = f->lon(ycoord|:,xcoord|:)
 
 ;---Just look at first time step.
-   it = 1
-   lay = 2
+   it = 19
+   lay = 0
    ;print("Working on time: " + times(it) )
 
 ;---Variables from wrfout file
@@ -54,6 +55,10 @@ begin
    GHI@long_name = "Global Horizontal Irradiance"
    printVarSummary(GHI)
 
+   time_numeric = cd_inv_string( times(it), “%Y%N%D%H%M”)  ;; will return in hours since 1800-01-01 unless specified otherwise
+   offset = -8    ; hours
+   time_numeric = time_numeric - offset
+
 ;---Set the workstation (x11, png, eps, ps, pdf, ncgm)
    wks  = gsn_open_wks("x11","Solar Plot")            ;-- open a workstation
    cmap = read_colormap_file("MPL_YlOrRd")         ;-- so we can subset later
@@ -63,9 +68,9 @@ begin
    res@cnFillOn               = True               ; color fill  
    res@cnSpanFillPalette      = True
    res@cnLevelSelectionMode   = "ManualLevels"
-   res@cnMinLevelValF         = 30.                 ; set min contour level
-   res@cnMaxLevelValF         = 300.                ; set max contour level
-   res@cnLevelSpacingF        = 30.
+   res@cnMinLevelValF         = 100.                ; set min contour level
+   res@cnMaxLevelValF         = 1000.               ; set max contour level
+   res@cnLevelSpacingF        = 100.
    ;res@cnMaxLevelCount        = 30                 ; maximum contour level count  
    ;res@cnLevelSelectionMode   = "EqualSpacedLevels"  ; color fill  
    res@cnFillPalette          = cmap(:,:)         ; subset the color map
