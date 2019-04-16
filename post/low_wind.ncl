@@ -46,7 +46,9 @@ do it = 0,ntimes-1,12 ; TIME LOOP
 print("Working on time: " + times(it) )
 res@TimeLabel = times(it) ; Set Valid time to use on plots
 tc = wrf_user_getvar(a,"tc",it) ; T in C
+printVarSummary(tc)
 rh = wrf_user_getvar(a,"rh",it) ; relative humidity
+printVarSummary(rh)
 z = wrf_user_getvar(a, "z",it) ; grid point height
 if ( FirstTime ) then ; get height info for labels
 zmin = 0.
