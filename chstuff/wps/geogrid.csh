@@ -21,7 +21,7 @@
 #PBS -l select=2:ncpus=36:mpiprocs=36
 
 ### Change to whe WPS working directory 
-cd /glade/scratch/$USER/wrf/wps
+cd /glade/scratch/$USER/wps
 
 ### Run geogrid
 echo Stating geogrid
