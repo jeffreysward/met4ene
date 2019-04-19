@@ -1,0 +1,17 @@
+# wrf.sub -- submits a wrf job to condor via real_and_wrf.csh
+
+# Set the universe, define the executable, and specify computer resource requirements
+universe 		= vanilla
+getenv			= True
+executable              = ./2011may30-31_real_wrf.csh
+request_cpus		= 32 
+request_memory		= 30 GB
+
+# Define output files and options
+log                     = /dev/null
+output			= output.wrf
+error                   = errors.wrf
+should_transfer_files   = No 
+
+# Add the job to the condor queue
+queue

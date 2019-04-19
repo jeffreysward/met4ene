@@ -1,5 +1,0 @@
-This directory is for running the Case 1 of the NY offshore wind pv study for one day in each season.
-Case 1 contains an offshore wind farm where the turbines are split evenly among the four offshore 
-wind sites and the spacing is 5D and 9D for spanwise and streamwise turbine separation, respectively.
-
-The directories within NYpvow_cntl correspond to the dates for which the WRF model was run. 
