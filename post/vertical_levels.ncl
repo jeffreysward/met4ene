@@ -7,7 +7,7 @@
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 ;-------------------------------------------------------------------------------------------------------
 begin
- WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/wrfwrk/ARW/NYpvow_A5Dx3D/2011jan23-24/wrfrun_z12r1bl5cu300ls2/"
+ WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/wrfwrk/ARW/NYpvow_A5Dx3D/2011jan23-24/test/"
 ; WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/wrfwrk/ARW/NYpvow_A5Dx3D/2011jan23-24/wrfrun_r1bl5cu300ls2/"
 ; WRFfile = "wrfout_NYpvow_A5Dx3D_d03_2011-01-24_01:00:00"
  WRFfile = "wrfinput_d03"
