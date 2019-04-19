@@ -20,12 +20,15 @@ ln -s $obsins/src/obsgrid.exe
 # Set the days that you intend to run and link observational data
 set hours = ('00' '06' '12' '18')
 set yr = (2011 2011)
-set mo = (09 09)
-set d  = (13 15)
+set mo = (05 06)
+set d  = (30 01)
 set mo_len = (31 28 31 30 31 30 31 31 30 31 30 31)
 
 if ($d[2] < $mo_len[$mo[2]]) then
 	@   ed = $d[2] + 1
+	if ($ed < 10) then
+		set ed = "0$ed"
+	endif
 	set em = $mo[2]
 else
 	set ed = 01
@@ -40,15 +43,52 @@ echo The end month is: $em
 echo The end day is: $ed
 
 set day = $d[1]
-while ($day <= $d[2])
-	#Link in the metfiles from the WPS directory
-	echo Linking : met_em.${yr[1]}-${mo[1]}-$day...
-	ln -s $metdir/met_em.*${yr[1]}-${mo[1]}-$day* .
-	foreach hr (1 2 3 4)
-		echo Linking : SURFACE_OBS:${yr[1]}${mo[1]}${day}$hours[$hr]...
-		ln -s $surfdat/SURFACE_OBS:${yr[1]}${mo[1]}${day}$hours[$hr] SURFACE_OBS:${yr[1]}-${mo[1]}-${day}_$hours[$hr]
+set month = $mo[1]
+while ($month <= $mo[2])
+	# If the month is not equal to the end month, run from $day to the end of the month
+	if ($month < $mo[2]) then
+	while ($day <= $mo_len[$month])
+		echo The day is $day
+		#Link in the metfiles from the WPS directory
+		echo Linking : met_em.${yr[1]}-${month}-$day...
+		ln -s $metdir/met_em.*${yr[1]}-${month}-$day* .
+		foreach hr (1 2 3 4)
+			echo Linking : SURFACE_OBS:${yr[1]}${month}${day}$hours[$hr]...
+			ln -s $surfdat/SURFACE_OBS:${yr[1]}${month}${day}$hours[$hr] SURFACE_OBS:${yr[1]}-${month}-${day}_$hours[$hr]
+		end
+		@ day = $day + 1
+		if ($day < 10) then
+			set day = "0$day"
+		endif
 	end
-	@ day = $day + 1
+	# Set the day back to 01 and add one to the month
+	set day = 01
+	@ month = $month + 1
+	# Make sure the month is formatted correctly
+	if ($month < 10) then
+		set month = "0$month"
+	endif
+
+	else
+	# If the month is equal to the end month, run from $day to the end day
+	while ($day <= $d[2])
+		echo The day is $day
+		#Link in the metfiles from the WPS directory
+		echo Linking : met_em.${yr[1]}-${month}-$day...
+		ln -s $metdir/met_em.*${yr[1]}-${month}-$day* .
+		foreach hr (1 2 3 4)
+			echo Linking : SURFACE_OBS:${yr[1]}${month}${day}$hours[$hr]...
+			ln -s $surfdat/SURFACE_OBS:${yr[1]}${month}${day}$hours[$hr] SURFACE_OBS:${yr[1]}-${month}-${day}_$hours[$hr]
+		end
+		@ day = $day + 1
+		if ($day < 10) then
+			set day = "0$day"
+		endif
+	end
+	# Add one to the month so that the loop will end
+	@ month = $month + 1
+	endif
+	echo The month is $month, and the end month is $mo[2]
 end
 
 #This is the hour after the last day
