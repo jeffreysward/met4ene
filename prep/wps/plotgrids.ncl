@@ -45,7 +45,7 @@ begin
   mpres@mpUSStateLineColor          = "Black"
 ;  mpres@mpOutlineBoundarySets       = "AllBoundaries"
   ;mpres@mpGridSpacingF              = 45
-  mpres@tiMainString                = " WPS Domain Configuration  "
+  mpres@tiMainString                = " WRF Domain Configuration  "
 
   lnres = True 
   lnres@gsLineThicknessF = 2.5

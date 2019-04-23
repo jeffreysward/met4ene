@@ -7,7 +7,7 @@
 loadscript("cd_inv_string.ncl")
 begin
 ;Open MAP and ACONC files (do not append with .nc) 
-   WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/wrfwrk/ARW/NYpvow_A5Dx3D/2011jan23-24/wrfrun_r1bl5cu300ls2/"
+   WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/wrfwrk/ARW/NYpvow_A5Dx3D/2011jan23-24/wrfrun_z46r1bl5cu300ls2/"
    WRFfile = "wrfout_d03_2011-01-24_01:00:00"
   
    if (fileexists(WRFdir+WRFfile)) then
@@ -33,7 +33,8 @@ begin
 ;---Just look at first time step.
    it = 19
    lay = 0
-   ;print("Working on time: " + times(it) )
+   times = wrf_user_getvar(fwrf,"times",-1) 
+   print("Working on time: " + times(it) )
 
 ;---Variables from wrfout file
    LAT2D = fwrf->XLAT(it,:,:)
@@ -55,7 +56,7 @@ begin
    GHI@long_name = "Global Horizontal Irradiance"
    printVarSummary(GHI)
 
-   time_numeric = cd_inv_string( times(it), “%Y%N%D%H%M”)  ;; will return in hours since 1800-01-01 unless specified otherwise
+   time_numeric = cd_inv_string( times(it), "%Y%N%D%H%M")  ;; will return in hours since 1800-01-01 unless specified otherwise
    offset = -8    ; hours
    time_numeric = time_numeric - offset
 
