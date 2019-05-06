@@ -67,17 +67,17 @@ begin
 
 	;---------------------------------------------------------------
 	n = 1
-	do it = 0,ntimes-1,1                   ; TIME LOOP
+	do it = 0,ntimes-1,1                    ; TIME LOOP
 	print("Working on time: " + times(it) )
 	res@TimeLabel = times(it)               ; Set Valid time to use on plots
 	outdir = "./met_plots/"+expr+"/"+dates+"/wrfrun_"+params
-	outfile = "/PBL_Wind_ts."+sprinti("%0.3i", n)
+	outfile = "/PBL_Wind_ts."+sprinti("%0.3i", it+1)
 	ret = systemfunc("test -d "+outdir+"; echo $?")
-    if(ret .eq. 0) then
-        ;-- the directory already exists
-    else 
-        system("mkdir -p "+outdir)      ;-- create the directory    
-    end if
+    	if(ret .eq. 0) then
+        	;-- the directory already exists
+    	else 
+        	system("mkdir -p "+outdir)      ;-- create the directory    
+    	end if
 	wks = gsn_open_wks(type,outdir+outfile)
 
 	u  = wrf_user_getvar(a,"ua",it)          ; U wind component
@@ -187,10 +187,10 @@ begin
 	opts_wind@sfYArray               = levs4lb
 	opts_wind@cnFillOn               = True 
 	opts_wind@cnSpanFillPalette      = True
-	;opts_wind@cnLevelSelectionMode   = "ManualLevels"
-	;opts_wind@cnMinLevelValF         = 3.               ;-- set min contour level
-	;opts_wind@cnMaxLevelValF         = 30.              ;-- set max contour level
-	;opts_wind@cnLevelSpacingF        = 3;
+	opts_wind@cnLevelSelectionMode   = "ManualLevels"
+	opts_wind@cnMinLevelValF         = 1.               ;-- set min contour level
+	opts_wind@cnMaxLevelValF         = 10.              ;-- set max contour level
+	opts_wind@cnLevelSpacingF        = 1		    ;-- set contour level spacing
 	;opts_wind@cnMaxLevelCount        = 30                      ;-- maximum contour level count  
 	;opts_wind@cnLevelSelectionMode   = "EqualSpacedLevels"     ;-- color fill  
 	opts_wind@cnFillPalette          = cmap(:,:)          ;-- subset the color map
@@ -216,6 +216,8 @@ begin
 	;---------------------------------------------------------------
 	; MAKE PLOTS
 	if (FirstTimeMap) then
+		outfile1 = "/PBL_Wind_location"
+		wks1 = gsn_open_wks(type,outdir+outfile1)
 
 		lat_plane = wrf_user_intrp2d(XLAT,plane,angle,opts)
 		lon_plane = wrf_user_intrp2d(XLONG,plane,angle,opts)
@@ -234,16 +236,16 @@ begin
 		optsM@lbTitleOffsetF         = -0.6
 		;optsM@lbTitleFontHeightF     = 0.02
 		;optsM@lbLabelFontHeightF     = 0.015
-		contour = wrf_contour(a,wks,ter,optsM)
-		plot = wrf_map_overlays(a,wks,(/contour/),pltres,mpres)
+		contour = wrf_contour(a,wks1,ter,optsM)
+		plot = wrf_map_overlays(a,wks1,(/contour/),pltres,mpres)
 
 		lnres = True
 		lnres@gsLineThicknessF = 3.0
 		lnres@gsLineColor = "Red"
 		do ii = 0,dimsX(0)-2
-			gsn_polyline(wks,plot,(/lon_plane(ii),lon_plane(ii+1)/),(/lat_plane(ii),lat_plane(ii+1)/),lnres)
+			gsn_polyline(wks1,plot,(/lon_plane(ii),lon_plane(ii+1)/),(/lat_plane(ii),lat_plane(ii+1)/),lnres)
 		end do
-		frame(wks)
+		frame(wks1)
 		delete(lon_plane)
 		delete(lat_plane)
 		pltres@FramePlot = True
@@ -260,6 +262,6 @@ begin
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	FirstTimeMap = False
 	n := n + 1
-end do ; END OF TIME LOOP
+	end do ; END OF TIME LOOP
 
 end

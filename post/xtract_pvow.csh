@@ -4,10 +4,27 @@ set verbose
 ##################################################################################################
 # BEGIN USER INPUT SECTION
 ##################################################################################################
-set scen = "NYpvow_A5Dx3D"
+#set scen = "NYpvow_A5Dx3D"
+#set scen = "NYpvow_A9Dx5D"
+#set scen = "NYpvow_A1.9x1.9"
+#set scen = "NYpvow_B5Dx3D"
+#set scen = "NYpvow_B9Dx5D"
+#set scen = "NYpvow_B1.9x1.9"
+#set scen = "NYpvow_C5Dx3D"
+#set scen = "NYpvow_C9Dx5D"
+#set scen = "NYpvow_C1.9x1.9"
+#set scen = "NYpvow_D5Dx3D"
+set scen = "NYpvow_D9Dx5D"
+#set scen = "NYpvow_D1.9x1.9"
 set yr = 2011
-set mo = 01
-set std = 24
+#set mo = 01
+#set mo = 05
+#set mo = 07
+set mo = 09
+#set std = 24
+#set std = 31
+#set std = 22
+set std = 14
 set params = "z46r1bl5cu300ls2"
 
 set outdir = "/share/mzhang/jas983/wrf_data/eas5555/post/wrf_xtract/"
