@@ -7,7 +7,7 @@
 #-set compset = FW5
 set compset = FC5AQUAP
 
-set pversion = /glade/u/home/sward/2017/eas5555/chstuff/cesm/cases/
+set pversion = /glade/u/home/sward/eas5555/chstuff/cesm/cases/
 
 set case = 001z
 #set new_case = f.e12.${compset}.f19_19.waccm.$case
