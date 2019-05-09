@@ -12,8 +12,8 @@ loadscript("./cd_string.ncl")
 begin
 
 ; Load the WRF input file.  
-WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/wrfwrk/ARW/NYpvow_A5Dx3D/2011jan23-24/wrfrun_r1bl5cu300ls2/"
-WRFfile = "wrfout_NYpvow_A5Dx3D_d02_2011-01-24_01:00:00"
+WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/wrfwrk/ARW/NYpvow_A5Dx3D/2011jan23-24/wrfrun_z46r1bl5cu300ls2/"
+WRFfile = "wrfout_d02_2011-01-24_01:00:00"
   
 if (fileexists(WRFdir+WRFfile)) then
    a = addfile(WRFdir+WRFfile, "r")
@@ -44,7 +44,7 @@ ntimes = dimsizes(times)               ; number of times in the file
 ;-----------------------------------------------------------------
 
 n = 1
-do it = 0,ntimes-1,1             ; TIME LOOP
+do it = 0,ntimes-1,12             ; TIME LOOP
   ;it = 0
 
    print("Working on time: " + times(it) )
@@ -62,7 +62,7 @@ do it = 0,ntimes-1,1             ; TIME LOOP
    time_str = cd_string( time_numeric, "%c %D, %Y %H:%M")
 
    ;---Set the workstation (x11, png, eps, ps, pdf, ncgm)
-   wks  = gsn_open_wks("png",outfile)              ;-- open a workstation
+   wks  = gsn_open_wks("x11",outfile)              ;-- open a workstation
    cmap = read_colormap_file("MPL_YlOrRd")         ;-- so we can subset later
 
    ;---Set plot resources

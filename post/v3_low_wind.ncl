@@ -3,16 +3,16 @@
 ; Plot data on a cross section
 ; This script will plot data at a set angle through a specified point
 ; This script adds lon/lat info along X-axis
+
 loadscript("./cd_inv_string.ncl")
 loadscript("./cd_string.ncl")
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 begin
-;
+
 ; The WRF ARW input file.
-; This needs to have a ".nc" appended, so just do it.
-WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/wrfwrk/ARW/NYpvow_A5Dx3D/2011jan23-24/wrfrun_r1bl5cu300ls2/"
-WRFfile = "wrfout_NYpvow_A5Dx3D_d03_2011-01-24_01:00:00"
+WRFdir = "/magma-dirs/jas983/wrf_data/eas5555/wrfwrk/ARW/NYpvow_A5Dx3D/2011jan23-24/err.wrfrun_z46r1bl5cu300ls2/"
+WRFfile = "wrfout_d03_2011-01-24_01:00:00"
 
 if (fileexists(WRFdir+WRFfile)) then
          a = addfile(WRFdir+WRFfile, "r")
@@ -24,12 +24,13 @@ else
 end if
 
 ; We generate plots, but what kind do we prefer?
-; type = "x11"
-type = "png"
+type = "x11"
+;type = "png"
 ; type = "pdf"
 ; type = "ps"
 ; type = "ncgm"
 wks = gsn_open_wks(type,"plt_CrossSection4")
+
 ; Set some basic resources
 res = True
 res@MainTitle = "REAL-TIME WRF"
@@ -48,14 +49,13 @@ xlon = wrf_user_getvar(a, "XLONG",0)
 ter = wrf_user_getvar(a, "HGT",0)
 
 ;---------------------------------------------------------------
-do it = 0,ntimes-1,24                   ; TIME LOOP
+do it = 0,ntimes-1,6                   ; TIME LOOP
 print("Working on time: " + times(it) )
 res@TimeLabel = times(it)               ; Set Valid time to use on plots
-tc = wrf_user_getvar(a,"tc",it)         ; T in C
 u  = wrf_user_getvar(a,"ua",it)          ; U wind component
-printVarSummary(u)
+;printVarSummary(u)
 v  = wrf_user_getvar(a,"va",it)          ; V wind component
-printVarSummary(v)
+;printVarSummary(v)
 wind = sqrt(u^2+v^2)                    ; relative humidity
 printVarSummary(wind)
 printMinMax(wind,0)
@@ -71,7 +71,8 @@ time_str = cd_string( time_numeric, "%c %D, %Y %H:%M")
 if ( FirstTime ) then                   ; get height info for labels
 zmin = 0.
 zmax = 1.                               ; We are only interested in the first 1km
-nz = floattoint(zmax + 1)
+;nz = floattoint(zmax + 5)
+nz = 5 
 end if
 ;---------------------------------------------------------------
 ;do ip = 1, 3 ; we are doing 3 plots
@@ -101,22 +102,37 @@ angle = 45.
 X_plane = wrf_user_intrp2d(xlon,plane,angle,opts)
 X_desc = "longitude"
 end if
-wind_plane = wrf_user_intrp3d(wind,z,"v",plane,angle,opts)
-tc_plane = wrf_user_intrp3d(tc,z,"v",plane,angle,opts)
+wind_plane = wrf_user_intrp3d(wind,z,"v",X_plane,angle,opts)
+printVarSummary(wind_plane)
 
-; Find the index where zmax km is - only need to do this once
+; Find the index where zmax km is located - only need to do this once
+usezz = 0
+if ( usezz .eq. 1 ) then
 if ( FirstTime ) then
-zz = wrf_user_intrp3d(z,z,"v",plane,angle,opts)
-b = ind(zz(:,0) .gt. zmax*1000. )
-zmax_pos = b(0) - 1
-if ( abs(zz(zmax_pos,0)-zmax*1000.) .lt. abs(zz(zmax_pos+1,0)-zmax*1000.) ) then
-zspan = b(0) - 1
-else
-zspan = b(0)
+	zz = wrf_user_intrp3d(z,z,"v",plane,angle,opts)
+	b = ind(zz(:,0) .gt. zmax*1000. )
+	zmax_pos = b(0) - 1
+	if ( abs(zz(zmax_pos,0)-zmax*1000.) .lt. abs(zz(zmax_pos+1,0)-zmax*1000.) ) then
+		zspan = b(0) - 1
+	else
+		zspan = b(0)
+	end if
+	delete(zz)
+	delete(b)
+	FirstTime = False
 end if
-delete(zz)
-delete(b)
-FirstTime = False
+else
+if ( FirstTime ) then
+	b = ind(z(:,0,0) .gt. zmax*1000. )
+	zmax_pos = b(0) - 1
+	if ( abs(z(zmax_pos,0,0)-zmax*1000.) .lt. abs(z(zmax_pos+1,0,0)-zmax*1000.) ) then
+		zspan = b(0) - 1
+	else
+		zspan = b(0)
+	end if
+	delete(b)
+	FirstTime = False
+end if
 end if
 
 ; X-axis lables
@@ -129,26 +145,25 @@ nx = floattoint( (xmax-xmin)/2 + 1)
 ;---------------------------------------------------------------
 ; Options for XY Plots
 opts_xy = res
-opts_xy@tiXAxisString = X_desc
-opts_xy@tiYAxisString = "Height (km)"
+;opts_xy@tiXAxisString = X_desc
+opts_xy@tiYAxisString = "Height (m)"
 opts_xy@cnMissingValPerimOn = True
 opts_xy@cnMissingValFillColor = 0
 opts_xy@cnMissingValFillPattern = 11
-opts_xy@tmXTOn = False
-opts_xy@tmYROn = False
-opts_xy@tmXBMode = "Explicit"
-; opts_xy@tmXBValues = fspan(0,xspan,nx) ; Create tick marks
-; opts_xy@tmXBLabels = sprintf("%.1f",fspan(xmin,xmax,nx)) ; Create labels
+;opts_xy@tmXTOn = True 
+;opts_xy@tmYROn = True
+;opts_xy@tmXBMode = "Explicit"
+;opts_xy@tmXBValues = fspan(0,xspan,nx) 		     ; Create X tick marks
+;opts_xy@tmXBLabels = sprintf("%.1f",fspan(xmin,xmax,nx))    ; Create X labels
 opts_xy@tmXBLabelFontHeightF = 0.015
-opts_xy@tmYLMode = "Explicit"
-opts_xy@tmYLValues = fspan(0,zspan,nz)                      ; Create tick marks
-opts_xy@tmYLLabels = sprintf("%.1f",fspan(zmin,zmax,nz))    ; Create labels
+;opts_xy@tmYLMode = "Explicit"
+;opts_xy@tmYLValues = fspan(0,zspan*1000,nz)                      ; Create Y tick marks
+;opts_xy@tmYLLabels = sprintf("%d",fspan(zmin*1000,zmax*1000,nz))    ; Create Y labels
 opts_xy@tiXAxisFontHeightF = 0.020
 opts_xy@tiYAxisFontHeightF = 0.020
 opts_xy@tmXBMajorLengthF = 0.02
 opts_xy@tmYLMajorLengthF = 0.02
 opts_xy@tmYLLabelFontHeightF = 0.015
-opts_xy@PlotOrientation = tc_plane@Orientation
 
 ; Plotting options for wind
 cmap = read_colormap_file("MPL_YlGnBu")               ;-- so we can subset later
@@ -161,30 +176,22 @@ opts_wind@cnLevelSelectionMode   = "ManualLevels"
 opts_wind@cnMinLevelValF         = 3.               ;-- set min contour level
 opts_wind@cnMaxLevelValF         = 30.              ;-- set max contour level
 opts_wind@cnLevelSpacingF        = 3;
-;res@cnMaxLevelCount        = 30                       ;-- maximum contour level count  
-;res@cnLevelSelectionMode   = "EqualSpacedLevels"      ;-- color fill  
+;res@cnMaxLevelCount        = 30                      ;-- maximum contour level count  
+;res@cnLevelSelectionMode   = "EqualSpacedLevels"     ;-- color fill  
 opts_wind@cnFillPalette          = cmap(:,:)          ;-- subset the color map
 opts_wind@lbTitleString          = "Wind Speed (m/s)"
 opts_wind@lbTitleOffsetF         = -0.35
 opts_wind@lbTitleFontHeightF     = 0.02
 opts_wind@lbLabelFontHeightF     = 0.015
 ;opts_wind@gsnLeftString          = ""                 ;-- do not draw the left sub-title (otherwise automatically set)
-;opts_wind@gsnRightString         = time_str                 ;-- do not draw the right sub-title (otherwise automatically set)
+;opts_wind@gsnRightString         = time_str           ;-- do not draw the right sub-title (otherwise automatically set)
 ;opts_wind@gsnCenterString        = time_str           ;-- write time to center string
 ;opts_wind@gsnCenterStringOrthogonalPosF = 0.02        ;-- move center string upwards
 
-
-; Plotting options for Temperature
-opts_tc = opts_xy
-opts_tc@cnInfoLabelZone = 1
-opts_tc@cnInfoLabelSide = "Top"
-opts_tc@cnInfoLabelPerimOn = True
-opts_tc@cnInfoLabelOrthogonalPosF = -0.00005
-opts_tc@ContourParameters = (/ 3. /)
-
 ; Get the contour info for the wind and temp
-contour_tc = wrf_contour(a,wks,tc_plane(0:zmax_pos,:),opts_tc)
-contour_wind = wrf_contour(a,wks,wind_plane(0:zmax_pos,:),opts_wind)
+;contour_wind = wrf_contour(a,wks,wind_plane(0:zmax_pos,:),opts_wind)
+contour_wind = wrf_contour(a,wks,wind(0:zmax_pos,50,:),opts_wind)
+;contour_wind = wrf_contour(a,wks,wind_plane,opts_wind)
 
 ;---------------------------------------------------------------
 ; MAKE PLOTS
@@ -198,13 +205,12 @@ pltres@FramePlot = False
 optsM = res
 optsM@NoHeaderFooter = True
 optsM@cnFillOn = True
-;optsM@lbTitleOn = False
+optsM@lbTitleOn = False
 optsM@lbLabelOffsetF 	     = -0.4
-optsM@lbTitleString          = "Terrain Height (m)"
+optsM@lbTitleString          = ""
 optsM@lbTitleOffsetF         = -0.6
 optsM@lbTitleFontHeightF     = 0.02
 optsM@lbLabelFontHeightF     = 0.015
-;optsM@lbLabelOffsetF	     = -0.4
 contour = wrf_contour(a,wks,ter,optsM)
 plot = wrf_map_overlays(a,wks,(/contour/),pltres,mpres)
 
@@ -219,13 +225,11 @@ delete(lon_plane)
 delete(lat_plane)
 pltres@FramePlot = True
 end if
-plot = wrf_overlays(a,wks,(/contour_wind,contour_tc/),pltres) ; plot x-section
+plot = wrf_overlays(a,wks,(/contour_wind/),pltres) ; plot x-section
 
 ; Delete options and fields, so we don't have carry over
 delete(opts_xy)
-delete(opts_tc)
 delete(opts_wind)
-delete(tc_plane)
 delete(wind_plane)
 delete(X_plane)
 
