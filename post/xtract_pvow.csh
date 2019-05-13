@@ -13,8 +13,8 @@ set verbose
 #set scen = "NYpvow_C5Dx3D"
 #set scen = "NYpvow_C9Dx5D"
 #set scen = "NYpvow_C1.9x1.9"
-#set scen = "NYpvow_D5Dx3D"
-set scen = "NYpvow_D9Dx5D"
+set scen = "NYpvow_D5Dx3D"
+#set scen = "NYpvow_D9Dx5D"
 #set scen = "NYpvow_D1.9x1.9"
 set yr = 2011
 #set mo = 01
@@ -68,9 +68,9 @@ echo The indir has been set to: $indir
 # Extract data for offshore wind
 set iwrfoutOW = "wrfout_d03_${yr}-${mo}-${std}_01*"
 set owrfoutOW = "wrfout_OW_${scen}_${params}_d03_${yr}-${mo}-${std}"
-ncks -v Times,POWER,U,V,W $indir$iwrfoutOW -O $outdir$owrfoutOW
+ncks -v Times,POWER,WSPD100,XLAT,XLONG $indir$iwrfoutOW -O $outdir$owrfoutOW
 
 # Extract data for solar
-set iwrfoutPV = "wrfout_d02_${yr}-${mo}-${std}_01*"
-set owrfoutPV = "wrfout_PV_${scen}_${params}_d02_${yr}-${mo}-${std}"
-ncks -v Times,SWDDNI,SWDDIF,T2,U10,V10 $indir$iwrfoutPV -O $outdir$owrfoutPV
+#set iwrfoutPV = "wrfout_d02_${yr}-${mo}-${std}_01*"
+#set owrfoutPV = "wrfout_PV_${scen}_${params}_d02_${yr}-${mo}-${std}"
+#ncks -v Times,SWDDNI,SWDDIF,T2,U10,V10 $indir$iwrfoutPV -O $outdir$owrfoutPV
