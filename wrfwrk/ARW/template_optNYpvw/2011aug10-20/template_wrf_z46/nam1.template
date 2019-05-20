@@ -1,0 +1,5 @@
+ &time_control
+ run_days                            = 0,
+ run_hours                           = 240, 
+ run_minutes                         = 0,
+ run_seconds                         = 0,
