@@ -1,67 +1,67 @@
 #!/bin/csh
 # This script removes all the stuff in case we need to recompile the WRF model or change model versions
 
-rm ndown.exe 
-rm real.exe 
-rm tc.exe 
-rm wrf.exe 
+rm -f ndown.exe 
+rm -f real.exe 
+rm -f tc.exe 
+rm -f wrf.exe 
 
-rm README.namelist
-rm MPTABLE.TBL 
-rm URBPARM_UZE.TBL 
-rm URBPARM.TBL 
-rm VEGPARM.TBL 
-rm SOILPARM.TBL 
-rm CCN_ACTIVATE.BIN 
-rm bulkdens.asc_s_0_03_0_9 
-rm bulkradii.asc_s_0_03_0_9 
-rm capacity.asc 
-rm coeff_p.asc
-rm coeff_q.asc 
-rm constants.asc 
-rm kernels.asc_s_0_03_0_9 
-rm kernels_z.asc 
-rm masses.asc 
-rm termvels.asc 
-rm grib2map.tbl 
-rm gribmap.txt 
-rm CAMtr_volume_mixing_ratio.A1B 
-rm CAMtr_volume_mixing_ratio.A2 
-rm CAMtr_volume_mixing_ratio.RCP6 
-rm CAMtr_volume_mixing_ratio.RCP4.5 
-rm CAMtr_volume_mixing_ratio.RCP8.5 
-rm CLM_ALB_ICE_DFS_DATA 
-rm CLM_ALB_ICE_DRC_DATA 
-rm CLM_ASM_ICE_DFS_DATA 
-rm CLM_ASM_ICE_DRC_DATA 
-rm CLM_DRDSDT0_DATA 
-rm CLM_EXT_ICE_DFS_DATA 
-rm CLM_EXT_ICE_DRC_DATA 
-rm CLM_KAPPA_DATA 
-rm CLM_TAU_DATA 
-rm README.tslist 
-rm aerosol.formatted 
-rm aerosol_lat.formatted 
-rm aerosol_lon.formatted 
-rm aerosol_plev.formatted 
-rm LANDUSE.TBL 
-rm ETAMPNEW_DATA.expanded_rain_DBL 
-rm ETAMPNEW_DATA.expanded_rain 
-rm RRTMG_LW_DATA 
-rm RRTMG_LW_DATA_DBL 
-rm GENPARM.TBL 
-rm co2_trans 
-rm RRTMG_SW_DATA 
-rm RRTMG_SW_DATA_DBL 
-rm ozone.formatted 
-rm ozone_lat.formatted 
-rm ozone_plev.formatted 
-rm CAM_ABS_DATA 
-rm CAM_AEROPT_DATA 
-rm ETAMPNEW_DATA_DBL 
-rm RRTM_DATA_DBL 
-rm ETAMPNEW_DATA 
-rm RRTM_DATA 
-rm tr49t67 
-rm tr49t85 
-rm tr67t85
+rm -f README.namelist
+rm -f MPTABLE.TBL 
+rm -f URBPARM_UZE.TBL 
+rm -f URBPARM.TBL 
+rm -f VEGPARM.TBL 
+rm -f SOILPARM.TBL 
+rm -f CCN_ACTIVATE.BIN 
+rm -f bulkdens.asc_s_0_03_0_9 
+rm -f bulkradii.asc_s_0_03_0_9 
+rm -f capacity.asc 
+rm -f coeff_p.asc
+rm -f coeff_q.asc 
+rm -f constants.asc 
+rm -f kernels.asc_s_0_03_0_9 
+rm -f kernels_z.asc 
+rm -f masses.asc 
+rm -f termvels.asc 
+rm -f grib2map.tbl 
+rm -f gribmap.txt 
+rm -f CAMtr_volume_mixing_ratio.A1B 
+rm -f CAMtr_volume_mixing_ratio.A2 
+rm -f CAMtr_volume_mixing_ratio.RCP6 
+rm -f CAMtr_volume_mixing_ratio.RCP4.5 
+rm -f CAMtr_volume_mixing_ratio.RCP8.5 
+rm -f CLM_ALB_ICE_DFS_DATA 
+rm -f CLM_ALB_ICE_DRC_DATA 
+rm -f CLM_ASM_ICE_DFS_DATA 
+rm -f CLM_ASM_ICE_DRC_DATA 
+rm -f CLM_DRDSDT0_DATA 
+rm -f CLM_EXT_ICE_DFS_DATA 
+rm -f CLM_EXT_ICE_DRC_DATA 
+rm -f CLM_KAPPA_DATA 
+rm -f CLM_TAU_DATA 
+rm -f README.tslist 
+rm -f aerosol.formatted 
+rm -f aerosol_lat.formatted 
+rm -f aerosol_lon.formatted 
+rm -f aerosol_plev.formatted 
+rm -f LANDUSE.TBL 
+rm -f ETAMPNEW_DATA.expanded_rain_DBL 
+rm -f ETAMPNEW_DATA.expanded_rain 
+rm -f RRTMG_LW_DATA 
+rm -f RRTMG_LW_DATA_DBL 
+rm -f GENPARM.TBL 
+rm -f co2_trans 
+rm -f RRTMG_SW_DATA 
+rm -f RRTMG_SW_DATA_DBL 
+rm -f ozone.formatted 
+rm -f ozone_lat.formatted 
+rm -f ozone_plev.formatted 
+rm -f CAM_ABS_DATA 
+rm -f CAM_AEROPT_DATA 
+rm -f ETAMPNEW_DATA_DBL 
+rm -f RRTM_DATA_DBL 
+rm -f ETAMPNEW_DATA 
+rm -f RRTM_DATA 
+rm -f tr49t67 
+rm -f tr49t85 
+rm -f tr67t85
