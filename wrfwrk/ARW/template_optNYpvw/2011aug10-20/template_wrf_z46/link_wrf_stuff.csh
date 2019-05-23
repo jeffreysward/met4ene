@@ -1,7 +1,7 @@
 #!/bin/csh
 # This script copies all the stuff we need into this run directory for WRF
 
-set WRF = /glade/u/home/wrfhelp/PRE_COMPILED_CODE/WRFV4.0.3_intel_dmpar
+set WRF = /glade/u/home/wrfhelp/PRE_COMPILED_CODE/WRFV4.1_intel_dmpar
 ln -sf $WRF/main/ndown.exe .
 ln -sf $WRF/main/real.exe .
 ln -sf $WRF/main/tc.exe .

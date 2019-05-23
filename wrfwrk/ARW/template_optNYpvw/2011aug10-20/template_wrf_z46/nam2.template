@@ -2,7 +2,7 @@
  input_from_file                     = .true.,.true.,.true.,
  history_interval                    = 60,  60,   60,
  frames_per_outfile                  = 1000, 1000, 1000,
- restart                             = .true.,
+ restart                             = .false.,
  restart_interval                    = 2880,
  io_form_history                     = 2
  io_form_restart                     = 2
@@ -33,7 +33,7 @@
                                        0.500, 0.450, 0.400, 0.350,
                                        0.300, 0.250, 0.200, 0.150,
                                        0.100, 0.050, 0.000,
- num_metgrid_levels                  = 27,
+ num_metgrid_levels                  = 40,
  num_metgrid_soil_levels             = 4,
  dx                                  = 12000, 4000,  1333.333,
  dy                                  = 12000, 4000,  1333.333,

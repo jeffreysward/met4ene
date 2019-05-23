@@ -214,6 +214,6 @@ elapsed = int(time()) - startTime
 print('WRF ran in: ' + str(elapsed))
 
 # Rename the wrfout files.
-system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d01_2016-06-01_00:00:00', DIR_LOCAL_TMP + 'wrfout_d01.nc'))
-system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d02_2016-06-01_00:00:00', DIR_LOCAL_TMP + 'wrfout_d02.nc'))
-system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d03_2016-06-01_00:00:00', DIR_LOCAL_TMP + 'wrfout_d03.nc'))
+#system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d01_2016-06-01_00:00:00', DIR_LOCAL_TMP + 'wrfout_d01.nc'))
+#system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d02_2016-06-01_00:00:00', DIR_LOCAL_TMP + 'wrfout_d02.nc'))
+#system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d03_2016-06-01_00:00:00', DIR_LOCAL_TMP + 'wrfout_d03.nc'))
