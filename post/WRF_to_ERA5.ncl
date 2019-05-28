@@ -62,8 +62,10 @@ begin
 
     dst_lat  = dfile->latitude                    ;;---Change (likely)
     dst_lon  = dfile->longitude                   ;;---Change (likely)
-    dst_2t   = dfile->VAR_2T(0,:,:)
-    printVarSummary(dst_2t)
+    dst_2tK   = dfile->VAR_2T(0,:,:)
+    dst_2tC           = dst_2tK - 273.15          ;-- convert from Kelvin to Celsius
+    dst_2tC@units     = "C"            		  ;-- define new units
+    printVarSummary(dst_2tC)
 
 ;---Set up regridding options
     Opt                   = True
@@ -93,8 +95,12 @@ begin
     printVarSummary(var_regrid)
 
 ;---Compute difference between ERA5 variable and WRF variable
-    var_diff = dst_2t - var_regrid
-
+    var_diff = dst_2tC - var_regrid
+    var_diff!0 = "lat"
+    var_diff!1 = "lon"
+    var_diff&lat = dst_lat     ; Needed for plotting. "var_regrid" 
+    var_diff&lon = dst_lon     ; already has these coords attached.
+    printVarSummary(var_diff)
 
 ;----------------------------------------------------------------------
 ; Plotting section
@@ -120,11 +126,15 @@ begin
     res@cnFillMode            = "RasterFill"
 
     res@lbLabelBarOn          = False    ; Turn on later in panel
+    res@mpDataBaseVersion     = "MediumRes"
 
     res@mpMinLatF             = min(src_lat)
     res@mpMaxLatF             = max(src_lat)
     res@mpMinLonF             = min(src_lon)
     res@mpMaxLonF             = max(src_lon)
+
+    d_res 		      = res
+    d_res@lbLabelBarOn        = True
 
 ;;--Set contour spacing interval 		Change (maybe)
     mnmxint = nice_mnmxintvl( min(var), max(var), 18, False)
@@ -132,6 +142,12 @@ begin
     res@cnMinLevelValF       = mnmxint(0)
     res@cnMaxLevelValF       = mnmxint(1)
     res@cnLevelSpacingF      = mnmxint(2)
+
+    mnmxint = nice_mnmxintvl( min(var_diff), max(var_diff), 18, False)
+;    print(max(var_diff))
+    d_res@cnMinLevelValF       = -mnmxint(1)
+    d_res@cnMaxLevelValF       = mnmxint(1)
+    d_res@cnLevelSpacingF      = mnmxint(2)
 
 ;---Resources for plotting regridded data
     res@gsnAddCyclic  = False            ;;---Change (maybe)
@@ -145,10 +161,27 @@ begin
 
     plot_orig = gsn_csm_contour_map(wks,var,res)  
 
+;---Resources for plotting difference in WRF and ERA5 data
+    d_res@gsnAddCyclic           = False            ;;---Change (maybe)
+    d_res@tiMainString 		 = "WRF & ERA5 Difference"
+    d_res@lbTitleString          = "Temperature Difference (C)"
+    d_res@lbTitleOffsetF         = -0.2
+    d_res@lbTitleFontHeightF     = 0.02
+    d_res@lbLabelFontHeightF     = 0.015
+    cmap = read_colormap_file("BlueDarkRed18")      ;-- so we can subset later
+    d_res@cnFillPalette          = cmap(:,:)        ;-- subset the color map
+
+    plot_diff = gsn_csm_contour_map(wks,var_diff,d_res)  
+
 ;---Compare the plots in a panel
     pres                   = True
     pres@gsnMaximize       = True
     pres@gsnPanelLabelBar  = True
 
     gsn_panel(wks,(/plot_orig,plot_regrid/),(/2,1/),pres)
+
+;---Plot the difference 
+;    overlay(plot_diff)
+    draw(plot_diff)
+    frame(wks)
 end
