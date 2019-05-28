@@ -17,6 +17,8 @@ oa*
 *.exe
 log.*
 *.log
+Log.*
+*.Log
 Vtable*
 output*
 errors*
