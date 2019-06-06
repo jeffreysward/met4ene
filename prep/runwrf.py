@@ -13,42 +13,43 @@ import time as tm
 
 # I think this is a command line interface; how are these arguments input?
 arg = ArgumentParser()
-arg.add_argument('-s', help="Start Date")
-arg.add_argument('-e', help="End Date")
-arg.add_argument('-d', help="Max Domains")
-arg.add_argument('-t', help="Namelist Template Directory")
-arg.add_argument('-H', help="Path to host list file")
+arg.add_argument('-s', help="Start Date", type=str)
+arg.add_argument('-e', help="End Date", type=str)
+arg.add_argument('-b', help="Boundary Conditon Data Source", type=str)
+arg.add_argument('-d', help="Max Domains", type=int)
+arg.add_argument('-t', help="Namelist Template Directory", type=str)
 args = arg.parse_args()
 
-###########################################################################################
-# This is where I will hardcode some stuff for a single WRF run; improve this eventually... 
-da = '10'
-mo = '08'
-yr = '2012'
-hr = '00'
-ndays = 5
-datatype = 'ERA'
-###########################################################################################
-if datatype == 'ERA':
-    DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.pl/' + yr + mo + '/'
+forecast_start = datetime.strptime(args.s, '%b %d %Y')
+#forecast_start = datetime.strptime(args.s, '%b %d %Y %H')
+#forecast_start = datetime.strptime(args.s, '%b %d %Y %H:%M:%S')
+forecast_end = datetime.strptime(args.e, '%b %d %Y')
+delt = forecast_end - forecast_start
+print(forecast_start)
+print (forecast_end)
+
+if args.b == 'ERA':
+    DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.pl/'
+    DATA_ROOT1 = DATA_ROOT1 + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
     datpfx1 = 'ei.oper.an.pl.regn128sc.'
     datpfx2 = 'ei.oper.an.pl.regn128uv.'
-    DATA_ROOT2 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.sfc/' + yr + mo + '/'
+    DATA_ROOT2 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.sfc/'
+    DATA_ROOT2 = DATA_ROOT2 + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
     datpfx3 = 'ei.oper.an.sfc.regn128sc.'
     Vsfx = 'ERA-interim.pl'
 else:
-    Vsfx = datatype
+    Vsfx = args.b
 
-DATE = datetime(day=int(da), month=int(mo), year=int(yr), hour=int(hr), minute=0, second=0)
+print(Vsfx)
 
 # This sets directory names
 DIR_OUT = getcwd() + '/' #Needs Editing
-DIR_LOCAL_TMP = '/glade/scratch/sward/tmp/%s/' % DATE.strftime('%Y-%m-%d_%H-%M-%S')
+DIR_LOCAL_TMP = '/glade/scratch/sward/tmp/%s/' % forecast_start.strftime('%Y-%m-%d_%H-%M-%S')
 DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
 DIR_WPS = DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
 DIR_WRF = DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
 DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
-DIR_DATA = '/glade/scratch/sward/data/' + datatype + '/'
+DIR_DATA = '/glade/scratch/sward/data/' + str(args.b) + '/'
 
 # I think this defines a directory of qsub template csh scripts for running geogrid, ungrib and metgrid, real, and wrf.
 if args.t != None:
@@ -62,7 +63,8 @@ CMD_CP = 'cp %s %s'
 CMD_MV = 'mv %s %s'
 CMD_CHMOD = 'chmod -R %s %s'
 CMD_LINK_GRIB = DIR_WPS + 'link_grib.csh ' + DIR_DATA + '*' #Needs editing
-CMD_GEOGRID = DIR_WPS + 'geogrid.exe >& log.geogrid'
+CMD_GEOGRID = 'qsub template_rungeogrid.csh'
+#CMD_GEOGRID = DIR_WPS + 'geogrid.exe >& log.geogrid'
 #CMD_UNGRIB = DIR_WPS + 'ungrib.exe >& log.ungrib' 
 #CMD_METGRID = DIR_WPS + 'metgrid.exe >& log.metgrid' 
 CMD_UNGMETG = 'qsub template_runungmetg.csh'
@@ -75,16 +77,6 @@ if args.d != None and args.d > 0:
 else:
     MAX_DOMAINS = 3
 
-# Try to open WPS and WRF namelists as readonly, and print an error if you cannot.
-try:
-    with open(DIR_TEMPLATES + 'namelist.wps', 'r') as namelist:
-        NAMELIST_WPS = namelist.read()
-    with open(DIR_TEMPLATES + 'namelist.input', 'r') as namelist:
-        NAMELIST_WRF = namelist.read()
-except:
-    print('Error reading namelist files')
-    exit()
-
 # Try to remove the data dir, and print 'DIR_DATA not deleted' if you cannot. Then remake the dir, and enter it.
 try: rmtree(DIR_DATA)
 except: print(DIR_DATA + ' not deleted')
@@ -92,12 +84,16 @@ os.mkdir(DIR_DATA, 0755)
 os.chdir(DIR_DATA)
 
 # Copy desired data files from RDA
-i = int(da)
-n = int(da) + int(ndays)
+##### THIS ONLY WORKS IF YOU WANT TO RUN WITHIN A SINGLE MONTH
+i = int(forecast_start.day)
+n = int(forecast_start.day) + int(delt.days)
 while i <= n:
-    cmd = CMD_CP % (DATA_ROOT1 + datpfx1 + yr + mo + str(i) + '*', DIR_DATA)
-    cmd = cmd + '; ' +  CMD_CP % (DATA_ROOT1 + datpfx2 + yr + mo + str(i) + '*', DIR_DATA)
-    cmd = cmd + '; ' +  CMD_CP % (DATA_ROOT2 + datpfx3 + yr + mo + str(i) + '*', DIR_DATA)
+    cmd = CMD_CP % (DATA_ROOT1 + datpfx1 + forecast_start.strftime('%Y') \
+          + forecast_start.strftime('%m') + str(i) + '*', DIR_DATA)
+    cmd = cmd + '; ' +  CMD_CP % (DATA_ROOT1 + datpfx2 + forecast_start.strftime('%Y') \
+          + forecast_start.strftime('%m') + str(i) + '*', DIR_DATA)
+    cmd = cmd + '; ' +  CMD_CP % (DATA_ROOT2 + datpfx3 + forecast_start.strftime('%Y') \
+          + forecast_start.strftime('%m')+ str(i) + '*', DIR_DATA)
     os.system(cmd)
     i += 1 
 
@@ -131,12 +127,17 @@ cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/real.exe', './')
 cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/wrf.exe', './')
 os.system(cmd)
 
-# Write the start and end dates to the WPS Namelist
-forecast_start = DATE
-forecast_end = forecast_start + timedelta(days = ndays, hours = 0)
-print(forecast_start)
-print (forecast_end)
+# Try to open WPS and WRF namelists as readonly, and print an error if you cannot.
+try:
+    with open(DIR_LOCAL_TMP + 'namelist.wps', 'r') as namelist:
+        NAMELIST_WPS = namelist.read()
+    with open(DIR_LOCAL_TMP + 'namelist.input', 'r') as namelist:
+        NAMELIST_WRF = namelist.read()
+except:
+    print('Error reading namelist files')
+    exit()
 
+# Write the start and end dates to the WPS Namelist
 wps_dates = ' start_date = '
 for i in range(0, MAX_DOMAINS):
     wps_dates = wps_dates + forecast_start.strftime("'%Y-%m-%d_%H:%M:%S', ") 
@@ -148,14 +149,16 @@ with open('namelist.wps', 'w') as namelist:
     namelist.write(NAMELIST_WPS.replace('%DATES%', wps_dates))
 
 # Write the runtime info and start dates and times to the WRF Namelist
-wrf_runtime = ' run_days                            = ' + str(ndays) + ',\n'
+wrf_runtime = ' run_days                            = ' + str(delt.days - 1) + ',\n'
 wrf_runtime = wrf_runtime + ' run_hours                           = ' + '0' + ',\n'
 wrf_runtime = wrf_runtime + ' run_minutes                         = ' + '0' + ',\n'
 wrf_runtime = wrf_runtime + ' run_seconds                         = ' + '0' + ','
 
 with open('namelist.input', 'w') as namelist:
     namelist.write(NAMELIST_WRF.replace('%RUNTIME%', wrf_runtime))
-    namelist.close()
+
+with open(DIR_LOCAL_TMP + 'namelist.input', 'r') as namelist:
+        NAMELIST_WRF = namelist.read()
 
 wrf_dates = ' start_year = '
 for i in range(0, MAX_DOMAINS):
@@ -196,7 +199,6 @@ for i in range(0, MAX_DOMAINS):
 
 with open('namelist.input', 'w') as namelist:
     namelist.write(NAMELIST_WRF.replace('%DATES%', wrf_dates))
-    namelist.close()
 
 # Link the grib files
 os.system(CMD_LINK_GRIB)
@@ -206,7 +208,7 @@ startTime = int(time())
 os.system(CMD_GEOGRID)
 	
 while not os.path.exists(DIR_LOCAL_TMP + 'geo_em.d03.nc'):
-        tm.sleep(5)
+        tm.sleep(10)
 
 elapsed = int(time()) - startTime
 print('Geogrid ran in: ' + str(elapsed))
@@ -215,6 +217,10 @@ print('Geogrid ran in: ' + str(elapsed))
 startTime = int(time())
 os.system(CMD_UNGMETG)
 
+while not os.path.exists(DIR_LOCAL_TMP + 'met_em.d03.' + forecast_end.strftime('%Y') \
+    + '-' + forecast_end.strftime('%m') + '-' + forecast_end.strftime('%d') + '_00:00:00.nc'):
+        tm.sleep(10)
+
 elapsed = int(time()) - startTime
 print('Ungrib and Metgrid ran in: ' + str(elapsed))
 
@@ -222,13 +228,20 @@ print('Ungrib and Metgrid ran in: ' + str(elapsed))
 startTime = int(time())
 os.system(CMD_REALWRF)
 
-while not os.path.exists(DIR_LOCAL_TMP + 'wrfout_d03_' + yr '-' + mo + '-' + da + '_00:00:00'):
+while not os.path.exists(DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y') \
+    + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d') + '_00:00:00'):
 	tm.sleep(10)
 
 elapsed = int(time()) - startTime
 print('Real and WRF ran in: ' + str(elapsed))
 
 # Rename the wrfout files.
-os.system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d01_' + yr '-' + mo + '-' + da + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d01.nc'))
-os.system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d02_' + yr '-' + mo + '-' + da + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d02.nc'))
-os.system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d03_' + yr '-' + mo + '-' + da + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d03.nc'))
+os.system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d01_' + forecast_start.strftime('%Y') \
+    + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d') \
+    + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d01.nc'))
+os.system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d02_' + forecast_start.strftime('%Y') \
+    + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d') \
+    + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d02.nc'))
+os.system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y') \
+    + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d') \
+    + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d03.nc'))
