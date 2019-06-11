@@ -17,23 +17,35 @@
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"  
 
 begin
+; Load the WRF input file.  
+WRFdir = "/magma-dirs/jas983/wrf_data/met4ene/wrfwrk/ARW/NYpvow_A5Dx3D/2011jan23-24/wrfrun_z46r1bl5cu300ls2/"
+WRFfile = "wrfout_d02_2011-01-24_01:00:00"
 
-;---Open netCDF file
-  a = addfile("/magma-dirs/jas983/wrf_data/solar_wfp/wrfprd_jan01-05/wrfout_d03_2010-12-31_12:00:00","r")
+if (fileexists(WRFdir+WRFfile)) then
+	a = addfile(WRFdir+WRFfile, "r")
+else
+	print("")
+	print("The wrfout file "+WRFdir+WRFfile+" does not exist. Check your path.")
+	print("")
+	exit
+end if
   
-;
-; Read in Sea Surface Temperature Anomalies
-; Read in U and V at 1000 mb [subscript 0]
-; Determine the subscripts corresponding to Jan 88
-;
+  u  = wrf_user_getvar(a,"ua",-1)        ; u averaged to mass points
+  v  = wrf_user_getvar(a,"va",-1)        ; v averaged to mass points
+  z  = wrf_user_getvar(a, "z",-1)        ; grid point height
+  u_plane  = wrf_user_intrp3d( u,z,"h",100.,0.,False)
+  printVarSummary(u_plane)
+  v_plane  = wrf_user_intrp3d( v,z,"h",100.,0.,False)
+  printVarSummary(v_plane)
+  wspd = sqrt(u_plane^2 + v_plane^2)
+  wspd@long_name  = "Wind Speed at 100m"
+  wspd@short_name = "100wind"
+  wspd@units      = "m/s"
+  wspd@_FillValue = -999           	 ; sets _FillValue to -999
+  printVarSummary(wspd)
+  
+
   it       = 0
-  ilay	   = 2
-
-  u        = wrf_user_getvar(a, "ua", it) ;This will be a three dim array [LAY, XLAT, XLONG]
-  ;printVarSummary(u)
-
-  v        = wrf_user_getvar(a, "va", it) ;This will be a three dim array [LAY, XLAT, XLONG]
-  ;printVarSummary(v)
 
   LAT2D = a->XLAT(it,:,:)  
   nlat = dimsizes(LAT2D(:,0))
@@ -44,14 +56,6 @@ begin
   nlon = dimsizes(LAT2D(0,:))
   LON2D@units = "degrees_east"
   ;printVarSummary(LON2D)
-
-  speed    = sqrt(u(ilay,:,:)^2+v(ilay,:,:)^2)  ;This will be a two dim array [XLAT, XLONG]
-  speed@long_name = "Wind Speed"
-  speed!0  = "south_north"
-  speed!1  = "west_east"
-  speed&south_north = LAT2D(:,0)
-  speed&west_east = LON2D(0,:)
-  ;printVarSummary(speed)
 
 
 ;---Create plot
@@ -94,7 +98,6 @@ begin
 ; IMPORTANT!!!
 ;
 
-;  res@tfDoNDCOverlay           = True             
   res@tfDoNDCOverlay           = "NDCViewport"    ; NCL V6.5.0 or later
 
 ; note, when doing a subregion, NCL determines the range of the data from
@@ -109,7 +112,7 @@ begin
   res@lbTitleOffsetF         = -0.2
   res@lbTitleFontHeightF     = 0.02
   res@lbLabelFontHeightF     = 0.015
-  res@tiMainString         = "Winds near Turbine Hub Height"
+  res@tiMainString         = "100m Winds"
   res@gsnLeftString        = ""                   ; do not draw the left sub-title (otherwise automatically set)
   res@gsnRightString       = ""                   ; do not draw the right sub-title (otherwise automatically set
   
@@ -127,9 +130,9 @@ begin
   res@vcLineArrowThicknessF   = 1.0               ; change vector thickness
   res@vcVectorDrawOrder       = "PostDraw"        ; draw vectors last
 
-  ;res@gsnDraw          = False                    ; turn off draw and frame
-  ;res@gsnFrame         = False                    ; b/c this is an overlay plot
-  plot=gsn_csm_vector_scalar_map(wks,u(ilay,:,:),v(ilay,:,:),speed(:,:),res)
+  res@gsnDraw          = False                    ; turn off draw and frame
+  res@gsnFrame         = False                    ; b/c this is an overlay plot
+  plot=gsn_csm_vector_scalar_map(wks,u_plane(it,:,:),v_plane(it,:,:),wspd(it,:,:),res)
 
 
 ;---Add contours of wind speed to plot
@@ -144,6 +147,6 @@ begin
 
   ;cplot = gsn_csm_contour(wks,speed,res)
   ;overlay(plot,cplot)
-  ;draw(plot)
-  ;frame(wks)
+  draw(plot)
+  frame(wks)
 end
