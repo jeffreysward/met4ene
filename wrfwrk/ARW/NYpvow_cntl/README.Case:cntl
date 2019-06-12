@@ -1,4 +1,0 @@
-This directory is for running the control case of the NY offshore wind pv study for one day in each season.
-For the control case no wind farm is parameterized in the offshore wind area off the coast of NYC.
-
-The directories within NYpvow_cntl correspond to the dates for which the WRF model was run. 

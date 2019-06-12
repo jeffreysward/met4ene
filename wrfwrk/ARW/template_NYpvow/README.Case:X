@@ -1,6 +1,0 @@
-This directory is for running Case X of the NY offshore wind pv study for one day in each season.
-Case X contains an offshore wind farm with design configuration N (see offline documentation) 
-where 
-
-
-The directories within NYpvow_X correspond to the dates for which the WRF model was run. 
