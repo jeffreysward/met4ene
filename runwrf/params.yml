@@ -55,10 +55,12 @@ land surface:
   noah-mp: 4
   ssib: 8
 urban surface:
+  off: 0
   urban canopy: 1
   bep: 2
   bem: 3
-lake physics: 
+lake physics:
+  off: 0
   clm: 1
 PBL: 
   ysu: 1
@@ -88,7 +90,8 @@ cumulus:
   new arakawa-schubert1: 14
   new arakawa-schubert2: 84
   grell-freitas: 3
-shallow convection: 
+shallow convection:
+  off: 0
   ishallow: 1
   uw: 2
   grims: 3
