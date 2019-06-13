@@ -1,0 +1,99 @@
+# List of parameter choices in WRF
+microphysics:
+  kressler: 1
+  lin: 2
+  wsm3: 3
+  wsm5: 4
+  eta: 5
+  wsm6: 6
+  goddard: 7
+  thompson: 8
+  milbrandt2mom: 9 
+  morrison2mom: 10
+  cam5.1: 11
+  sbu-ylin: 13  
+  wdm5: 14
+  wdm6: 16
+  nssl 2mom: 17
+  nssl 2mom w/ccn: 18
+  nssl 1mom: 19
+  nssl 1mom lfo: 21 
+  nssl 1mom no hail: 22
+  thompson aerosol: 28
+  huji fast: 30
+  huji full: 32
+  p3: 50
+lw radiation:
+  rrtm: 1
+  cam: 3
+  rrtmg: 4
+  new goddard: 5
+  flg: 7
+  held-suarez: 31
+  gfdl: 99
+sw radiation:
+  dudia: 1
+  goddard: 2
+  cam: 3
+  rrtmg: 4
+  rrtmg fast: 24
+  new goddard: 5
+  flg: 7
+  gfdl: 99
+surface layer:
+  mm5: 91
+  revised mm5: 1
+  eta: 2
+  pleim-xiu: 7
+  qnse: 4
+  mynn: 5
+land surface: 
+  5 layer: 1
+  noah: 2
+  ruc: 3
+  pleim-xiu: 7
+  noah-mp: 4
+  ssib: 8
+urban surface:
+  urban canopy: 1
+  bep: 2
+  bem: 3
+lake physics: 
+  clm: 1
+PBL: 
+  ysu: 1
+  myj: 2
+  gfs: 3
+  qnse: 4
+  mynn2: 5
+  mynn3: 6
+  acm2: 7
+  boulac: 8
+  uw: 9
+  temf: 10
+  gbm: 12
+  shin-hong: 11
+  mrf: 99
+cumulus: 
+  kain-fritsch: 1
+  old kain-fritsch: 99
+  multi kain-fritsch: 11
+  kain-fritsch cp: 10 
+  bmj: 2 
+  arakawa-schubert: 4
+  grell3d: 5
+  tiedtke: 6
+  new tiedtke: 16
+  zhang-mcfarlane: 7
+  new arakawa-schubert1: 14
+  new arakawa-schubert2: 84
+  grell-freitas: 3
+shallow convection: 
+  ishallow: 1
+  uw: 2
+  grims: 3
+
+
+
+
+

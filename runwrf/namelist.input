@@ -1,6 +1,20 @@
  &time_control
-%RUNTIME%
-%DATES%
+ run_days                            = 0,
+ run_hours                           = 0,
+ run_minutes                         = 0,
+ run_seconds                         = 0,
+ start_year = 2011, 2011, 2011, 
+ start_month = 01, 01, 01, 
+ start_day = 10, 10, 10, 
+ start_hour = 00, 00, 00, 
+ start_minute = 00, 00, 00, 
+ start_second = 00, 00, 00, 
+ end_year = 2011, 2011, 2011, 
+ end_month = 01, 01, 01, 
+ end_day = 11, 11, 11, 
+ end_hour = 00, 00, 00, 
+ end_minute = 00, 00, 00, 
+ end_second = 00, 00, 00, 
  interval_seconds                    = 10800
  input_from_file                     = .true.,.true.,.true.,
  history_interval                    = 60,  60,   60,
@@ -26,9 +40,9 @@
  e_vert                              = 46, 46, 46,
  p_top_requested                     = 5000,
  eta_levels                          = 1.000, 0.9980, 0.9960, 0.9940, 0.9920, 0.990, 
-				                           0.9880, 0.9860, 0.9840, 0.9820,
+				       0.9880, 0.9860, 0.9840, 0.9820,
                                        0.980, 0.9780, 0.9760, 0.9740, 0.9720, 
-				                           0.970, 0.9650, 0.960, 0.950,
+				       0.970, 0.9650, 0.960, 0.950,
                                        0.940, 0.930, 0.920, 0.910,
                                        0.900, 0.880, 0.860, 0.840,
                                        0.820, 0.800, 0.770, 0.740,
@@ -51,24 +65,31 @@
  /
 
  &physics
-%PARAMS%
- swint_opt                           = 1,
+ mp_physics                          = 10,    10,    10,
+ ra_lw_physics                       = 1,     1,     1,
+ ra_sw_physics                       = 1,     1,     1,
+ swint_opt			     = 1
  radt                                = 15,    5,     1,
+ sf_sfclay_physics                   = 2,     2,     2, 
+ sf_surface_physics                  = 2,     2,     2,
+ bl_pbl_physics                      = 5,     5,     5,
  bldt                                = 0,     0,     0,
+ cu_physics                          = 3,     0,     0,
  cudt                                = 0,     0,     0,
  isfflx                              = 1,
  ifsnow                              = 1,
  icloud                              = 1,
  surface_input_source                = 1,
  num_soil_layers                     = 4,
- num_land_cat			                = 21,
+ num_land_cat			     = 21,
+ sf_urban_physics                    = 0,     0,     0,
  maxiens                             = 1,
  maxens                              = 3,
  maxens2                             = 3,
  maxens3                             = 16,
  ensdim                              = 144,
- windfarm_opt			                = 0,     0,     0
- windfarm_ij			                = 0
+ windfarm_opt			     = 0,     0,     0
+ windfarm_ij			     = 0
  /
 
  &fdda
