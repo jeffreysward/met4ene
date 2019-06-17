@@ -27,7 +27,7 @@ microphysics:
   p3: 50
   p3 2mom: 51
 lw radiation:
-  off: 0
+  no lw: 0
   rrtm: 1
   cam: 3
   rrtmg: 4
@@ -37,7 +37,7 @@ lw radiation:
   held-suarez: 31
   gfdl: 99
 sw radiation:
-  off: 0
+  no sw: 0
   dudia: 1
   goddard: 2
   cam: 3
@@ -46,17 +46,8 @@ sw radiation:
   flg: 7
   rrtmg fast: 24
   gfdl: 99
-surface layer:
-  off: 0
-  revised mm5: 1
-  eta: 2
-  qnse: 4
-  mynn: 5
-  pleim-xiu: 7
-  temf: 10
-  old mm5: 91
 land surface:
-  off: 0
+  no lsm: 0
   5 layer: 1
   noah: 2
   ruc: 3
@@ -64,16 +55,8 @@ land surface:
   clm4: 5
   pleim-xiu: 7
   ssib: 8
-urban surface:
-  off: 0
-  urban canopy: 1
-  bep: 2
-  bem: 3
-lake physics:
-  off: 0
-  clm: 1
 PBL:
-  off: 0
+  no pbl: 0
   ysu: 1
   myj: 2
   qnse: 4
@@ -85,9 +68,8 @@ PBL:
   temf: 10
   shin-hong: 11
   gbm: 12
-  mrf: 99
 cumulus:
-  off: 0
+  no cu: 0
   kain-fritsch: 1
   bmj: 2
   grell-freitas: 3
@@ -103,8 +85,3 @@ cumulus:
   hwrf gfs sas: 94
   old hwrf gfs sas: 95
   old kain-fritsch: 99
-shallow convection:
-  off: 0
-  ishallow: 1
-  uw: 2
-  grims: 3

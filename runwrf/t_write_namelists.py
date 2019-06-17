@@ -201,40 +201,40 @@ except IOError as e:
 with open('namelist.input', 'r') as namelist:
     NAMELIST_WRF = namelist.read()
 
-wrf_dates = ' start_year                = '
+wrf_dates = ' start_year                          = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_start.strftime('%Y, ')
-wrf_dates = wrf_dates + '\n start_month                 = '
+wrf_dates = wrf_dates + '\n start_month                         = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_start.strftime('%m, ')
-wrf_dates = wrf_dates + '\n start_day                   = '
+wrf_dates = wrf_dates + '\n start_day                           = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_start.strftime('%d, ')
-wrf_dates = wrf_dates + '\n start_hour                  = '
+wrf_dates = wrf_dates + '\n start_hour                          = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_start.strftime('%H, ')
-wrf_dates = wrf_dates + '\n start_minute                = '
+wrf_dates = wrf_dates + '\n start_minute                        = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
-wrf_dates = wrf_dates + '\n start_second                = '
+wrf_dates = wrf_dates + '\n start_second                        = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
-wrf_dates = wrf_dates + '\n end_year                    = '
+wrf_dates = wrf_dates + '\n end_year                            = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_end.strftime('%Y, ')
-wrf_dates = wrf_dates + '\n end_month                   = '
+wrf_dates = wrf_dates + '\n end_month                           = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_end.strftime('%m, ')
-wrf_dates = wrf_dates + '\n end_day                     = '
+wrf_dates = wrf_dates + '\n end_day                             = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_end.strftime('%d, ')
-wrf_dates = wrf_dates + '\n end_hour                    = '
+wrf_dates = wrf_dates + '\n end_hour                            = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_end.strftime('%H, ')
-wrf_dates = wrf_dates + '\n end_minute                  = '
+wrf_dates = wrf_dates + '\n end_minute                          = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
-wrf_dates = wrf_dates + '\n end_second                  = '
+wrf_dates = wrf_dates + '\n end_second                          = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
 
