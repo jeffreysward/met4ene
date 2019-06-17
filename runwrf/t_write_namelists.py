@@ -10,7 +10,7 @@ from sys import exit
 from time import localtime, strftime, strptime, time
 import os.path
 import time as tm
-from wrfparams import name2num, generate
+from wrfparams import name2num, generate, combine, filldefault, pbl2sfclay
 
 # I think this is a command line interface; how are these arguments input?
 arg = ArgumentParser()
@@ -24,13 +24,9 @@ arg.add_argument('-t', help="Namelist Template Directory", type=str)
 arg.add_argument('-mp', help="Microphysics scheme", type=str)
 arg.add_argument('-lw', help="Longwave radiation scheme", type=str)
 arg.add_argument('-sw', help="Shortwave radiation scheme", type=str)
-arg.add_argument('-slay', help="Surface layer scheme", type=str)
 arg.add_argument('-lsm', help="Land surface model", type=str)
-arg.add_argument('-usurf', help="Urban surface scheme", type=str)
-arg.add_argument('-lsurf', help="Lake surface scheme", type=str)
 arg.add_argument('-pbl', help="Planetary boundary layer scheme", type=str)
-arg.add_argument('-clo', help="Cloud scheme", type=str)
-arg.add_argument('-conv', help="Convection scheme", type=str)
+arg.add_argument('-cu', help="Cumulus scheme", type=str)
 args = arg.parse_args()
 
 # Reformat input start dates
@@ -67,20 +63,47 @@ else:
 print('Using Vtable: ')
 print(Vsfx)
 
-# Generate a parameter combination if the user has specified this option.
+# Generate a parameter combination of the 6 core parameters if the user has specified this option.
 # Otherwise, use specified input parameters and use defaults for the remaining paramters.
 if args.p:
     rand_params = generate(in_yaml)
     print('The following parameters were chosen: ')
     print(rand_params)
     param_ids = name2num(in_yaml, mp_in=rand_params[0], lw_in=rand_params[1],
-                         sw_in=rand_params[2], slay_in=rand_params[3],
-                         lsm_in=rand_params[4], usurf_in=rand_params[5],
-                         lsurf_in=rand_params[6], pbl_in=rand_params[7],
-                         clo_in=rand_params[8], conv_in=rand_params[9])
+                         sw_in=rand_params[2], lsm_in=rand_params[3],
+                         pbl_in=rand_params[4], clo_in=rand_params[5])
     print(param_ids)
 else:
-    pass
+    param_ids = [None, None, None, None, None, None]
+    if args.mp is not None:
+        param_ids1 = name2num(yaml_file, use_defaults=False, mp_in=args.mp, lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids1)
+    if args.lw is not None:
+        param_ids2 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids2)
+    if args.sw is not None:
+        param_ids3 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids3)
+    if args.lsm is not None:
+        param_ids4 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids4)
+    if args.pbl is not None:
+        param_ids5 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids5)
+    if args.cu is not None:
+        param_ids6 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids6)
+    param_ids = filldefault(in_yaml, param_ids)
+
+# Set the sf_sfclay_pysics option based on that selected for PBL
+id_sfclay = pbl2sfclay(param_ids[4])
+param_ids.append(id_sfclay)
 
 # sets directory names
 DIR_OUT = getcwd() + '/'  # Needs Editing
@@ -146,10 +169,10 @@ except IOError as e:
     exit()
 
 # Write the start and end dates to the WPS Namelist
-wps_dates = ' start_date = '
+wps_dates = ' start_date                     = '
 for i in range(0, MAX_DOMAINS):
     wps_dates = wps_dates + forecast_start.strftime("'%Y-%m-%d_%H:%M:%S', ")
-wps_dates = wps_dates + '\n end_date  = '
+wps_dates = wps_dates + '\n end_date                     = '
 for i in range(0, MAX_DOMAINS):
     wps_dates = wps_dates + forecast_end.strftime("'%Y-%m-%d_%H:%M:%S', ")
 
@@ -178,40 +201,40 @@ except IOError as e:
 with open('namelist.input', 'r') as namelist:
     NAMELIST_WRF = namelist.read()
 
-wrf_dates = ' start_year = '
+wrf_dates = ' start_year                = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_start.strftime('%Y, ')
-wrf_dates = wrf_dates + '\n start_month = '
+wrf_dates = wrf_dates + '\n start_month                 = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_start.strftime('%m, ')
-wrf_dates = wrf_dates + '\n start_day = '
+wrf_dates = wrf_dates + '\n start_day                   = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_start.strftime('%d, ')
-wrf_dates = wrf_dates + '\n start_hour = '
+wrf_dates = wrf_dates + '\n start_hour                  = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_start.strftime('%H, ')
-wrf_dates = wrf_dates + '\n start_minute = '
+wrf_dates = wrf_dates + '\n start_minute                = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
-wrf_dates = wrf_dates + '\n start_second = '
+wrf_dates = wrf_dates + '\n start_second                = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
-wrf_dates = wrf_dates + '\n end_year = '
+wrf_dates = wrf_dates + '\n end_year                    = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_end.strftime('%Y, ')
-wrf_dates = wrf_dates + '\n end_month = '
+wrf_dates = wrf_dates + '\n end_month                   = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_end.strftime('%m, ')
-wrf_dates = wrf_dates + '\n end_day = '
+wrf_dates = wrf_dates + '\n end_day                     = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_end.strftime('%d, ')
-wrf_dates = wrf_dates + '\n end_hour = '
+wrf_dates = wrf_dates + '\n end_hour                    = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_end.strftime('%H, ')
-wrf_dates = wrf_dates + '\n end_minute = '
+wrf_dates = wrf_dates + '\n end_minute                  = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
-wrf_dates = wrf_dates + '\n end_second = '
+wrf_dates = wrf_dates + '\n end_second                  = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
 
@@ -231,23 +254,17 @@ for i in range(0, MAX_DOMAINS):
 wrf_physics = wrf_physics + '\n ra_sw_physics                       = '
 for i in range(0, MAX_DOMAINS):
     wrf_physics = wrf_physics + str(param_ids[2]) + ', '
-wrf_physics = wrf_physics + '\n sf_sfclay_physics                   = '
-for i in range(0, MAX_DOMAINS):
-    wrf_physics = wrf_physics + str(param_ids[3]) + ', '
 wrf_physics = wrf_physics + '\n sf_surface_physics                  = '
 for i in range(0, MAX_DOMAINS):
-    wrf_physics = wrf_physics + str(param_ids[4]) + ', '
-wrf_physics = wrf_physics + '\n sf_urban_physics                    = '
-for i in range(0, MAX_DOMAINS):
-    wrf_physics = wrf_physics + str(param_ids[5]) + ', '
-wrf_physics = wrf_physics + '\n sf_lake_physics                     = '
-for i in range(0, MAX_DOMAINS):
-    wrf_physics = wrf_physics + str(param_ids[6]) + ', '
+    wrf_physics = wrf_physics + str(param_ids[3]) + ', '
 wrf_physics = wrf_physics + '\n bl_pbl_physics                      = '
 for i in range(0, MAX_DOMAINS):
-    wrf_physics = wrf_physics + str(param_ids[7]) + ', '
+    wrf_physics = wrf_physics + str(param_ids[4]) + ', '
 wrf_physics = wrf_physics + '\n cu_physics                          = '
-wrf_physics = wrf_physics + str(param_ids[8]) + ', 0, 0,'
+wrf_physics = wrf_physics + str(param_ids[5]) + ', 0, 0,'
+wrf_physics = wrf_physics + '\n sf_sfclay_physics                   = '
+for i in range(0, MAX_DOMAINS):
+    wrf_physics = wrf_physics + str(param_ids[6]) + ', '
 
 with open('namelist.input', 'w') as namelist:
     namelist.write(NAMELIST_WRF.replace('%PARAMS%', wrf_physics))

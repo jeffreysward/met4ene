@@ -17,15 +17,11 @@ def wrfparams_generate():
     mp = params.get("microphysics")
     lw = params.get("lw radiation")
     sw = params.get("sw radiation")
-    slay = params.get("surface layer")
     lsm = params.get("land surface")
-    usurf = params.get("urban surface")
-    lsurf = params.get("lake physics")
     pbl = params.get("PBL")
     clo = params.get("cumulus")
-    conv = params.get("shallow convection")
 
-    param_opts = [mp, lw, sw, slay, lsm, usurf, lsurf, pbl, clo, conv]
+    param_opts = [mp, lw, sw, lsm, pbl, clo]
 
     param_list = []
     for opt in param_opts:
