@@ -2,7 +2,7 @@
 
 from argparse import ArgumentParser
 from datetime import datetime, timedelta
-from os import chdir, getcwd, mkdir, system
+from os import chdir, getcwd, makedirs, system
 from shutil import rmtree
 from socket import gethostname
 from subprocess import call
@@ -10,6 +10,7 @@ from sys import exit
 from time import localtime, strftime, strptime, time
 import os.path
 import time as tm
+from wrfparams import name2num, generate, combine, filldefault, pbl2sfclay
 
 # Define command line input options
 arg = ArgumentParser()
