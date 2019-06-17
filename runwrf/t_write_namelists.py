@@ -266,5 +266,20 @@ wrf_physics = wrf_physics + '\n sf_sfclay_physics                   = '
 for i in range(0, MAX_DOMAINS):
     wrf_physics = wrf_physics + str(param_ids[6]) + ', '
 
+# The following namelist options are only set if certain parameter choices are selected
+if param_ids[6] in [1, 5, 7, 11]:
+    wrf_physics = wrf_physics + '\n isfflx                             = 1, '
+if param_ids[6] in [1]:
+    wrf_physics = wrf_physics + '\n ifsnow                             = 1, '
+if param_ids[1] in [1, 4] and param_ids[2] in [1, 4]:
+    wrf_physics = wrf_physics + '\n icloud                             = 1, '
+if param_ids[5] in [5, 93]:
+    wrf_physics = wrf_physics + '\n maxiens                             = 1,'
+if param_ids[5] in [93]:
+    wrf_physics = wrf_physics + '\n maxens                              = 3,'
+    wrf_physics = wrf_physics + '\n maxens2                             = 3,'
+    wrf_physics = wrf_physics + '\n maxens3                             = 16,'
+    wrf_physics = wrf_physics + '\n ensdim                              = 144,'
+
 with open('namelist.input', 'w') as namelist:
     namelist.write(NAMELIST_WRF.replace('%PARAMS%', wrf_physics))
