@@ -10,7 +10,7 @@ from sys import exit
 from time import localtime, strftime, strptime, time
 import os.path
 import time as tm
-from wrfparams import name2num, generate
+from wrfparams import name2num, generate, combine, filldefault, pbl2sfclay
 
 # I think this is a command line interface; how are these arguments input?
 arg = ArgumentParser()
@@ -63,7 +63,7 @@ else:
 print('Using Vtable: ')
 print(Vsfx)
 
-# Generate a parameter combination if the user has specified this option.
+# Generate a parameter combination of the 6 core parameters if the user has specified this option.
 # Otherwise, use specified input parameters and use defaults for the remaining paramters.
 if args.p:
     rand_params = generate(in_yaml)
@@ -74,7 +74,36 @@ if args.p:
                          pbl_in=rand_params[4], clo_in=rand_params[5])
     print(param_ids)
 else:
-    pass
+    param_ids = [None, None, None, None, None, None]
+    if args.mp is not None:
+        param_ids1 = name2num(yaml_file, use_defaults=False, mp_in=args.mp, lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids1)
+    if args.lw is not None:
+        param_ids2 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids2)
+    if args.sw is not None:
+        param_ids3 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids3)
+    if args.lsm is not None:
+        param_ids4 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids4)
+    if args.pbl is not None:
+        param_ids5 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids5)
+    if args.cu is not None:
+        param_ids6 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids6)
+    param_ids = filldefault(in_yaml, param_ids)
+
+# Set the sf_sfclay_pysics option based on that selected for PBL
+id_sfclay = pbl2sfclay(param_ids[4])
+param_ids.append(id_sfclay)
 
 # sets directory names
 DIR_OUT = getcwd() + '/'  # Needs Editing
@@ -231,11 +260,11 @@ for i in range(0, MAX_DOMAINS):
 wrf_physics = wrf_physics + '\n bl_pbl_physics                      = '
 for i in range(0, MAX_DOMAINS):
     wrf_physics = wrf_physics + str(param_ids[4]) + ', '
-wrf_physics = wrf_physics + '\n sf_sfclay_physics                   = '
-for i in range(0, MAX_DOMAINS):
-    wrf_physics = wrf_physics +  + ', '
 wrf_physics = wrf_physics + '\n cu_physics                          = '
 wrf_physics = wrf_physics + str(param_ids[5]) + ', 0, 0,'
+wrf_physics = wrf_physics + '\n sf_sfclay_physics                   = '
+for i in range(0, MAX_DOMAINS):
+    wrf_physics = wrf_physics + str(param_ids[6]) + ', '
 
 with open('namelist.input', 'w') as namelist:
     namelist.write(NAMELIST_WRF.replace('%PARAMS%', wrf_physics))

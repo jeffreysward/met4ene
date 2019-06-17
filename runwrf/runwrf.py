@@ -46,7 +46,7 @@ else:
 print(Vsfx)
 
 # This sets directory names
-DIR_OUT = getcwd() + '/' #Needs Editing
+DIR_OUT = getcwd() + '/' # Needs Editing
 DIR_LOCAL_TMP = '/glade/scratch/sward/tmp/%s/' % forecast_start.strftime('%Y-%m-%d_%H-%M-%S')
 DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
 DIR_WPS = DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
