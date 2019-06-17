@@ -2,13 +2,12 @@
 
 from argparse import ArgumentParser
 from datetime import datetime, timedelta
-from os import chdir, getcwd, makedirs, system
+from os import chdir, getcwd, mkdir, makedirs, system, path, environ
 from shutil import rmtree
 from socket import gethostname
 from subprocess import call
 from sys import exit
 from time import localtime, strftime, strptime, time
-import os.path
 import time as tm
 from wrfparams import name2num, generate, combine, filldefault, pbl2sfclay
 
@@ -106,7 +105,7 @@ param_ids.append(id_sfclay)
 
 # Set directory names
 DIR_OUT = getcwd() + '/'  # Needs Editing
-DIR_LOCAL_TMP = '/glade/scratch/sward/tmp/%s/' % forecast_start.strftime('%Y-%m-%d_%H-%M-%S')
+DIR_LOCAL_TMP = '/glade/scratch/sward/wrfout/%s/' % forecast_start.strftime('%Y-%m-%d_%H-%M-%S')
 DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
 DIR_WPS = DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
 DIR_WRF = DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
@@ -119,7 +118,12 @@ DIR_DATA = '/glade/scratch/sward/data/' + str(args.b) + '/'
 if args.t is not None:
     DIR_TEMPLATES = args.t + '/'
 else:
-    DIR_TEMPLATES = '../templates/wrftemplates/'
+    if environ['GROUP'] == 'ncar': 
+        DIR_TEMPLATES = '/glade/scratch/sward/met4ene/templates/wrftemplates/'
+    else:
+        DIR_TEMPLATES = '../templates/wrftemplates/'
+print('Using template directory:')
+print(DIR_TEMPLATES)
 
 # Define command aliai
 CMD_LN = 'ln -sf %s %s'
@@ -140,8 +144,8 @@ else:
 # Try to remove the data dir, and print 'DIR_DATA not deleted' if you cannot. Then remake the dir, and enter it.
 try: rmtree(DIR_DATA)
 except: print(DIR_DATA + ' not deleted')
-os.mkdir(DIR_DATA, 0755)
-os.chdir(DIR_DATA)
+makedirs(DIR_DATA, 0755)
+chdir(DIR_DATA)
 
 # Copy desired data files from RDA
 ##### THIS ONLY WORKS IF YOU WANT TO RUN WITHIN A SINGLE MONTH
@@ -154,15 +158,15 @@ while i <= n:
                                  + forecast_start.strftime('%m') + str(i) + '*', DIR_DATA)
     cmd = cmd + '; ' + CMD_CP % (DATA_ROOT2 + datpfx3 + forecast_start.strftime('%Y')
                                  + forecast_start.strftime('%m')+ str(i) + '*', DIR_DATA)
-    os.system(cmd)
+    system(cmd)
     i += 1 
 
 # Try to remove the local tmp directory, and print 'DIR_LOCAL_TMP not deleted' if you cannot.
 # Then remake the dir, and enter it.
 try: rmtree(DIR_LOCAL_TMP)
 except: print(DIR_LOCAL_TMP + ' not deleted')
-os.mkdir(DIR_LOCAL_TMP, 0755)
-os.chdir(DIR_LOCAL_TMP)
+makedirs(DIR_LOCAL_TMP, 0755)
+chdir(DIR_LOCAL_TMP)
 
 # Copy over namelists and Cheyenne submission scripts
 cmd = CMD_CP % (DIR_TEMPLATES + 'template_rungeogrid.csh', DIR_LOCAL_TMP)
@@ -170,7 +174,7 @@ cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runungmetg.csh', DIR_LOCA
 cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runrealwrf.csh', DIR_LOCAL_TMP)
 cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.wps', DIR_LOCAL_TMP)
 cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.input', DIR_LOCAL_TMP)
-os.system(cmd)
+system(cmd)
 
 # Link the metgrid and geogrid dirs and executables as well as the correct variable table for the BC/IC data.
 cmd = CMD_LN % (DIR_WPS + 'geogrid', './')
@@ -179,14 +183,11 @@ cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'ungrib.exe', './')
 cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'metgrid', './')
 cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'metgrid.exe', './')
 cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'ungrib/Variable_Tables/Vtable.' + Vsfx, 'Vtable')
-os.system(cmd)
+system(cmd)
 
 # Link WRF tables, data, and executables.
-cmd = CMD_LN % (DIR_WRF + 'run/*.TBL', './')
-cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/*_DATA', './')
-cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/real.exe', './')
-cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/wrf.exe', './')
-os.system(cmd)
+cmd = CMD_LN % (DIR_WRF + 'run/*', './')
+system(cmd)
 
 # Try to open WPS and WRF namelists as readonly, and print an error if you cannot.
 try:
@@ -302,13 +303,13 @@ with open('namelist.input', 'w') as namelist:
 
 # LINK REMAING FILES, AND RUN THE WPS AND WRF EXECUTABLES
 # Link the grib files
-os.system(CMD_LINK_GRIB)
+system(CMD_LINK_GRIB)
 
 # Run geogrid if it has not already been run
 startTime = int(time())
-os.system(CMD_GEOGRID)
+system(CMD_GEOGRID)
 
-while not os.path.exists(DIR_LOCAL_TMP + 'geo_em.d03.nc'):
+while not path.exists(DIR_LOCAL_TMP + 'geo_em.d03.nc'):
     tm.sleep(10)
 
 elapsed = int(time()) - startTime
@@ -316,9 +317,9 @@ print('Geogrid ran in: ' + str(elapsed))
 
 # Run ungrib and metgrid
 startTime = int(time())
-os.system(CMD_UNGMETG)
+system(CMD_UNGMETG)
 
-while not os.path.exists(DIR_LOCAL_TMP + 'met_em.d03.' + forecast_end.strftime('%Y')
+while not path.exists(DIR_LOCAL_TMP + 'met_em.d03.' + forecast_end.strftime('%Y')
                          + '-' + forecast_end.strftime('%m') + '-' + forecast_end.strftime('%d') + '_00:00:00.nc'):
     tm.sleep(10)
 
@@ -327,9 +328,9 @@ print('Ungrib and Metgrid ran in: ' + str(elapsed))
 
 # Run real and wrf
 startTime = int(time())
-os.system(CMD_REALWRF)
+system(CMD_REALWRF)
 
-while not os.path.exists(DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
+while not path.exists(DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
                          + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d') + '_00:00:00'):
     tm.sleep(10)
 
@@ -337,12 +338,12 @@ elapsed = int(time()) - startTime
 print('Real and WRF ran in: ' + str(elapsed))
 
 # Rename the wrfout files.
-os.system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d01_' + forecast_start.strftime('%Y')
+system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d01_' + forecast_start.strftime('%Y')
                     + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
                     + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d01.nc'))
-os.system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d02_' + forecast_start.strftime('%Y')
+system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d02_' + forecast_start.strftime('%Y')
                     + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
                     + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d02.nc'))
-os.system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
+system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
                     + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
                     + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d03.nc'))
