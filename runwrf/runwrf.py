@@ -11,13 +11,21 @@ from time import localtime, strftime, strptime, time
 import os.path
 import time as tm
 
-# I think this is a command line interface; how are these arguments input?
+# Define command line input options
 arg = ArgumentParser()
 arg.add_argument('-s', help="Start Date", type=str)
 arg.add_argument('-e', help="End Date", type=str)
+arg.add_argument('-y', help="Parameterizations Yaml File", type=str)
+arg.add_argument('-p', help="Generate Params?", type=bool)
 arg.add_argument('-b', help="Boundary Conditon Data Source", type=str)
 arg.add_argument('-d', help="Max Domains", type=int)
 arg.add_argument('-t', help="Namelist Template Directory", type=str)
+arg.add_argument('-mp', help="Microphysics scheme", type=str)
+arg.add_argument('-lw', help="Longwave radiation scheme", type=str)
+arg.add_argument('-sw', help="Shortwave radiation scheme", type=str)
+arg.add_argument('-lsm', help="Land surface model", type=str)
+arg.add_argument('-pbl', help="Planetary boundary layer scheme", type=str)
+arg.add_argument('-cu', help="Cumulus scheme", type=str)
 args = arg.parse_args()
 
 forecast_start = datetime.strptime(args.s, '%b %d %Y')
@@ -25,10 +33,18 @@ forecast_start = datetime.strptime(args.s, '%b %d %Y')
 # forecast_start = datetime.strptime(args.s, '%b %d %Y %H:%M:%S')
 forecast_end = datetime.strptime(args.e, '%b %d %Y')
 delt = forecast_end - forecast_start
+print('Forecast statting on: ')
 print(forecast_start)
-print (forecast_end)
+print('Forecast ending on: ')
+print(forecast_end)
 
-# Next, we define the data directories and file prefixes on RDA which correspond
+# Define the yaml file containing a desired set of paramter combinations
+if args.y is not None:
+    in_yaml = args.y
+else:
+    in_yaml = 'params.yml'
+
+# Next, define the data directories and file prefixes on RDA which correspond
 # to each specific type of input data
 # ERA is the only supported data type right now
 if args.b == 'ERA':
@@ -42,11 +58,53 @@ if args.b == 'ERA':
     Vsfx = 'ERA-interim.pl'
 else:
     Vsfx = args.b
-
+print('Using Vtable: ')
 print(Vsfx)
 
-# This sets directory names
-DIR_OUT = getcwd() + '/' # Needs Editing
+# Generate a parameter combination of the 6 core parameters if the user has specified this option.
+# Otherwise, use specified input parameters and use defaults for the remaining paramters.
+if args.p:
+    rand_params = generate(in_yaml)
+    print('The following parameters were chosen: ')
+    print(rand_params)
+    param_ids = name2num(in_yaml, mp_in=rand_params[0], lw_in=rand_params[1],
+                         sw_in=rand_params[2], lsm_in=rand_params[3],
+                         pbl_in=rand_params[4], clo_in=rand_params[5])
+    print(param_ids)
+else:
+    param_ids = [None, None, None, None, None, None]
+    if args.mp is not None:
+        param_ids1 = name2num(yaml_file, use_defaults=False, mp_in=args.mp, lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids1)
+    if args.lw is not None:
+        param_ids2 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids2)
+    if args.sw is not None:
+        param_ids3 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids3)
+    if args.lsm is not None:
+        param_ids4 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids4)
+    if args.pbl is not None:
+        param_ids5 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids5)
+    if args.cu is not None:
+        param_ids6 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids = combine(param_ids, param_ids6)
+    param_ids = filldefault(in_yaml, param_ids)
+
+# Set the sf_sfclay_pysics option based on that selected for PBL
+id_sfclay = pbl2sfclay(param_ids[4])
+param_ids.append(id_sfclay)
+
+# Set directory names
+DIR_OUT = getcwd() + '/'  # Needs Editing
 DIR_LOCAL_TMP = '/glade/scratch/sward/tmp/%s/' % forecast_start.strftime('%Y-%m-%d_%H-%M-%S')
 DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
 DIR_WPS = DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
@@ -54,7 +112,9 @@ DIR_WRF = DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
 DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
 DIR_DATA = '/glade/scratch/sward/data/' + str(args.b) + '/'
 
-# I think this defines a directory of qsub template csh scripts for running geogrid, ungrib and metgrid, real, and wrf.
+# Define a directory containing:
+# a) namelist.wps and namelist.input templates
+# b) qsub template csh scripts for running geogrid, ungrib & metgrid, and real & wrf.
 if args.t is not None:
     DIR_TEMPLATES = args.t + '/'
 else:
@@ -65,13 +125,9 @@ CMD_LN = 'ln -sf %s %s'
 CMD_CP = 'cp %s %s'
 CMD_MV = 'mv %s %s'
 CMD_CHMOD = 'chmod -R %s %s'
-CMD_LINK_GRIB = DIR_WPS + 'link_grib.csh ' + DIR_DATA + '*' #Needs editing
+CMD_LINK_GRIB = DIR_WPS + 'link_grib.csh ' + DIR_DATA + '*'  # Needs editing
 CMD_GEOGRID = 'qsub template_rungeogrid.csh'
-# CMD_GEOGRID = DIR_WPS + 'geogrid.exe >& log.geogrid'
-# CMD_UNGRIB = DIR_WPS + 'ungrib.exe >& log.ungrib'
-# CMD_METGRID = DIR_WPS + 'metgrid.exe >& log.metgrid'
 CMD_UNGMETG = 'qsub template_runungmetg.csh'
-# CMD_REAL = 'qsub template_runreal.csh'
 CMD_REALWRF = 'qsub template_runrealwrf.csh'
 
 # Set the number of domains to that input, or default to a single domain. 
@@ -137,20 +193,26 @@ try:
         NAMELIST_WPS = namelist.read()
     with open(DIR_LOCAL_TMP + 'namelist.input', 'r') as namelist:
         NAMELIST_WRF = namelist.read()
-except:
-    print('Error reading namelist files')
+except IOError as e:
+    print(e.errno)
+    print(e)
     exit()
 
 # Write the start and end dates to the WPS Namelist
-wps_dates = ' start_date = '
+wps_dates = ' start_date                     = '
 for i in range(0, MAX_DOMAINS):
-    wps_dates = wps_dates + forecast_start.strftime("'%Y-%m-%d_%H:%M:%S', ") 
-wps_dates = wps_dates + '\n end_date  = '
+    wps_dates = wps_dates + forecast_start.strftime("'%Y-%m-%d_%H:%M:%S', ")
+wps_dates = wps_dates + '\n end_date                     = '
 for i in range(0, MAX_DOMAINS):
     wps_dates = wps_dates + forecast_end.strftime("'%Y-%m-%d_%H:%M:%S', ")
 
-with open('namelist.wps', 'w') as namelist:
-    namelist.write(NAMELIST_WPS.replace('%DATES%', wps_dates))
+try:
+    with open('namelist.wps', 'w') as namelist:
+        namelist.write(NAMELIST_WPS.replace('%DATES%', wps_dates))
+except IOError as e:
+    print(e.errno)
+    print(e)
+    exit()
 
 # Write the runtime info and start dates and times to the WRF Namelist
 wrf_runtime = ' run_days                            = ' + str(delt.days - 1) + ',\n'
@@ -158,52 +220,86 @@ wrf_runtime = wrf_runtime + ' run_hours                           = ' + '0' + ',
 wrf_runtime = wrf_runtime + ' run_minutes                         = ' + '0' + ',\n'
 wrf_runtime = wrf_runtime + ' run_seconds                         = ' + '0' + ','
 
-with open('namelist.input', 'w') as namelist:
-    namelist.write(NAMELIST_WRF.replace('%RUNTIME%', wrf_runtime))
+try:
+    with open('namelist.input', 'w') as namelist:
+        namelist.write(NAMELIST_WRF.replace('%RUNTIME%', wrf_runtime))
+except IOError as e:
+    print(e.errno)
+    print(e)
+    exit()
 
-with open(DIR_LOCAL_TMP + 'namelist.input', 'r') as namelist:
+with open('namelist.input', 'r') as namelist:
     NAMELIST_WRF = namelist.read()
 
-wrf_dates = ' start_year = '
+wrf_dates = ' start_year                          = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_start.strftime('%Y, ')
-wrf_dates = wrf_dates + '\n start_month = '
+wrf_dates = wrf_dates + '\n start_month                         = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_start.strftime('%m, ')
-wrf_dates = wrf_dates + '\n start_day = '
+wrf_dates = wrf_dates + '\n start_day                           = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_start.strftime('%d, ')
-wrf_dates = wrf_dates + '\n start_hour = '
+wrf_dates = wrf_dates + '\n start_hour                          = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_start.strftime('%H, ')
-wrf_dates = wrf_dates + '\n start_minute = '
+wrf_dates = wrf_dates + '\n start_minute                        = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
-wrf_dates = wrf_dates + '\n start_second = '
+wrf_dates = wrf_dates + '\n start_second                        = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
-wrf_dates = wrf_dates + '\n end_year = '
+wrf_dates = wrf_dates + '\n end_year                            = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_end.strftime('%Y, ')
-wrf_dates = wrf_dates + '\n end_month = '
+wrf_dates = wrf_dates + '\n end_month                           = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_end.strftime('%m, ')
-wrf_dates = wrf_dates + '\n end_day = '
+wrf_dates = wrf_dates + '\n end_day                             = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_end.strftime('%d, ')
-wrf_dates = wrf_dates + '\n end_hour = '
+wrf_dates = wrf_dates + '\n end_hour                            = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + forecast_end.strftime('%H, ')
-wrf_dates = wrf_dates + '\n end_minute = '
+wrf_dates = wrf_dates + '\n end_minute                          = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
-wrf_dates = wrf_dates + '\n end_second = '
+wrf_dates = wrf_dates + '\n end_second                          = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
 
 with open('namelist.input', 'w') as namelist:
     namelist.write(NAMELIST_WRF.replace('%DATES%', wrf_dates))
 
+# Write the physics paramerization scheme info to the WRF Namelist
+with open('namelist.input', 'r') as namelist:
+    NAMELIST_WRF = namelist.read()
+
+wrf_physics = ' mp_physics                          = '
+for i in range(0, MAX_DOMAINS):
+    wrf_physics = wrf_physics + str(param_ids[0]) + ', '
+wrf_physics = wrf_physics + '\n ra_lw_physics                       = '
+for i in range(0, MAX_DOMAINS):
+    wrf_physics = wrf_physics + str(param_ids[1]) + ', '
+wrf_physics = wrf_physics + '\n ra_sw_physics                       = '
+for i in range(0, MAX_DOMAINS):
+    wrf_physics = wrf_physics + str(param_ids[2]) + ', '
+wrf_physics = wrf_physics + '\n sf_surface_physics                  = '
+for i in range(0, MAX_DOMAINS):
+    wrf_physics = wrf_physics + str(param_ids[3]) + ', '
+wrf_physics = wrf_physics + '\n bl_pbl_physics                      = '
+for i in range(0, MAX_DOMAINS):
+    wrf_physics = wrf_physics + str(param_ids[4]) + ', '
+wrf_physics = wrf_physics + '\n cu_physics                          = '
+wrf_physics = wrf_physics + str(param_ids[5]) + ', 0, 0,'
+wrf_physics = wrf_physics + '\n sf_sfclay_physics                   = '
+for i in range(0, MAX_DOMAINS):
+    wrf_physics = wrf_physics + str(param_ids[6]) + ', '
+
+with open('namelist.input', 'w') as namelist:
+    namelist.write(NAMELIST_WRF.replace('%PARAMS%', wrf_physics))
+
+# LINK REMAING FILES, AND RUN THE WPS AND WRF EXECUTABLES
 # Link the grib files
 os.system(CMD_LINK_GRIB)
 
