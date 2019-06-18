@@ -1,5 +1,5 @@
 #!/bin/csh
-#PuS fN run_wrf
+#PBS -N run_wrf
 #PBS -A UCOR0037
 #PBS -l walltime=8:00:00
 #PBS -q regular
@@ -9,17 +9,6 @@
 #PBS -l select=4:ncpus=32:mpiprocs=32
 
 limit stacksize unlimited
-
-### -----------  run wrf ---------------------------
-
-mpiexec_mpt ./real.exe
-
-if (-f wrfinput_d03) then
-        echo Done running real. Starting WRF...
-else
-        echo ERROR: wrf inputs were not created.
-        exit
-endif
 
 ### -----------  run wrf ---------------------------
 
