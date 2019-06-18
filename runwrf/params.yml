@@ -1,6 +1,6 @@
 # List of parameter choices in WRF
 microphysics:
-  off: 0
+  no mp: 0
   kressler: 1
   lin: 2
   wsm3: 3

@@ -65,8 +65,7 @@ print(Vsfx)
 # Otherwise, use specified input parameters and use defaults for the remaining paramters.
 if args.p:
     rand_params = generate(in_yaml)
-    print('The following parameters were chosen: ')
-    print(rand_params)
+    print('The following random parameters were generated: ')
     param_ids = name2num(in_yaml, mp_in=rand_params[0], lw_in=rand_params[1],
                          sw_in=rand_params[2], lsm_in=rand_params[3],
                          pbl_in=rand_params[4], clo_in=rand_params[5])
@@ -74,30 +73,32 @@ if args.p:
 else:
     param_ids = [None, None, None, None, None, None]
     if args.mp is not None:
-        param_ids1 = name2num(yaml_file, use_defaults=False, mp_in=args.mp, lw_in="None",
+        param_ids1 = name2num(in_yaml, use_defaults=False, mp_in=args.mp, lw_in="None",
                               sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
         param_ids = combine(param_ids, param_ids1)
     if args.lw is not None:
-        param_ids2 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
+        param_ids2 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in=args.lw,
                               sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
         param_ids = combine(param_ids, param_ids2)
     if args.sw is not None:
-        param_ids3 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
-                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids3 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in=args.sw, lsm_in="None", pbl_in="None", clo_in="None")
         param_ids = combine(param_ids, param_ids3)
     if args.lsm is not None:
-        param_ids4 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
-                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids4 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in=args.lsm, pbl_in="None", clo_in="None")
         param_ids = combine(param_ids, param_ids4)
     if args.pbl is not None:
-        param_ids5 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
-                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids5 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in=args.pbl, clo_in="None")
         param_ids = combine(param_ids, param_ids5)
     if args.cu is not None:
-        param_ids6 = name2num(yaml_file, use_defaults=False, mp_in="None", lw_in="None",
-                              sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+        param_ids6 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
+                              sw_in="None", lsm_in="None", pbl_in="None", clo_in=args.cu)
         param_ids = combine(param_ids, param_ids6)
     param_ids = filldefault(in_yaml, param_ids)
+    print('The following parameters were chosen: ')
+    print(param_ids)
 
 # Set the sf_sfclay_pysics option based on that selected for PBL
 id_sfclay = pbl2sfclay(param_ids[4])
@@ -298,6 +299,21 @@ wrf_physics = wrf_physics + '\n sf_sfclay_physics                   = '
 for i in range(0, MAX_DOMAINS):
     wrf_physics = wrf_physics + str(param_ids[6]) + ', '
 
+# The following namelist options are only set if certain parameter choices are selected
+if param_ids[6] in [1, 5, 7, 11]:
+    wrf_physics = wrf_physics + '\n isfflx                              = 1, '
+if param_ids[6] in [1]:
+    wrf_physics = wrf_physics + '\n ifsnow                              = 1, '
+if param_ids[1] in [1, 4] and param_ids[2] in [1, 4]:
+    wrf_physics = wrf_physics + '\n icloud                              = 1, '
+if param_ids[5] in [5, 93]:
+    wrf_physics = wrf_physics + '\n maxiens                             = 1,'
+if param_ids[5] in [93]:
+    wrf_physics = wrf_physics + '\n maxens                              = 3,'
+    wrf_physics = wrf_physics + '\n maxens2                             = 3,'
+    wrf_physics = wrf_physics + '\n maxens3                             = 16,'
+    wrf_physics = wrf_physics + '\n ensdim                              = 144,'
+
 with open('namelist.input', 'w') as namelist:
     namelist.write(NAMELIST_WRF.replace('%PARAMS%', wrf_physics))
 
@@ -320,7 +336,7 @@ startTime = int(time())
 system(CMD_UNGMETG)
 
 while not path.exists(DIR_LOCAL_TMP + 'met_em.d03.' + forecast_end.strftime('%Y')
-                         + '-' + forecast_end.strftime('%m') + '-' + forecast_end.strftime('%d') + '_00:00:00.nc'):
+                      + '-' + forecast_end.strftime('%m') + '-' + forecast_end.strftime('%d') + '_00:00:00.nc'):
     tm.sleep(10)
 
 elapsed = int(time()) - startTime
@@ -331,7 +347,7 @@ startTime = int(time())
 system(CMD_REALWRF)
 
 while not path.exists(DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
-                         + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d') + '_00:00:00'):
+                      + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d') + '_00:00:00'):
     tm.sleep(10)
 
 elapsed = int(time()) - startTime
@@ -339,11 +355,11 @@ print('Real and WRF ran in: ' + str(elapsed))
 
 # Rename the wrfout files.
 system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d01_' + forecast_start.strftime('%Y')
-                    + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
-                    + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d01.nc'))
+                 + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
+                 + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d01.nc'))
 system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d02_' + forecast_start.strftime('%Y')
-                    + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
-                    + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d02.nc'))
+                 + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
+                 + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d02.nc'))
 system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
-                    + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
-                    + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d03.nc'))
+                 + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
+                 + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d03.nc'))
