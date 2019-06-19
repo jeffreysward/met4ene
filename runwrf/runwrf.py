@@ -134,7 +134,8 @@ CMD_CHMOD = 'chmod -R %s %s'
 CMD_LINK_GRIB = DIR_WPS + 'link_grib.csh ' + DIR_DATA + '*'  # Needs editing
 CMD_GEOGRID = 'qsub template_rungeogrid.csh'
 CMD_UNGMETG = 'qsub template_runungmetg.csh'
-CMD_REALWRF = 'qsub template_runrealwrf.csh'
+CMD_REAL = 'qsub template_runreal.csh'
+CMD_WRF = 'qsub template_runwrf.csh'
 
 # Set the number of domains to that input, or default to a single domain. 
 if args.d is not None and args.d > 0:
@@ -169,10 +170,44 @@ except: print(DIR_LOCAL_TMP + ' not deleted')
 makedirs(DIR_LOCAL_TMP, 0755)
 chdir(DIR_LOCAL_TMP)
 
+# Link WRF tables, data, and executables.
+cmd = CMD_LN % (DIR_WRF + 'run/aerosol*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/BROADBAND*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/bulk*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/CAM*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/capacity*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/CCN*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/CLM*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/co2*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/coeff*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/constants*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/create*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/ETAMPNEW*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/GENPARM*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/grib2map*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/gribmap*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/HLC*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/ishmael*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/kernels*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/LANDUSE*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/masses*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/MPTABLE*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/ozone*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/p3_lookup*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/RRTM*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/SOILPARM*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/termvels*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/tr*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/URBPARM*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/VEGPARM*', './')
+cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/*exe', './')
+system(cmd)
+
 # Copy over namelists and Cheyenne submission scripts
 cmd = CMD_CP % (DIR_TEMPLATES + 'template_rungeogrid.csh', DIR_LOCAL_TMP)
 cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runungmetg.csh', DIR_LOCAL_TMP)
-cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runrealwrf.csh', DIR_LOCAL_TMP)
+cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runreal.csh', DIR_LOCAL_TMP)
+cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runwrf.csh', DIR_LOCAL_TMP)
 cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.wps', DIR_LOCAL_TMP)
 cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.input', DIR_LOCAL_TMP)
 system(cmd)
@@ -184,10 +219,6 @@ cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'ungrib.exe', './')
 cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'metgrid', './')
 cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'metgrid.exe', './')
 cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'ungrib/Variable_Tables/Vtable.' + Vsfx, 'Vtable')
-system(cmd)
-
-# Link WRF tables, data, and executables.
-cmd = CMD_LN % (DIR_WRF + 'run/*', './')
 system(cmd)
 
 # Try to open WPS and WRF namelists as readonly, and print an error if you cannot.
@@ -344,8 +375,11 @@ print('Ungrib and Metgrid ran in: ' + str(elapsed))
 
 # Run real and wrf
 startTime = int(time())
-system(CMD_REALWRF)
+system(CMD_REAL)
+while not path.exists(DIR_LOCAL_TMP + 'wrfinput_d03'):
+    tm.sleep(10)
 
+system(CMD_WRF)
 while not path.exists(DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
                       + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d') + '_00:00:00'):
     tm.sleep(10)
