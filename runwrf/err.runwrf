@@ -1,0 +1,36 @@
+# This text file contains errors in running wrf with random paramter combinations
+
+RUN 1 Physics:
+ &physics
+ mp_physics                          = 13, 13, 13,
+ ra_lw_physics                       = 0, 0, 0,
+ ra_sw_physics                       = 3, 3, 3,
+ sf_surface_physics                  = 3, 3, 3,
+ bl_pbl_physics                      = 2, 2, 2,
+ cu_physics                          = 10, 0, 0,
+ sf_sfclay_physics                   = 2, 2, 2,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error message:
+d01 2011-01-10_00:00:00 No average surface temperature for use with inland lakes
+ Assume non-RUC LSM input
+ from Noah to RUC - compute Noah bucket
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    3082
+grid%tsk unreasonable
+-------------------------------------------
+
+There may be a hint about this problem here: http://www2.mmm.ucar.edu/wrf/users/wrfv3.8/known-prob-3.8.1.html, but this is for WRFv3.8.1. Perhaps they have fixed the 
+issue and now 'surface_input_source = 3' would correct this error? On second thought, 
+this MUST be a paramter combination-specific error because I reran without changing
+anything and encountered no errors. 
+
