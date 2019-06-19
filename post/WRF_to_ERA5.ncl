@@ -21,9 +21,14 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
 begin
+;---Define input variables
+    in_yr = 2011
+    in_mo = 1
+    in_da = 10
+    
 ;---WRF file containing source grid
-    WRFdir   = "/glade/scratch/sward/tmp/2012-08-10_00-00-00/"
-    WRFfile  = "wrfout_d03_2012-08-10_00:00:00"
+    WRFdir   = "/glade/scratch/sward/wrfout/" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_00-00-00/"
+    WRFfile  = "wrfout_d03_" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_00:00:00"
     if (fileexists(WRFdir+WRFfile)) then
         sfile = addfile(WRFdir+WRFfile, "r")
     else
@@ -51,9 +56,9 @@ begin
     v100  = wrf_user_interp_level(v,z,100,False)
 
 ;---ERA data file(s)
-    ERAdir   = "/gpfs/fs1/collections/rda/data/ds630.0/e5.oper.an.sfc/201208/"
+    ERAdir   = "/gpfs/fs1/collections/rda/data/ds630.0/e5.oper.an.sfc/" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
     ;---2m temperature
-    ERAfile  = "e5.oper.an.sfc.128_167_2t.regn320sc.2012080100_2012083123.nc"
+    ERAfile  = "e5.oper.an.sfc.128_167_2t.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile1 = addfile(ERAdir+ERAfile, "r")
     else
@@ -63,7 +68,7 @@ begin
         exit
     end if 
     ;---10m U wind component
-    ERAfile  = "e5.oper.an.sfc.128_165_10u.regn320sc.2012080100_2012083123.nc"
+    ERAfile  = "e5.oper.an.sfc.128_165_10u.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile2 = addfile(ERAdir+ERAfile, "r")
     else
@@ -73,7 +78,7 @@ begin
         exit
     end if
     ;---10m V wind component
-    ERAfile  = "e5.oper.an.sfc.128_166_10v.regn320sc.2012080100_2012083123.nc"
+    ERAfile  = "e5.oper.an.sfc.128_166_10v.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile3 = addfile(ERAdir+ERAfile, "r")
     else
@@ -83,7 +88,7 @@ begin
         exit
     end if
     ;---100m U wind component
-    ERAfile  = "e5.oper.an.sfc.228_246_100u.regn320sc.2012080100_2012083123.nc"
+    ERAfile  = "e5.oper.an.sfc.228_246_100u.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile4 = addfile(ERAdir+ERAfile, "r")
     else
@@ -93,7 +98,7 @@ begin
         exit
     end if
     ;---100m V wind component
-    ERAfile  = "e5.oper.an.sfc.228_247_100v.regn320sc.2012080100_2012083123.nc"
+    ERAfile  = "e5.oper.an.sfc.228_247_100v.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile5 = addfile(ERAdir+ERAfile, "r")
     else
@@ -158,7 +163,7 @@ begin
     u100_regrid = ESMF_regrid(u100,Opt)
     v100_regrid = ESMF_regrid(v100,Opt)
 
-    ;printVarSummary(t2_regrid)
+    printVarSummary(t2_regrid)
     ;printVarSummary(u10_regrid)
     ;printVarSummary(v10_regrid)
     ;printVarSummary(u100_regrid)
@@ -167,44 +172,44 @@ begin
 ;---Loop through all the times in the WRF file to compute mean bias
     ntimes = dimsizes(wrf_time)                 ; number of times in the file
     n = 1
-    t2_bias = 0
-    u10_bias = 0
-    v10_bias = 0
-    u100_bias = 0
-    v100_bias = 0
+    t2_MAE = 0
+    u10_MAE = 0
+    v10_MAE = 0
+    u100_MAE = 0
+    v100_MAE = 0
     do iwrf = 0,ntimes-1,24                       ; TIME LOOP
         iera = str_match_ind(date_str, wrf_time(iwrf))
 
         ;---Compute difference between ERA5 variable and WRF variable(s)
-        t2_diff = t2_regrid(iwrf,:,:) - ERA_2tC(iera,:,:) 
+        t2_diff = abs(t2_regrid(iwrf,:,:) - ERA_2tC(iera,:,:)) 
         t2_diff!0 = "lat"
         t2_diff!1 = "lon"
         t2_diff&lat = ERA_lat     
         t2_diff&lon = ERA_lon     
         ;printVarSummary(t2_diff)
 
-        u10_diff = u10_regrid(iwrf,:,:) - ERA_u10(iera,:,:)
+        u10_diff = abs(u10_regrid(iwrf,:,:) - ERA_u10(iera,:,:))
         u10_diff!0 = "lat"
         u10_diff!1 = "lon"
         u10_diff&lat = ERA_lat
         u10_diff&lon = ERA_lon
         ;printVarSummary(u10_diff)
 
-        v10_diff = v10_regrid(iwrf,:,:) - ERA_v10(iera,:,:)
+        v10_diff = abs(v10_regrid(iwrf,:,:) - ERA_v10(iera,:,:))
         v10_diff!0 = "lat"
         v10_diff!1 = "lon"
         v10_diff&lat = ERA_lat
         v10_diff&lon = ERA_lon
         ;printVarSummary(v10_diff)
 
-        u100_diff = u100_regrid(iwrf,:,:) - ERA_u100(iera,:,:)
+        u100_diff = abs(u100_regrid(iwrf,:,:) - ERA_u100(iera,:,:))
         u100_diff!0 = "lat"
         u100_diff!1 = "lon"
         u100_diff&lat = ERA_lat
         u100_diff&lon = ERA_lon
         ;printVarSummary(u100_diff)
 
-        v100_diff = v100_regrid(iwrf,:,:) - ERA_v100(iera,:,:)
+        v100_diff = abs(v100_regrid(iwrf,:,:) - ERA_v100(iera,:,:))
         v100_diff!0 = "lat"
         v100_diff!1 = "lon"
         v100_diff&lat = ERA_lat
@@ -213,11 +218,11 @@ begin
 
         ;---Sum all computed biases across the domain
         ;***May need to set the missing values for all the *_diff variables.
-        t2_bias := t2_bias + sum(t2_diff)
-        u10_bias := u10_bias + sum(u10_diff)
-        v10_bias := v10_bias + sum(v10_diff)
-        u100_bias := u100_bias + sum(u100_diff)
-        v100_bias := v100_bias + sum(v100_diff)
+        t2_MAE := t2_MAE + sum(t2_diff)
+        u10_MAE := u10_MAE + sum(u10_diff)
+        v10_MAE := v10_MAE + sum(v10_diff)
+        u100_MAE := u100_MAE + sum(u100_diff)
+        v100_MAE := v100_MAE + sum(v100_diff)
 
         ;----------------------------------------------------------------------
         ; Plotting section
@@ -302,16 +307,16 @@ begin
 
 ;---Compute the mean bias and save/print    
     n := n - 1
-    t2_bias := t2_bias/n
-    u10_bias := u10_bias/n
-    v10_bias := v10_bias/n
-    u100_bias := u100_bias/n
-    v100_bias := v100_bias/n
+    t2_MAE := t2_MAE/n
+    u10_MAE := u10_MAE/n
+    v10_MAE := v10_MAE/n
+    u100_MAE := u100_MAE/n
+    v100_MAE := v100_MAE/n
     
-    print(t2_bias)
-    print(u10_bias)
-    print(v10_bias)
-    print(u100_bias)
-    print(v100_bias)
+    print(t2_MAE)
+    print(u10_MAE)
+    print(v10_MAE)
+    print(u100_MAE)
+    print(v100_MAE)
 
 end
