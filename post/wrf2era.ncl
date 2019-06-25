@@ -194,7 +194,7 @@ begin
     v10_MAE = 0
     u100_MAE = 0
     v100_MAE = 0
-    do iwrf = 0,ntimes-1,24                       ; TIME LOOP
+    do iwrf = 0,ntimes-1,72                       ; TIME LOOP
         iera = str_match_ind(date_str, wrf_time(iwrf))
 
         ;---Compute difference between ERA5 variable and WRF variable(s)
@@ -329,13 +329,15 @@ begin
     v10_MAE := v10_MAE/n
     u100_MAE := u100_MAE/n
     v100_MAE := v100_MAE/n
+    
+    dq = str_get_dq()                ; double quote character
+    csv_filename = "mae_wrfyera.csv"
 
     fields = (/"t2_MAE", "u10_MAE", "v10_MAE", "u100_MAE", "v100_MAE"/)
     fields = dq + fields + dq                      ; Pre/append quotes to field names
     header = [/str_join(fields,", ")/]             ; Header is field names separated by commas.
     alist  = [/t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE/]   ; List of variables to write.
     format = "%7.2f,%7.2f,%7.2f,%7.2f,%7.2f"       ; Format to use for each variable.
-    csv_filename = "mae_wrfyera.csv"
 
     if (fileexists(csv_filename)) then
         write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
