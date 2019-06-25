@@ -103,6 +103,28 @@ begin
         exit
     end if
 
+    ;---Shortwave radiation
+;    ERAfile  = "" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+;    if (fileexists(ERAdir+ERAfile)) then
+;        dfile6 = addfile(ERAdir+ERAfile, "r")
+;    else
+;        print("")
+;        print("The wrfout file "+ERAdir+ERAfile+" does not exist. Check your path.")
+;        print("")
+;        exit
+;    end if
+
+    ;---Longwave radiation
+;    ERAfile  = "" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+;    if (fileexists(ERAdir+ERAfile)) then
+;        dfile7 = addfile(ERAdir+ERAfile, "r")
+;    else
+;        print("")
+;        print("The wrfout file "+ERAdir+ERAfile+" does not exist. Check your path.")
+;        print("")
+;        exit
+;    end if
+
     ERA_lat  = dfile1->latitude                  
     ERA_lon  = dfile1->longitude
     ERA_time = dfile1->time
@@ -307,6 +329,20 @@ begin
     v10_MAE := v10_MAE/n
     u100_MAE := u100_MAE/n
     v100_MAE := v100_MAE/n
-    
+
+    fields = (/"t2_MAE", "u10_MAE", "v10_MAE", "u100_MAE", "v100_MAE"/)
+    fields = dq + fields + dq                      ; Pre/append quotes to field names
+    header = [/str_join(fields,", ")/]             ; Header is field names separated by commas.
+    alist  = [/t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE/]   ; List of variables to write.
+    format = "%7.2f,%7.2f,%7.2f,%7.2f,%7.2f"       ; Format to use for each variable.
+    csv_filename = "mae_wrfyera.csv"
+
+    if (fileexists(csv_filename)) then
+        write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
+    else
+        write_table(csv_filename, "w", header, "%s")   ; Write header to CSV file.
+        write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
+    end if
+
     return( [/ t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE /] ) 
 end
