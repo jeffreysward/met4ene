@@ -1,18 +1,16 @@
 ;----------------------------------------------------------------------
-; WRF_to_ERA5.ncl
+; wrf2era.ncl
 ;
-; This is an NCL/ESMF template file for regridding from a WRF 
-; (curvilinear) grid to a different curvilinear grid. It uses
+; This is an NCL/ESMF regridding from a WRF 
+; (curvilinear) grid to the ERA5 grid. It uses
 ; ESMF_regrid to do the regridding.
 ;
-; Both grids are assumed to be contained in separate NetCDF files.
-; 
-; Search for lines with ";;---Change (likely)" or ";;---Change (maybe)".
-; These are the lines you will likely or maybe have to change.
+; This function takes the year, month, and day - so it can locate the
+; wrfout file and the corresponding ERA5 data - as inputs and computes
+; a single mean absolute error (MAE) across the entire domain for 
+; several different meteorological variables, which are then returned 
+; by this function (t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE). 
 ;
-; For more information on ESMF_regrid, see: 
-;
-;    http://www.ncl.ucar.edu/Document/Functions/ESMF/ESMF_regrid.shtml
 ;----------------------------------------------------------------------
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
@@ -20,12 +18,9 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
+undef("wrf2era")
+function wrf2era(in_yr, in_mo, in_da)
 begin
-;---Define input variables
-    in_yr = 2011
-    in_mo = 1
-    in_da = 10
-    
 ;---WRF file containing source grid
     WRFdir   = "/glade/scratch/sward/wrfout/" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_00-00-00/"
     WRFfile  = "wrfout_d03_" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_00:00:00"
@@ -163,7 +158,7 @@ begin
     u100_regrid = ESMF_regrid(u100,Opt)
     v100_regrid = ESMF_regrid(v100,Opt)
 
-    printVarSummary(t2_regrid)
+    ;printVarSummary(t2_regrid)
     ;printVarSummary(u10_regrid)
     ;printVarSummary(v10_regrid)
     ;printVarSummary(u100_regrid)
@@ -313,10 +308,5 @@ begin
     u100_MAE := u100_MAE/n
     v100_MAE := v100_MAE/n
     
-    print(t2_MAE)
-    print(u10_MAE)
-    print(v10_MAE)
-    print(u100_MAE)
-    print(v100_MAE)
-    
+    return( [/ t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE /] ) 
 end
