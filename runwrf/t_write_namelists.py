@@ -1,16 +1,17 @@
 #!/usr/bin/python
 
+import os.path
 from argparse import ArgumentParser
 from datetime import datetime, timedelta
-from os import chdir, getcwd, makedirs, system
+from os import chdir, getcwd, makedirs, system, path
 from shutil import rmtree
 from socket import gethostname
 from subprocess import call
 from sys import exit
 from time import localtime, strftime, strptime, time
-import os.path
 import time as tm
 from wrfparams import name2num, generate, combine, filldefault, pbl2sfclay
+import csv
 
 # I think this is a command line interface; how are these arguments input?
 arg = ArgumentParser()
@@ -150,10 +151,25 @@ os.makedirs(DIR_LOCAL_TMP, 0755)
 # Copy over namelists and Cheyenne submission scripts
 cmd = CMD_CP % (DIR_TEMPLATES + 'template_rungeogrid.csh', DIR_LOCAL_TMP)
 cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runungmetg.csh', DIR_LOCAL_TMP)
-cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runrealwrf.csh', DIR_LOCAL_TMP)
+cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runreal.csh', DIR_LOCAL_TMP)
+cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runwrf.csh', DIR_LOCAL_TMP)
 cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.wps', DIR_LOCAL_TMP)
 cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.input', DIR_LOCAL_TMP)
-os.system(cmd)
+system(cmd)
+
+# Write parameter combinations to CSV
+# (if you would like to restart this, you must manually delete this CSV)
+runwrfcsv = 'paramfeed_runwrf.csv'
+if not os.path.exists(runwrfcsv):
+    csvData = [['ra_lw_physics', 'ra_sw_physics', 'sf_surface_physics',
+                'bl_pbl_physics', 'cu_physics', 'sf_sfclay_physics'], param_ids]
+    with open(runwrfcsv, 'w') as csvFile:
+        writer = csv.writer(csvFile)
+        writer.writerows(csvData)
+else:
+    with open(runwrfcsv, 'a') as csvFile:
+        writer = csv.writer(csvFile)
+        writer.writerow(param_ids)
 
 # I AM NOW CHANGING INTO THE LOCAL TEMP DIRECTORY - BE CAREFULE WITH ABSOLUTE VS. RELATIVE PATHS
 os.chdir(DIR_LOCAL_TMP)
