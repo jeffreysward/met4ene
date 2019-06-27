@@ -100,13 +100,29 @@ else:
     print('The following parameters were chosen: ')
     print(param_ids)
 
+# Write parameter combinations to CSV
+# (if you would like to restart this, you must manually delete this CSV)
+runwrfcsv = 'paramfeed_runwrf.csv'
+if not path.exists(runwrfcsv):
+    csvData = [['ra_lw_physics', 'ra_sw_physics', 'sf_surface_physics',
+                'bl_pbl_physics', 'cu_physics', 'sf_sfclay_physics'], param_ids]
+    with open(runwrfcsv, 'w') as csvFile:
+        writer = csv.writer(csvFile)
+        writer.writerows(csvData)
+else:
+    with open(runwrfcsv, 'a') as csvFile:
+        writer = csv.writer(csvFile)
+        writer.writerow(param_ids)
+
 # Set the sf_sfclay_pysics option based on that selected for PBL
 id_sfclay = pbl2sfclay(param_ids[4])
 param_ids.append(id_sfclay)
 
 # Set directory names
 DIR_OUT = getcwd() + '/'  # Needs Editing
-DIR_LOCAL_TMP = '/glade/scratch/sward/wrfout/%s/' % forecast_start.strftime('%Y-%m-%d_%H-%M-%S')
+DIR_LOCAL_TMP = '../wrfout/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
+                (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
+                 param_ids[2], param_ids[3], param_ids[4], param_ids[6])
 DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
 DIR_WPS = DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
 DIR_WRF = DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'

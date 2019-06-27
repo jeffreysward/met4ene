@@ -109,7 +109,9 @@ param_ids.append(id_sfclay)
 
 # sets directory names
 DIR_OUT = getcwd() + '/'  # Needs Editing
-DIR_LOCAL_TMP = '../wrfout/%s/' % forecast_start.strftime('%Y-%m-%d_%H-%M-%S')
+DIR_LOCAL_TMP = '../wrfout/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
+                (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
+                 param_ids[2], param_ids[3], param_ids[4], param_ids[6])
 DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
 DIR_WPS = DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
 DIR_WRF = DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
