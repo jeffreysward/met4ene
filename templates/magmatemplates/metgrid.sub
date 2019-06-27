@@ -1,0 +1,17 @@
+# metgrid.sub -- submits a metgrid job to condor via geogrid.csh
+
+# Set the universe, define the executable, and specify computer resource requirements
+universe                = vanilla
+getenv                  = True
+executable              = ./metgrid.csh
+request_cpus            = 1
+request_memory          = 1 GB
+
+# Define output files and options
+log                     = /dev/null
+output                  = output.metgrid
+error                   = errors.metgrid
+should_transfer_files   = No
+
+# Add the job to the condor queue
+queue

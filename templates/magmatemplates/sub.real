@@ -1,0 +1,17 @@
+# real.sub -- submits a real job to condor via real.csh
+
+# Set the universe, define the executable, and specify computer resource requirements
+universe                = vanilla
+getenv                  = True
+executable              = ./real.csh
+request_cpus            = 32
+request_memory          = 100 GB
+
+# Define output files and options
+log                     = /dev/null
+output                  = output.real
+error                   = errors.real
+should_transfer_files   = No
+
+# Add the job to the condor queue
+queue

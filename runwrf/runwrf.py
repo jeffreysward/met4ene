@@ -10,6 +10,18 @@ from sys import exit
 from time import localtime, strftime, strptime, time
 import time as tm
 from wrfparams import name2num, generate, combine, filldefault, pbl2sfclay
+import sys, os
+import requests
+
+
+def check_file_status(filepath, filesize):
+    sys.stdout.write('\r')
+    sys.stdout.flush()
+    size = int(os.stat(filepath).st_size)
+    percent_complete = (size/filesize)*100
+    sys.stdout.write('%.3f %s' % (percent_complete, '% Completed'))
+    sys.stdout.flush()
+
 
 # Define command line input options
 arg = ArgumentParser()
@@ -27,6 +39,12 @@ arg.add_argument('-lsm', help="Land surface model", type=str)
 arg.add_argument('-pbl', help="Planetary boundary layer scheme", type=str)
 arg.add_argument('-cu', help="Cumulus scheme", type=str)
 args = arg.parse_args()
+
+# Determine if we are on Cheyenne
+if environ['GROUP'] == 'ncar':
+    on_cheyenne = True
+else:
+    on_cheyenne = False
 
 forecast_start = datetime.strptime(args.s, '%b %d %Y')
 # forecast_start = datetime.strptime(args.s, '%b %d %Y %H')
@@ -48,12 +66,18 @@ else:
 # to each specific type of input data
 # ERA is the only supported data type right now
 if args.b == 'ERA':
-    DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.pl/'
-    DATA_ROOT1 = DATA_ROOT1 + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
+    if on_cheyenne:
+        DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.pl/'
+        DATA_ROOT1 = DATA_ROOT1 + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
+        DATA_ROOT2 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.sfc/'
+        DATA_ROOT2 = DATA_ROOT2 + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
+    else:
+        # The following define paths to the required data on the RDA site
+        dspath = 'http://rda.ucar.edu/data/ds627.0/'
+        DATA_ROOT1 = 'ei.oper.an.pl/' + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
+        DATA_ROOT2 = 'ei.oper.an.sfc/' + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
     datpfx1 = 'ei.oper.an.pl.regn128sc.'
     datpfx2 = 'ei.oper.an.pl.regn128uv.'
-    DATA_ROOT2 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.sfc/'
-    DATA_ROOT2 = DATA_ROOT2 + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
     datpfx3 = 'ei.oper.an.sfc.regn128sc.'
     Vsfx = 'ERA-interim.pl'
 else:
@@ -121,13 +145,19 @@ param_ids.append(id_sfclay)
 # Set directory names
 DIR_OUT = getcwd() + '/'  # Needs Editing
 DIR_LOCAL_TMP = '../wrfout/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
-                (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
-                 param_ids[2], param_ids[3], param_ids[4], param_ids[6])
-DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
-DIR_WPS = DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
-DIR_WRF = DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
-DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
-DIR_DATA = '/glade/scratch/sward/data/' + str(args.b) + '/'
+                    (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
+                     param_ids[2], param_ids[3], param_ids[4], param_ids[6])
+if on_cheyenne:
+    DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
+    DIR_WPS = DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
+    DIR_WRF = DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
+    DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
+    DIR_DATA = '/glade/scratch/sward/data/' + str(args.b) + '/'
+else:
+    DIR_WPS = '/home/jas983/models/wrf/WPS-3.8.1/'
+    DIR_WRF = '/home/jas983/models/wrf/WRFV3/'
+    DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
+    DIR_DATA = '../../data/' + str(args.b) + '/'
 
 # Define a directory containing:
 # a) namelist.wps and namelist.input templates
@@ -135,10 +165,10 @@ DIR_DATA = '/glade/scratch/sward/data/' + str(args.b) + '/'
 if args.t is not None:
     DIR_TEMPLATES = args.t + '/'
 else:
-    if environ['GROUP'] == 'ncar': 
-        DIR_TEMPLATES = '/glade/scratch/sward/met4ene/templates/wrftemplates/'
+    if on_cheyenne:
+        DIR_TEMPLATES = '/glade/scratch/sward/met4ene/templates/ncartemplates/'
     else:
-        DIR_TEMPLATES = '../templates/wrftemplates/'
+        DIR_TEMPLATES = '../templates/magmatemplates/'
 print('Using template directory:')
 print(DIR_TEMPLATES)
 
@@ -148,10 +178,16 @@ CMD_CP = 'cp %s %s'
 CMD_MV = 'mv %s %s'
 CMD_CHMOD = 'chmod -R %s %s'
 CMD_LINK_GRIB = DIR_WPS + 'link_grib.csh ' + DIR_DATA + '*'  # Needs editing
-CMD_GEOGRID = 'qsub template_rungeogrid.csh'
-CMD_UNGMETG = 'qsub template_runungmetg.csh'
-CMD_REAL = 'qsub template_runreal.csh'
-CMD_WRF = 'qsub template_runwrf.csh'
+if on_cheyenne:
+    CMD_GEOGRID = 'qsub template_rungeogrid.csh'
+    CMD_UNGMETG = 'qsub template_runungmetg.csh'
+    CMD_REAL = 'qsub template_runreal.csh'
+    CMD_WRF = 'qsub template_runwrf.csh'
+else:
+    CMD_GEOGRID = 'condor_submit sub.geogrid'
+    CMD_UNGMETG = 'condor_submit sub.metgrid'
+    CMD_REAL = 'condor_submit sub.real'
+    CMD_WRF = 'condor_submit sub.wrf'
 
 # Set the number of domains to that input, or default to a single domain. 
 if args.d is not None and args.d > 0:
@@ -164,20 +200,59 @@ try: rmtree(DIR_DATA)
 except: print(DIR_DATA + ' not deleted')
 makedirs(DIR_DATA, 0755)
 chdir(DIR_DATA)
-
-# Copy desired data files from RDA
-##### THIS ONLY WORKS IF YOU WANT TO RUN WITHIN A SINGLE MONTH
 i = int(forecast_start.day)
 n = int(forecast_start.day) + int(delt.days)
-while i <= n:
-    cmd = CMD_CP % (DATA_ROOT1 + datpfx1 + forecast_start.strftime('%Y')
-                    + forecast_start.strftime('%m') + str(i) + '*', DIR_DATA)
-    cmd = cmd + '; ' + CMD_CP % (DATA_ROOT1 + datpfx2 + forecast_start.strftime('%Y')
-                                 + forecast_start.strftime('%m') + str(i) + '*', DIR_DATA)
-    cmd = cmd + '; ' + CMD_CP % (DATA_ROOT2 + datpfx3 + forecast_start.strftime('%Y')
-                                 + forecast_start.strftime('%m')+ str(i) + '*', DIR_DATA)
-    system(cmd)
-    i += 1 
+if on_cheyenne:
+    # Copy desired data files from RDA
+    ##### THIS ONLY WORKS IF YOU WANT TO RUN WITHIN A SINGLE MONTH
+    while i <= n:
+        cmd = CMD_CP % (DATA_ROOT1 + datpfx1 + forecast_start.strftime('%Y')
+                        + forecast_start.strftime('%m') + str(i) + '*', DIR_DATA)
+        cmd = cmd + '; ' + CMD_CP % (DATA_ROOT1 + datpfx2 + forecast_start.strftime('%Y')
+                                     + forecast_start.strftime('%m') + str(i) + '*', DIR_DATA)
+        cmd = cmd + '; ' + CMD_CP % (DATA_ROOT2 + datpfx3 + forecast_start.strftime('%Y')
+                                     + forecast_start.strftime('%m') + str(i) + '*', DIR_DATA)
+        os.system(cmd)
+        i += 1
+else:
+    # Build the file list to be downloaded from the RDA
+    hrs = ['00', '06', '12', '18']
+    filelist = []
+    while i <= n:
+        for hr in hrs:
+            filelist.append(DATA_ROOT1 + datpfx1 + forecast_start.strftime('%Y')
+                            + forecast_start.strftime('%m') + str(i) + hr)
+            filelist.append(DATA_ROOT1 + datpfx2 + forecast_start.strftime('%Y')
+                            + forecast_start.strftime('%m') + str(i) + hr)
+            filelist.append(DATA_ROOT2 + datpfx3 + forecast_start.strftime('%Y')
+                            + forecast_start.strftime('%m') + str(i) + hr)
+        i += 1
+    pswd = 'mkjmJ17'
+    url = 'https://rda.ucar.edu/cgi-bin/login'
+    values = {'email': 'jas983@cornell.edu', 'passwd': pswd, 'action': 'login'}
+
+    # RDA user authentication
+    ret = requests.post(url, data=values)
+    if ret.status_code != 200:
+        print('Bad Authentication')
+        print(ret.text)
+        exit(1)
+
+    # Download files from RDA server
+    for erafile in filelist:
+        filename = dspath + erafile
+        file_base = os.path.basename(erafile)
+        print('Downloading', file_base)
+        req = requests.get(filename, cookies=ret.cookies, allow_redirects=True, stream=True)
+        filesize = int(req.headers['Content-length'])
+        with open(file_base, 'wb') as outfile:
+            chunk_size = 1048576
+            for chunk in req.iter_content(chunk_size=chunk_size):
+                outfile.write(chunk)
+                if chunk_size < filesize:
+                    check_file_status(file_base, filesize)
+        check_file_status(file_base, filesize)
+        print()
 
 # Try to remove the local tmp directory, and print 'DIR_LOCAL_TMP not deleted' if you cannot.
 # Then remake the dir, and enter it.
