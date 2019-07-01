@@ -12,6 +12,7 @@ import time as tm
 from wrfparams import name2num, generate, combine, filldefault, pbl2sfclay
 import sys, os
 import requests
+import csv
 
 
 def check_file_status(filepath, filesize):
@@ -153,11 +154,17 @@ if on_cheyenne:
     DIR_WRF = DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
     DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
     DIR_DATA = '/glade/scratch/sward/data/' + str(args.b) + '/'
+    DIR_LOCAL_TMP = '/glade/scratch/sward/met4ene/wrfout/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
+                    (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
+                     param_ids[2], param_ids[3], param_ids[4], param_ids[6])
 else:
     DIR_WPS = '/home/jas983/models/wrf/WPS-3.8.1/'
     DIR_WRF = '/home/jas983/models/wrf/WRFV3/'
     DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
-    DIR_DATA = '../../data/' + str(args.b) + '/'
+    DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(args.b) + '/'
+    DIR_LOCAL_TMP = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
+                    (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
+                     param_ids[2], param_ids[3], param_ids[4], param_ids[6])
 
 # Define a directory containing:
 # a) namelist.wps and namelist.input templates
@@ -168,7 +175,7 @@ else:
     if on_cheyenne:
         DIR_TEMPLATES = '/glade/scratch/sward/met4ene/templates/ncartemplates/'
     else:
-        DIR_TEMPLATES = '../templates/magmatemplates/'
+        DIR_TEMPLATES = '/share/mzhang/jas983/wrf_data/met4ene/templates/magmatemplates/'
 print('Using template directory:')
 print(DIR_TEMPLATES)
 
@@ -253,6 +260,7 @@ else:
                     check_file_status(file_base, filesize)
         check_file_status(file_base, filesize)
         print()
+chdir(DIR_OUT)
 
 # Try to remove the local tmp directory, and print 'DIR_LOCAL_TMP not deleted' if you cannot.
 # Then remake the dir, and enter it.
@@ -263,7 +271,7 @@ chdir(DIR_LOCAL_TMP)
 
 # Link WRF tables, data, and executables.
 cmd = CMD_LN % (DIR_WRF + 'run/aerosol*', './')
-cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/BROADBAND*', './')
+#cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/BROADBAND*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/bulk*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/CAM*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/capacity*', './')
@@ -272,19 +280,19 @@ cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/CLM*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/co2*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/coeff*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/constants*', './')
-cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/create*', './')
+#cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/create*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/ETAMPNEW*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/GENPARM*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/grib2map*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/gribmap*', './')
-cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/HLC*', './')
-cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/ishmael*', './')
+#cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/HLC*', './')
+#cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/ishmael*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/kernels*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/LANDUSE*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/masses*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/MPTABLE*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/ozone*', './')
-cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/p3_lookup*', './')
+#cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/p3_lookup*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/RRTM*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/SOILPARM*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/termvels*', './')
@@ -293,14 +301,26 @@ cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/URBPARM*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/VEGPARM*', './')
 cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/*exe', './')
 system(cmd)
-
+print(getcwd())
 # Copy over namelists and Cheyenne submission scripts
-cmd = CMD_CP % (DIR_TEMPLATES + 'template_rungeogrid.csh', DIR_LOCAL_TMP)
-cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runungmetg.csh', DIR_LOCAL_TMP)
-cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runreal.csh', DIR_LOCAL_TMP)
-cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runwrf.csh', DIR_LOCAL_TMP)
-cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.wps', DIR_LOCAL_TMP)
-cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.input', DIR_LOCAL_TMP)
+if on_cheyenne:
+    cmd = CMD_CP % (DIR_TEMPLATES + 'template_rungeogrid.csh', DIR_LOCAL_TMP)
+    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runungmetg.csh', DIR_LOCAL_TMP)
+    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runreal.csh', DIR_LOCAL_TMP)
+    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runwrf.csh', DIR_LOCAL_TMP)
+#else:
+#    cmd = CMD_CP % (DIR_TEMPLATES + 'geogrid.csh', DIR_LOCAL_TMP)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'geogrid.sub', DIR_LOCAL_TMP)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'metgrid.csh', DIR_LOCAL_TMP)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'metgrid.sub', DIR_LOCAL_TMP)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'real.csh', DIR_LOCAL_TMP)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'real.sub', DIR_LOCAL_TMP)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'wrf.csh', DIR_LOCAL_TMP)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'wrf.sub', DIR_LOCAL_TMP)
+#cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.wps', DIR_LOCAL_TMP)
+#cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.input', DIR_LOCAL_TMP)
+else:
+    cmd = CMD_CP % (DIR_TEMPLATES + '*', DIR_LOCAL_TMP)
 system(cmd)
 
 # Link the metgrid and geogrid dirs and executables as well as the correct variable table for the BC/IC data.
@@ -334,6 +354,19 @@ for i in range(0, MAX_DOMAINS):
 try:
     with open('namelist.wps', 'w') as namelist:
         namelist.write(NAMELIST_WPS.replace('%DATES%', wps_dates))
+except IOError as e:
+    print(e.errno)
+    print(e)
+    exit()
+
+with open(DIR_LOCAL_TMP + 'namelist.wps', 'r') as namelist:
+    NAMELIST_WPS = namelist.read()
+
+# Write the GEOG data path to the WPS Namelist
+geog_data = " geog_data_path = '" + DIR_WPS_GEOG + "'" 
+try:
+    with open('namelist.wps', 'w') as namelist:
+        namelist.write(NAMELIST_WPS.replace('%GEOG%', geog_data))
 except IOError as e:
     print(e.errno)
     print(e)
@@ -438,6 +471,7 @@ if param_ids[5] in [93]:
 
 with open('namelist.input', 'w') as namelist:
     namelist.write(NAMELIST_WRF.replace('%PARAMS%', wrf_physics))
+print('Done writing WRF namelist')
 
 # LINK REMAING FILES, AND RUN THE WPS AND WRF EXECUTABLES
 # Link the grib files
@@ -445,6 +479,7 @@ system(CMD_LINK_GRIB)
 
 # Run geogrid if it has not already been run
 startTime = int(time())
+print('Starting Geogrid at: ' + str(startTime))
 system(CMD_GEOGRID)
 
 while not path.exists(DIR_LOCAL_TMP + 'geo_em.d03.nc'):
@@ -455,6 +490,7 @@ print('Geogrid ran in: ' + str(elapsed))
 
 # Run ungrib and metgrid
 startTime = int(time())
+print('Starting Ungrib and Metgrid at: ' + str(startTime))
 system(CMD_UNGMETG)
 
 while not path.exists(DIR_LOCAL_TMP + 'met_em.d03.' + forecast_end.strftime('%Y')
@@ -466,6 +502,7 @@ print('Ungrib and Metgrid ran in: ' + str(elapsed))
 
 # Run real and wrf
 startTime = int(time())
+print('Starting Real and WRF at: ' + str(startTime))
 system(CMD_REAL)
 while not path.exists(DIR_LOCAL_TMP + 'wrfinput_d03'):
     tm.sleep(10)

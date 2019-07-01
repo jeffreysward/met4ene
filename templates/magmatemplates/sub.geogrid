@@ -3,7 +3,7 @@
 # Set the universe, define the executable, and specify computer resource requirements
 universe                = vanilla
 getenv                  = True
-executable              = ./geogrid.csh
+executable              = ./geogrid.exe
 request_cpus            = 1
 request_memory          = 1 GB
 
