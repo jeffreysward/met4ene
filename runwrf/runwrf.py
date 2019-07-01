@@ -153,7 +153,9 @@ if on_cheyenne:
     DIR_WPS = DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
     DIR_WRF = DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
     DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
-    DIR_DATA = '/glade/scratch/sward/data/' + str(args.b) + '/'
+    DIR_DATA = '/glade/scratch/sward/data/' + str(args.b) + '/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
+	       (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1], param_ids[2], 
+	       param_ids[3], param_ids[4], param_ids[6])
     DIR_LOCAL_TMP = '/glade/scratch/sward/met4ene/wrfout/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
                     (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
                      param_ids[2], param_ids[3], param_ids[4], param_ids[6])
@@ -161,7 +163,9 @@ else:
     DIR_WPS = '/home/jas983/models/wrf/WPS-3.8.1/'
     DIR_WRF = '/home/jas983/models/wrf/WRFV3/'
     DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
-    DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(args.b) + '/'
+    DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(args.b) + '/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
+	       (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1], param_ids[2], 
+	       param_ids[3], param_ids[4], param_ids[6])
     DIR_LOCAL_TMP = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
                     (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
                      param_ids[2], param_ids[3], param_ids[4], param_ids[6])
@@ -525,3 +529,7 @@ system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d02_' + forecast_start.strftime('%Y')
 system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
                  + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
                  + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d03.nc'))
+
+try: rmtree(DIR_DATA)
+except: print(DIR_DATA + ' not deleted')
+

@@ -34,3 +34,28 @@ issue and now 'surface_input_source = 3' would correct this error? On second tho
 this MUST be a paramter combination-specific error because I reran without changing
 anything and encountered no errors. 
 
+
+ERROR 2:
+WRF NUMBER OF TILES =   1
+ No land surface physics option is used: sf_surface_physics =            0
+d01 2011-01-10_04:44:15           10  points exceeded cfl=2 in domain d01 at time 2011-01-10_04:44:15 hours
+[sridharan-7-2:02271] *** Process received signal ***
+[sridharan-7-2:02271] Signal: Segmentation fault (11)
+[sridharan-7-2:02271] Signal code: Address not mapped (1)
+[sridharan-7-2:02271] Failing at address: 0xfffffffe054897e0
+[sridharan-7-2:02271] [ 0] /lib64/libpthread.so.0() [0x3ec2a0f710]
+[sridharan-7-2:02271] [ 1] ./wrf.exe(__module_sf_sfclayrev_MOD_psim_stable+0x24) [0x274b574]
+[sridharan-7-2:02271] [ 2] ./wrf.exe(__module_sf_sfclayrev_MOD_sfclayrev1d+0x48bb) [0x27508ab]
+[sridharan-7-2:02271] [ 3] ./wrf.exe(__module_sf_sfclayrev_MOD_sfclayrev+0xa7a) [0x275424a]
+[sridharan-7-2:02271] [ 4] ./wrf.exe(__module_surface_driver_MOD_surface_driver+0x801b) [0x1e3806b]
+[sridharan-7-2:02271] [ 5] ./wrf.exe(__module_first_rk_step_part1_MOD_first_rk_step_part1+0xf605) [0x1599245]
+[sridharan-7-2:02271] [ 6] ./wrf.exe(solve_em_+0x2acd8) [0xfb2138]
+[sridharan-7-2:02271] [ 7] ./wrf.exe(solve_interface_+0x882) [0xeb4706]
+[sridharan-7-2:02271] [ 8] ./wrf.exe(__module_integrate_MOD_integrate+0x2eb) [0x54c363]
+[sridharan-7-2:02271] [ 9] ./wrf.exe(__module_wrf_top_MOD_wrf_run+0x24) [0x4dd6e4]
+[sridharan-7-2:02271] [10] ./wrf.exe(MAIN__+0x3c) [0x4dc7ac]
+[sridharan-7-2:02271] [11] ./wrf.exe(main+0x2a) [0x2bff7da]
+[sridharan-7-2:02271] [12] /lib64/libc.so.6(__libc_start_main+0xfd) [0x3ec221ed5d]
+[sridharan-7-2:02271] [13] ./wrf.exe() [0x4dc6a9]
+[sridharan-7-2:02271] *** End of error message ***
+  
