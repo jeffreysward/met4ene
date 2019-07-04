@@ -35,7 +35,35 @@ this MUST be a paramter combination-specific error because I reran without chang
 anything and encountered no errors. 
 
 
-ERROR 2:
+########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 14, 14, 14,
+ ra_lw_physics                       = 7, 7, 7,
+ ra_sw_physics                       = 2, 2, 2,
+ sf_surface_physics                  = 0, 0, 0,
+ bl_pbl_physics                      = 9, 9, 9,
+ cu_physics                          = 93, 0, 0,
+ sf_sfclay_physics                   = 1, 1, 1,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ maxiens                             = 1,
+ maxens                              = 3,
+ maxens2                             = 3,
+ maxens3                             = 16,
+ ensdim                              = 144,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message:
 WRF NUMBER OF TILES =   1
  No land surface physics option is used: sf_surface_physics =            0
 d01 2011-01-10_04:44:15           10  points exceeded cfl=2 in domain d01 at time 2011-01-10_04:44:15 hours
@@ -58,4 +86,574 @@ d01 2011-01-10_04:44:15           10  points exceeded cfl=2 in domain d01 at tim
 [sridharan-7-2:02271] [12] /lib64/libc.so.6(__libc_start_main+0xfd) [0x3ec221ed5d]
 [sridharan-7-2:02271] [13] ./wrf.exe() [0x4dc6a9]
 [sridharan-7-2:02271] *** End of error message ***
-  
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 5, 5, 5,
+ ra_lw_physics                       = 7, 7, 7,
+ ra_sw_physics                       = 3, 3, 3,
+ sf_surface_physics                  = 0, 0, 0,
+ bl_pbl_physics                      = 7, 7, 7,
+ cu_physics                          = 7, 0, 0,
+ sf_sfclay_physics                   = 1, 1, 1,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message:
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    1171
+ This cumulus option requires ice microphysics option: f_qi =  F
+-------------------------------------------  
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 8, 8, 8,
+ ra_lw_physics                       = 7, 7, 7,
+ ra_sw_physics                       = 7, 7, 7,
+ sf_surface_physics                  = 2, 2, 2,
+ bl_pbl_physics                      = 10, 10, 10,
+ cu_physics                          = 0, 0, 0,
+ sf_sfclay_physics                   = 10, 10, 10,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message:
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    9016
+Heating rate out of range. Stop program
+-------------------------------------------
+
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 9, 9, 9,
+ ra_lw_physics                       = 7, 7, 7,
+ ra_sw_physics                       = 1, 1, 1,
+ sf_surface_physics                  = 3, 3, 3,
+ bl_pbl_physics                      = 11, 11, 11,
+ cu_physics                          = 0, 0, 0,
+ sf_sfclay_physics                   = 1, 1, 1,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+
+Error Message (Real):
+Using sfcprs3 to compute psfc
+d01 2011-01-10_00:00:00   flag value of flag_qnwfa is            0
+d01 2011-01-10_00:00:00 No average surface temperature for use with inland lakes
+ Assume non-RUC LSM input
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2610
+grid%tsk unreasonable
+-------------------------------------------
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 7, 7, 7,
+ ra_lw_physics                       = 31, 31, 31,
+ ra_sw_physics                       = 1, 1, 1,
+ sf_surface_physics                  = 3, 3, 3,
+ bl_pbl_physics                      = 0, 0, 0,
+ cu_physics                          = 2, 0, 0,
+ sf_sfclay_physics                   = 0, 0, 0,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message (Real):
+Using sfcprs3 to compute psfc
+d01 2011-01-10_00:00:00   flag value of flag_qnwfa is            0
+d01 2011-01-10_00:00:00 No average surface temperature for use with inland lakes
+ Assume non-RUC LSM input
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2610
+grid%tsk unreasonable
+-------------------------------------------
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 7, 7, 7,
+ ra_lw_physics                       = 1, 1, 1,
+ ra_sw_physics                       = 99, 99, 99,
+ sf_surface_physics                  = 8, 8, 8,
+ bl_pbl_physics                      = 7, 7, 7,
+ cu_physics                          = 16, 0, 0,
+ sf_sfclay_physics                   = 1, 1, 1,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message (Real):
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2317
+The first two eta levels are too shallow for SSIB LSM scheme.
+-------------------------------------------
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 6, 6, 6,
+ ra_lw_physics                       = 24, 24, 24,
+ ra_sw_physics                       = 3, 3, 3,
+ sf_surface_physics                  = 4, 4, 4,
+ bl_pbl_physics                      = 12, 12, 12,
+ cu_physics                          = 11, 0, 0,
+ sf_sfclay_physics                   = 1, 1, 1,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message (Real): 
+Need MYNN PBL for icloud_bl = 1, resetting to 0
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    1465
+NOTE:       1 namelist settings are wrong. Please check and reset these options
+-------------------------------------------
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 5, 5, 5,
+ ra_lw_physics                       = 5, 5, 5,
+ ra_sw_physics                       = 99, 99, 99,
+ sf_surface_physics                  = 7, 7, 7,
+ bl_pbl_physics                      = 9, 9, 9,
+ cu_physics                          = 95, 0, 0,
+ sf_sfclay_physics                   = 1, 1, 1,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message: 
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    1389
+ The cumulus option does not exist: cu_physics =           95
+-------------------------------------------
+
+I simply fixed this issue by deleting this option from the yaml file containing 
+the paramter choices.
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 50, 50, 50,
+ ra_lw_physics                       = 24, 24, 24,
+ ra_sw_physics                       = 7, 7, 7,
+ sf_surface_physics                  = 3, 3, 3,
+ bl_pbl_physics                      = 1, 1, 1,
+ cu_physics                          = 95, 0, 0,
+ sf_sfclay_physics                   = 1, 1, 1,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message (Real):
+Using sfcprs3 to compute psfc
+d01 2011-01-10_00:00:00   flag value of flag_qnwfa is            0
+d01 2011-01-10_00:00:00 No average surface temperature for use with inland lakes
+ Assume non-RUC LSM input
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2610
+grid%tsk unreasonable
+-------------------------------------------
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 4, 4, 4,
+ ra_lw_physics                       = 3, 3, 3,
+ ra_sw_physics                       = 1, 1, 1,
+ sf_surface_physics                  = 0, 0, 0,
+ bl_pbl_physics                      = 4, 4, 4,
+ cu_physics                          = 2, 0, 0,
+ sf_sfclay_physics                   = 4, 4, 4,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message:
+[sridharan-7-2:09524] *** Process received signal ***
+[sridharan-7-2:09524] Signal: Segmentation fault (11)
+[sridharan-7-2:09524] Signal code: Address not mapped (1)
+[sridharan-7-2:09524] Failing at address: 0xfffffff802cb4884
+[sridharan-7-2:09524] [ 0] /lib64/libpthread.so.0() [0x3ec2a0f710]
+[sridharan-7-2:09524] [ 1] ./wrf.exe(__module_ra_sw_MOD_swpara+0xf9e) [0x18e84ee]
+[sridharan-7-2:09524] [ 2] ./wrf.exe(__module_ra_sw_MOD_swrad+0x2496) [0x18ec246]
+[sridharan-7-2:09524] [ 3] ./wrf.exe(__module_radiation_driver_MOD_radiation_driver+0x1251f) [0x14a49df]
+[sridharan-7-2:09524] [ 4] ./wrf.exe(__module_first_rk_step_part1_MOD_first_rk_step_part1+0x56ea) [0x158f32a]
+[sridharan-7-2:09524] [ 5] ./wrf.exe(solve_em_+0x2acd8) [0xfb2138]
+[sridharan-7-2:09524] [ 6] ./wrf.exe(solve_interface_+0x882) [0xeb4706]
+[sridharan-7-2:09524] [ 7] ./wrf.exe(__module_integrate_MOD_integrate+0x2eb) [0x54c363]
+[sridharan-7-2:09524] [ 8] ./wrf.exe(__module_wrf_top_MOD_wrf_run+0x24) [0x4dd6e4]
+[sridharan-7-2:09524] [ 9] ./wrf.exe(MAIN__+0x3c) [0x4dc7ac]
+[sridharan-7-2:09524] [10] ./wrf.exe(main+0x2a) [0x2bff7da]
+[sridharan-7-2:09524] [11] /lib64/libc.so.6(__libc_start_main+0xfd) [0x3ec221ed5d]
+[sridharan-7-2:09524] [12] ./wrf.exe() [0x4dc6a9]
+[sridharan-7-2:09524] *** End of error message ***
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 15, 15, 15,
+ ra_lw_physics                       = 1, 1, 1,
+ ra_sw_physics                       = 5, 5, 5,
+ sf_surface_physics                  = 2, 2, 2,
+ bl_pbl_physics                      = 4, 4, 4,
+ cu_physics                          = 10, 0, 0,
+ sf_sfclay_physics                   = 4, 4, 4,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message:
+running goddard sw radiation
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    1749
+arguments not present for calling fer_hires
+-------------------------------------------
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 14, 14, 14,
+ ra_lw_physics                       = 7, 7, 7,
+ ra_sw_physics                       = 2, 2, 2,
+ sf_surface_physics                  = 0, 0, 0,
+ bl_pbl_physics                      = 9, 9, 9,
+ cu_physics                          = 93, 0, 0,
+ sf_sfclay_physics                   = 1, 1, 1,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ maxiens                             = 1,
+ maxens                              = 3,
+ maxens2                             = 3,
+ maxens3                             = 16,
+ ensdim                              = 144,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message:
+ No land surface physics option is used: sf_surface_physics =            0
+d01 2011-01-10_04:44:15           10  points exceeded cfl=2 in domain d01 at time 2011-01-10_04:44:15 hours
+[sridharan-7-2:02271] *** Process received signal ***
+[sridharan-7-2:02271] Signal: Segmentation fault (11)
+[sridharan-7-2:02271] Signal code: Address not mapped (1)
+[sridharan-7-2:02271] Failing at address: 0xfffffffe054897e0
+[sridharan-7-2:02271] [ 0] /lib64/libpthread.so.0() [0x3ec2a0f710]
+[sridharan-7-2:02271] [ 1] ./wrf.exe(__module_sf_sfclayrev_MOD_psim_stable+0x24) [0x274b574]
+[sridharan-7-2:02271] [ 2] ./wrf.exe(__module_sf_sfclayrev_MOD_sfclayrev1d+0x48bb) [0x27508ab]
+[sridharan-7-2:02271] [ 3] ./wrf.exe(__module_sf_sfclayrev_MOD_sfclayrev+0xa7a) [0x275424a]
+[sridharan-7-2:02271] [ 4] ./wrf.exe(__module_surface_driver_MOD_surface_driver+0x801b) [0x1e3806b]
+[sridharan-7-2:02271] [ 5] ./wrf.exe(__module_first_rk_step_part1_MOD_first_rk_step_part1+0xf605) [0x1599245]
+[sridharan-7-2:02271] [ 6] ./wrf.exe(solve_em_+0x2acd8) [0xfb2138]
+[sridharan-7-2:02271] [ 7] ./wrf.exe(solve_interface_+0x882) [0xeb4706]
+[sridharan-7-2:02271] [ 8] ./wrf.exe(__module_integrate_MOD_integrate+0x2eb) [0x54c363]
+[sridharan-7-2:02271] [ 9] ./wrf.exe(__module_wrf_top_MOD_wrf_run+0x24) [0x4dd6e4]
+[sridharan-7-2:02271] [10] ./wrf.exe(MAIN__+0x3c) [0x4dc7ac]
+[sridharan-7-2:02271] [11] ./wrf.exe(main+0x2a) [0x2bff7da]
+[sridharan-7-2:02271] [12] /lib64/libc.so.6(__libc_start_main+0xfd) [0x3ec221ed5d]
+[sridharan-7-2:02271] [13] ./wrf.exe() [0x4dc6a9]
+[sridharan-7-2:02271] *** End of error message ***
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 0, 0, 0,
+ ra_lw_physics                       = 99, 99, 99,
+ ra_sw_physics                       = 7, 7, 7,
+ sf_surface_physics                  = 3, 3, 3,
+ bl_pbl_physics                      = 6, 6, 6,
+ cu_physics                          = 0, 0, 0,
+ sf_sfclay_physics                   = 5, 5, 5,
+ isfflx                              = 1,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message: 
+ Assume non-RUC LSM input
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2610
+grid%tsk unreasonable
+-------------------------------------------
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 5, 5, 5,
+ ra_lw_physics                       = 24, 24, 24,
+ ra_sw_physics                       = 4, 4, 4,
+ sf_surface_physics                  = 7, 7, 7,
+ bl_pbl_physics                      = 11, 11, 11,
+ cu_physics                          = 7, 0, 0,
+ sf_sfclay_physics                   = 1, 1, 1,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message:
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    1171
+ This cumulus option requires ice microphysics option: f_qi =  F
+-------------------------------------------
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 19, 19, 19,
+ ra_lw_physics                       = 7, 7, 7,
+ ra_sw_physics                       = 0, 0, 0,
+ sf_surface_physics                  = 8, 8, 8,
+ bl_pbl_physics                      = 8, 8, 8,
+ cu_physics                          = 94, 0, 0,
+ sf_sfclay_physics                   = 1, 1, 1,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message (Real):
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2317
+The first two eta levels are too shallow for SSIB LSM scheme.
+-------------------------------------------
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 15, 15, 15,
+ ra_lw_physics                       = 99, 99, 99,
+ ra_sw_physics                       = 7, 7, 7,
+ sf_surface_physics                  = 1, 1, 1,
+ bl_pbl_physics                      = 11, 11, 11,
+ cu_physics                          = 10, 0, 0,
+ sf_sfclay_physics                   = 1, 1, 1,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message:
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    1435
+Can not call ETARA (1a). Missing moisture fields.
+-------------------------------------------
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 0, 0, 0,
+ ra_lw_physics                       = 4, 4, 4,
+ ra_sw_physics                       = 24, 24, 24,
+ sf_surface_physics                  = 1, 1, 1,
+ bl_pbl_physics                      = 4, 4, 4,
+ cu_physics                          = 1, 0, 0,
+ sf_sfclay_physics                   = 4, 4, 4,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message:
+[magpie-5-3:29547] *** Process received signal ***
+[magpie-5-3:29547] Signal: Segmentation fault (11)
+[magpie-5-3:29547] Signal code: Address not mapped (1)
+[magpie-5-3:29547] Failing at address: 0xfffffffe0533ea64
+[magpie-5-3:29547] [ 0] /lib64/libpthread.so.0() [0x3dbfe0f710]
+[magpie-5-3:29547] [ 1] ./wrf.exe(__module_cu_kfeta_MOD_kf_eta_para+0x30ab) [0x24232fb]
+[magpie-5-3:29547] [ 2] ./wrf.exe(__module_cu_kfeta_MOD_kf_eta_cps+0x2a3d) [0x243494d]
+[magpie-5-3:29547] [ 3] ./wrf.exe(__module_cumulus_driver_MOD_cumulus_driver+0x6b85) [0x1db8925]
+[magpie-5-3:29547] [ 4] ./wrf.exe(__module_first_rk_step_part1_MOD_first_rk_step_part1+0x1eb9c) [0x15a87dc]
+[magpie-5-3:29547] [ 5] ./wrf.exe(solve_em_+0x2acd8) [0xfb2138]
+[magpie-5-3:29547] [ 6] ./wrf.exe(solve_interface_+0x882) [0xeb4706]
+[magpie-5-3:29547] [ 7] ./wrf.exe(__module_integrate_MOD_integrate+0x2eb) [0x54c363]
+[magpie-5-3:29547] [ 8] ./wrf.exe(__module_wrf_top_MOD_wrf_run+0x24) [0x4dd6e4]
+[magpie-5-3:29547] [ 9] ./wrf.exe(MAIN__+0x3c) [0x4dc7ac]
+[magpie-5-3:29547] [10] ./wrf.exe(main+0x2a) [0x2bff7da]
+[magpie-5-3:29547] [11] /lib64/libc.so.6(__libc_start_main+0xfd) [0x3dbf61ed5d]
+[magpie-5-3:29547] [12] ./wrf.exe() [0x4dc6a9]
+[magpie-5-3:29547] *** End of error message ***
+
+
+#########################################################################################
+Run Physics:
+ &physics
+ mp_physics                          = 0, 0, 0,
+ ra_lw_physics                       = 0, 0, 0,
+ ra_sw_physics                       = 7, 7, 7,
+ sf_surface_physics                  = 0, 0, 0,
+ bl_pbl_physics                      = 11, 11, 11,
+ cu_physics                          = 4, 0, 0,
+ sf_sfclay_physics                   = 1, 1, 1,
+ isfflx                              = 1,
+ ifsnow                              = 1,
+ swint_opt                           = 1,
+ radt                                = 15,    5,     1,
+ bldt                                = 0,     0,     0,
+ cudt                                = 0,     0,     0,
+ surface_input_source                = 1,
+ num_soil_layers                     = 4,
+ num_land_cat                        = 21,
+ windfarm_opt                        = 0,     0,     0
+ windfarm_ij                         = 0
+ /
+
+Error Message:
+-------------- FATAL CALLED ---------------
+FATAL CALLED FROM FILE:  <stdin>  LINE:    1635
+ The longwave option does not exist: lw_physics =            0
+-------------------------------------------
+
+I deleted this longwave option from params.yml

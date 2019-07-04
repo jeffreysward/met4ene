@@ -27,7 +27,6 @@ microphysics:
   p3: 50
   p3 2mom: 51
 lw radiation:
-  no lw: 0
   rrtm: 1
   cam: 3
   rrtmg: 4
@@ -83,5 +82,4 @@ cumulus:
   new tiedtke: 16
   grell-devenyi: 93
   hwrf gfs sas: 94
-  old hwrf gfs sas: 95
   old kain-fritsch: 99
