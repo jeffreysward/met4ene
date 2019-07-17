@@ -34,19 +34,35 @@ wget "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/mpi
 tar xzvf mpich-3.0.4.tar.gz
 cd mpich-3.0.4
 ./configure --prefix=$DIR/mpich
-make
-make install
+make && make install
 setenv PATH $DIR/mpich/bin:$PATH
-cd ../.. #change back into the Build_WRF dir
+cd ..
 
 # Install zlib
-sudo yum -y install zlib 
+setenv JASPERLIB $DIR/grib2/lib 
+setenv JASPERINC $DIR/grib2/include
+wget "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/zlib-1.2.7.tar.gz"
+tar xzvf zlib-1.2.7.tar.gz
+cd zlib-1.2.7
+./configure --prefix=$DIR/grib2
+make && make install
+cd ..
 
 # Install libpng
-sudo yum -y install libpng
+wget "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/libpng-1.2.50.tar.gz"
+tar xzvf libpng-1.2.50.tar.gz
+cd libpng-1.2.50
+./configure --prefix=$DIR/grib2
+make && make install
+cd ..
 
 # Install jasperlib
-sudo yum -y install jasper
+wget "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/jasper-1.900.1.tar.gz"
+tar xzvf jasper-1.900.1.tar.gz
+cd jasper-1.900.1
+./configure --prefix=$DIR/grib2
+make && make install
+cd ../.. #change back into the Build_WRF dir
 
 # Clone the WRF repository and compile the executables
 git clone https://github.com/wrf-model/WRF
