@@ -30,13 +30,37 @@ setenv NETCDF $DIR/netcdf
 cd ..
 
 # Install mpich
-sudo yum install mpich2
+wget "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/mpich-3.0.4.tar.gz"
+tar xzvf mpich-3.0.4.tar.gz
+cd mpich-3.0.4
+./configure --prefix=$DIR/mpich
+make
+make install
+setenv PATH $DIR/mpich/bin:$PATH
+cd ../.. #change back into the Build_WRF dir
 
 # Install zlib
-sudo yum install zlib 
+sudo yum -y install zlib 
 
 # Install libpng
-sudo yum install libpng
+sudo yum -y install libpng
 
 # Install jasperlib
-sudo yum install jasper
+sudo yum -y install jasper
+
+# Clone the WRF repository and compile the executables
+git clone https://github.com/wrf-model/WRF
+cd WRF
+./configure
+34
+1
+./compile em_real >& log.compile
+cd ..
+
+# Clone the WPS repository 
+git clone https://github.com/wrf-model/WPS
+cd WPS
+./configure
+1
+./compile >& log.compile
+
