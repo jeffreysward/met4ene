@@ -1,0 +1,29 @@
+#This is what I have done to setup my EC2 instance to run WRF
+
+#The system was setup with the following characteristics
+uname -a
+Linux ip-172-31-19-2 4.14.123-86.109.amzn1.x86_64 #1 SMP Mon Jun 10 19:44:53 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+
+#Because software compilation is not a task that every Amazon EC2 instance requires, these tools are not installed by #default, but they are available in a package group called "Development Tools" that is easily added to an instance with #the yum groupinstall command.
+
+sudo yum groupinstall "Development Tools"
+
+#To use some WRF functionality, I need to install tcsh
+
+sudo yum install tcsh
+
+#Add the following to .bash_profile to permenently use tcsh as default. 
+'''
+	# Switch shell to tcsh/csh
+	case $- in
+	  *i*)
+	    # Interactive session. Try switching to bash.
+	    if [ -z "$TCSH" ]; then # do nothing if running under bash already
+	      tcsh=$(command -v tcsh)
+	      if [ -x "$tcsh" ]; then
+	        export SHELL="$tcsh"
+	        exec "$tcsh"
+	      fi
+	    fi
+	esac
+'''
