@@ -44,8 +44,13 @@ args = arg.parse_args()
 # Determine if we are on Cheyenne
 if environ['GROUP'] == 'ncar':
     on_cheyenne = True
+    on_aws = False
+elif environ['GROUP'] == 'ec2-user':
+    on_cheyenne = False
+    on_aws = True
 else:
     on_cheyenne = False
+    on_aws = False
 
 forecast_start = datetime.strptime(args.s, '%b %d %Y')
 # forecast_start = datetime.strptime(args.s, '%b %d %Y %H')
@@ -159,6 +164,16 @@ if on_cheyenne:
     DIR_LOCAL_TMP = '/glade/scratch/sward/met4ene/wrfout/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
                     (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
                      param_ids[2], param_ids[3], param_ids[4], param_ids[6])
+elif on_aws:
+    DIR_WPS = '/home/ec2-user/environment/Build_WRF/WPS/'
+    DIR_WRF = '/home/ec2-user/environment/Build_WRF/WRF/'
+    DIR_WPS_GEOG = '/home/ec2-user/environment/data/WPS_GEOG'
+    DIR_DATA = '/home/ec2-user/environment/data/' + str(args.b) + '/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
+	       (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1], param_ids[2], 
+	       param_ids[3], param_ids[4], param_ids[6])
+    DIR_LOCAL_TMP = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
+                    (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
+                     param_ids[2], param_ids[3], param_ids[4], param_ids[6])
 else:
     DIR_WPS = '/home/jas983/models/wrf/WPS-3.8.1/'
     DIR_WRF = '/home/jas983/models/wrf/WRFV3/'
@@ -178,6 +193,8 @@ if args.t is not None:
 else:
     if on_cheyenne:
         DIR_TEMPLATES = '/glade/scratch/sward/met4ene/templates/ncartemplates/'
+    elif on_aws:
+        DIR_TEMPLATES = '/home/ec2-user/environment/met4ene/templates/awstemplates/'
     else:
         DIR_TEMPLATES = '/share/mzhang/jas983/wrf_data/met4ene/templates/magmatemplates/'
 print('Using template directory:')
@@ -194,6 +211,11 @@ if on_cheyenne:
     CMD_UNGMETG = 'qsub template_runungmetg.csh'
     CMD_REAL = 'qsub template_runreal.csh'
     CMD_WRF = 'qsub template_runwrf.csh'
+elif on_aws:
+    CMD_GEOGRID = './template_rungeogrid.csh'
+    CMD_UNGMETG = './template_runungmetg.csh'
+    CMD_REAL = './template_runreal.csh'
+    CMD_WRF = './template_runwrf.csh'
 else:
     CMD_GEOGRID = 'condor_submit sub.geogrid'
     CMD_UNGMETG = 'condor_submit sub.metgrid'
