@@ -1,0 +1,39 @@
+#Set up environment as recommended by CMAS
+#setenv CC gcc
+#setenv CPPFLAGS  '-DNDEBUG –DgFortran'
+#setenv CFLAGS  -O
+#setenv FC  gfortran
+#setenv FFLAGS  '-O –w'
+#setenv CXX  g++
+
+#Set up environment as recommended by NCAR
+setenv CC gcc
+setenv CXX g++
+setenv FC gfortran
+setenv FCFLAGS -m64
+setenv F77 gfortran
+setenv FFLAGS -m64
+
+#Set a fun prompt
+#set prompt = "%{\033[01;31m%}%n@%{\033[0m%}%{\033[01;34m%}%m:%{\033[0m%}%{\033[02;30m%}%~>%{\033[0m%} "
+
+#Add user-defined variables
+setenv WRF /home/ec2-user/environment/Build_WRF
+setenv DIR /home/ec2-user/environment/Build_WRF/LIBRARIES 
+setenv NETCDF $DIR/netcdf 
+setenv NETCDF_INC $NETCDF/include
+setenv NETCDF_LIB $NETCDF/lib
+setenv LD_LIBRARY_PATH $NETCDF/lib
+setenv PATH $PATH\:$NETCDF/bin
+setenv PATH $PATH\:$DIR/mpich/bin
+
+#Source anaconda activate script
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+if ( -f "/home/ec2-user/anaconda3/etc/profile.d/conda.csh" ) then
+    source "/home/ec2-user/anaconda3/etc/profile.d/conda.csh"
+else
+    setenv PATH="/home/ec2-user/anaconda3/bin:$PATH"
+endif
+# <<< conda initialize <<<
+conda activate met4ene

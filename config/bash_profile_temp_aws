@@ -1,0 +1,29 @@
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+	. ~/.bashrc
+fi
+
+# Switch shell to tcsh/csh
+case $- in
+  *i*)
+    # Interactive session. Try switching to bash.
+    if [ -z "$TCSH" ]; then # do nothing if running under bash already
+      tcsh=$(command -v tcsh)
+      if [ -x "$tcsh" ]; then
+        export SHELL="$tcsh"
+        exec "$tcsh"
+      fi
+    fi
+esac
+
+
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/.local/bin:$HOME/bin
+
+export PATH
+source $HOME/.nvm/nvm.sh
+
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
