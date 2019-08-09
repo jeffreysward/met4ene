@@ -1,29 +1,23 @@
-#This is what I have done to setup my EC2 instance to run WRF
+New AWS Instance Setup Guide
 
-#The system was setup with the following characteristics
-uname -a
-Linux ip-172-31-19-2 4.14.123-86.109.amzn1.x86_64 #1 SMP Mon Jun 10 19:44:53 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+1. Generate a publickey on AWS instance and add it to bitbucket. A guide is here: https://confluence.atlassian.com/bitbucket/set-up-an-ssh-key-728138079.html
 
-#Because software compilation is not a task that every Amazon EC2 instance requires, these tools are not installed by #default, but they are available in a package group called "Development Tools" that is easily added to an instance with #the yum groupinstall command.
+2. Clone met4ene repository into /environment directory on AWS instance. 
+
+3. Because software compilation is not a task that every Amazon EC2 instance requires, these tools are not installed by default, but they are available in a package group called "Development Tools" that is easily added to an instance with the yum groupinstall command:
 
 sudo yum groupinstall "Development Tools"
 
-#To use some WRF functionality, I need to install tcsh
+4. To use some WRF functionality, install tcsh:
 
 sudo yum install tcsh
 
-#Add the following to .bash_profile to permenently use tcsh as default. 
-'''
-	# Switch shell to tcsh/csh
-	case $- in
-	  *i*)
-	    # Interactive session. Try switching to bash.
-	    if [ -z "$TCSH" ]; then # do nothing if running under bash already
-	      tcsh=$(command -v tcsh)
-	      if [ -x "$tcsh" ]; then
-	        export SHELL="$tcsh"
-	        exec "$tcsh"
-	      fi
-	    fi
-	esac
-'''
+5. Copy the bash_profile_temp_aws and tcshrc_temp_aws to .bash_profile and .tcshrc, respectively.
+
+6. Increase the size of the AWS instance to 100GB via the Volumes tab on the EC2 dashboard. YOU MUST STOP AND REINITIALIZE THE INSTANCE AFTER YOU DO THIS.
+
+7. Install and intialize the met4ene anaconda3 environment by running met4ene/config/condainstall.sh (this is not currently working... it may be due to the fact that it takes some minutes for the volume to expand.)
+
+8. Install and compile WRF and WPS via met4ene/config/install_packages.sh
+
+You should now be ready to run wrf!
