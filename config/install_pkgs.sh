@@ -4,6 +4,7 @@
 echo "Installing packages required by WRF..."
 
 setenv DIR /home/ec2-user/environment/Build_WRF/LIBRARIES
+setenv DATA_dir /home/ec2-user/environment/data
 setenv CC gcc
 setenv CXX g++
 setenv FC gfortran
@@ -67,16 +68,26 @@ cd ../.. #change back into the Build_WRF dir
 # Clone the WRF repository and compile the executables
 git clone https://github.com/wrf-model/WRF
 cd WRF
-./configure
-34
-1
+./configure #Choose options 34 and 1
 ./compile em_real >& log.compile
 cd ..
 
 # Clone the WPS repository 
 git clone https://github.com/wrf-model/WPS
 cd WPS
-./configure
-1
+./configure #Choose option 1
 ./compile >& log.compile
+cd ../..
+
+# Check to see if the DATA_dir exists
+if ( ! -d $DATA_dir ) then
+   mkdir -p $DATA_dir
+endif
+
+cd $DATA_dir
+
+# Install static geographical data
+wget "http://www2.mmm.ucar.edu/wrf/src/wps_files/geog_high_res_mandatory.tar.gz"
+tar -xvf geog_high_res_mandatory.tar.gz
+rm geog_high_res_mandatory.tar.gz
 
