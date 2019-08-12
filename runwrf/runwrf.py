@@ -509,7 +509,11 @@ print('Starting Geogrid at: ' + str(startTime))
 system(CMD_GEOGRID)
 
 while not path.exists(DIR_LOCAL_TMP + 'geo_em.d03.nc'):
-    tm.sleep(10)
+    if int(time()) - startTime < 2000:
+        tm.sleep(10)
+    else:
+        print('ERROR: Geogrid took more than 2000s to run... exiting.')
+	exit()
 
 elapsed = int(time()) - startTime
 print('Geogrid ran in: ' + str(elapsed))
@@ -521,25 +525,42 @@ system(CMD_UNGMETG)
 
 while not path.exists(DIR_LOCAL_TMP + 'met_em.d03.' + forecast_end.strftime('%Y')
                       + '-' + forecast_end.strftime('%m') + '-' + forecast_end.strftime('%d') + '_00:00:00.nc'):
-    tm.sleep(10)
+    if int(time()) - startTime < 10000:
+        tm.sleep(10)
+    else:
+        print('ERROR: Ungrib and Metgrid took more than 10000s to run... exiting.')
+	exit()
 
 elapsed = int(time()) - startTime
 print('Ungrib and Metgrid ran in: ' + str(elapsed))
 
 # Run real and wrf
 startTime = int(time())
-print('Starting Real and WRF at: ' + str(startTime))
+print('Starting Real at: ' + str(startTime))
 system(CMD_REAL)
 while not path.exists(DIR_LOCAL_TMP + 'wrfinput_d03'):
-    tm.sleep(10)
+    if int(time()) - startTime < 10000:
+        tm.sleep(10)
+    else:
+        print('ERROR: Real took more than 10000s to run... exiting.')
+	exit()
 
+elapsed = int(time()) - startTime
+print('Real ran in: ' + str(elapsed))
+
+startTime = int(time())
+print('Starting WRF at: ' + str(startTime))
 system(CMD_WRF)
 while not path.exists(DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
                       + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d') + '_00:00:00'):
-    tm.sleep(10)
+    if int(time()) - startTime < 604800:
+        tm.sleep(60)
+    else:
+        print('ERROR: WRF took more than 604800s to run... exiting.')
+	exit()
 
 elapsed = int(time()) - startTime
-print('Real and WRF ran in: ' + str(elapsed))
+print('WRF ran in: ' + str(elapsed))
 
 # Rename the wrfout files.
 system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d01_' + forecast_start.strftime('%Y')
