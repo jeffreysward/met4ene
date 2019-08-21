@@ -22,7 +22,12 @@ undef("wrf2era")
 function wrf2era(in_yr, in_mo, in_da)
 begin
 ;---WRF file containing source grid
-    WRFdir   = "/glade/scratch/sward/wrfout/" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_00-00-00/"
+    if (getenv("HOSTNAME") .eq. "vis01.mae.cornell.edu") then
+        WRFdir = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_00-00-00/"
+    else
+        WRFdir   = "/glade/scratch/sward/wrfout/" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_00-00-00/"
+    end if
+
     WRFfile  = "wrfout_d03_" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_00:00:00"
     if (fileexists(WRFdir+WRFfile)) then
         sfile = addfile(WRFdir+WRFfile, "r")
@@ -51,7 +56,12 @@ begin
     v100  = wrf_user_interp_level(v,z,100,False)
 
 ;---ERA data file(s)
-    ERAdir   = "/gpfs/fs1/collections/rda/data/ds630.0/e5.oper.an.sfc/" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
+    if (getenv("HOSTNAME") .eq. "vis01.mae.cornell.edu") then
+        ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA/" + + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
+    else
+        ERAdir   = "/gpfs/fs1/collections/rda/data/ds630.0/e5.oper.an.sfc/" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
+    end if
+
     ;---2m temperature
     ERAfile  = "e5.oper.an.sfc.128_167_2t.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
@@ -241,84 +251,6 @@ begin
         u100_MAE := u100_MAE + sum(u100_diff)
         v100_MAE := v100_MAE + sum(v100_diff)
 
-        ;----------------------------------------------------------------------
-        ; Plotting section
-        ;
-        ; This section creates filled contour plots of both the original
-        ; data and the regridded data, and panels them.
-        ;----------------------------------------------------------------------
-        t2@lat2d = wrf_lat     ; Needed for plotting. "t2_regrid" 
-        t2@lon2d = wrf_lon     ; already has these attrs attached.
-
-        wks = gsn_open_wks("x11","WRF_to_curv")
-
-        res                       = True
-        res@gsnMaximize           = True
-        res@gsnDraw               = False
-        res@gsnFrame              = False
-
-        res@cnFillOn              = True
-        res@cnLinesOn             = False
-        res@cnLineLabelsOn        = False
-        res@cnFillMode            = "RasterFill"
-
-        res@lbLabelBarOn          = False    ; Turn on later in panel
-        res@mpDataBaseVersion     = "MediumRes"
-        res@mpMinLatF             = min(wrf_lat)
-        res@mpMaxLatF             = max(wrf_lat)
-        res@mpMinLonF             = min(wrf_lon)
-        res@mpMaxLonF             = max(wrf_lon)
-
-        d_res 		              = res
-        d_res@lbLabelBarOn        = True
-
-        ;;--Set contour spacing interval 		Change (maybe)
-        mnmxint = nice_mnmxintvl( min(t2(iwrf,:,:)), max(t2(iwrf,:,:)), 18, False)
-        res@cnLevelSelectionMode  = "ManualLevels"
-        res@cnMinLevelValF        = mnmxint(0)
-        res@cnMaxLevelValF        = mnmxint(1)
-        res@cnLevelSpacingF       = mnmxint(2)
-
-        mnmxint = nice_mnmxintvl( min(t2_diff), max(t2_diff), 18, False)
-        d_res@cnMinLevelValF      = -mnmxint(1)
-        d_res@cnMaxLevelValF      = mnmxint(1)
-        d_res@cnLevelSpacingF     = mnmxint(2)
-
-        ;---Resources for plotting regridded data
-        res@gsnAddCyclic  = False            ;;---Change (maybe)
-        res@tiMainString  = "Curvilinear grid (" + Opt@InterpMethod + ")"
-
-        plot_regrid = gsn_csm_contour_map(wks,t2_regrid(iwrf,:,:),res)
-
-        ;---Resources for plotting original data
-        res@gsnAddCyclic = False            ;;---Change (maybe)
-        res@tiMainString = "Original WRF grid"
-
-        plot_orig = gsn_csm_contour_map(wks,t2(iwrf,:,:),res)  
-
-        ;---Resources for plotting difference in WRF and ERA5 data
-        d_res@gsnAddCyclic           = False            ;;---Change (maybe)
-        d_res@tiMainString 	     = "WRF & ERA5 Difference"
-        d_res@lbTitleString          = "Temperature Difference (C)"
-        d_res@lbTitleOffsetF         = -0.2
-        d_res@lbTitleFontHeightF     = 0.02
-        d_res@lbLabelFontHeightF     = 0.015
-        cmap = read_colormap_file("BlueDarkRed18")      ;-- so we can subset later
-        d_res@cnFillPalette          = cmap(:,:)        ;-- subset the color map
-
-        plot_diff = gsn_csm_contour_map(wks,t2_diff,d_res)  
-
-        ;---Compare the plots in a panel
-        pres                   = True
-        pres@gsnMaximize       = True
-        pres@gsnPanelLabelBar  = True
-
-        gsn_panel(wks,(/plot_orig,plot_regrid/),(/2,1/),pres)
-
-        ;---Plot the difference 
-        ;    overlay(plot_diff)
-        draw(plot_diff)
-        frame(wks)
         n := n + 1
     end do        ; END OF TIME LOOP
 
