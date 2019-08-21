@@ -5,7 +5,7 @@
 ; (curvilinear) grid to the ERA5 grid. It uses
 ; ESMF_regrid to do the regridding.
 ;
-; This function takes the year, month, and day - so it can locate the
+; This script takes the year, month, and day - so it can locate the
 ; wrfout file and the corresponding ERA5 data - as inputs and computes
 ; a single mean absolute error (MAE) across the entire domain for 
 ; several different meteorological variables, which are then returned 
@@ -18,16 +18,8 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
-undef("wrf2era")
-function wrf2era(in_yr, in_mo, in_da)
 begin
 ;---WRF file containing source grid
-    if (getenv("HOSTNAME") .eq. "vis01.mae.cornell.edu") then
-        WRFdir = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_00-00-00/"
-    else
-        WRFdir   = "/glade/scratch/sward/wrfout/" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_00-00-00/"
-    end if
-
     WRFfile  = "wrfout_d03_" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_00:00:00"
     if (fileexists(WRFdir+WRFfile)) then
         sfile = addfile(WRFdir+WRFfile, "r")
@@ -57,7 +49,7 @@ begin
 
 ;---ERA data file(s)
     if (getenv("HOSTNAME") .eq. "vis01.mae.cornell.edu") then
-        ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA/" + + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
+        ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA/" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
     else
         ERAdir   = "/gpfs/fs1/collections/rda/data/ds630.0/e5.oper.an.sfc/" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
     end if
@@ -278,5 +270,4 @@ begin
         write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
     end if
 
-    return( [/ t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE /] ) 
 end
