@@ -129,7 +129,7 @@ id_sfclay = pbl2sfclay(param_ids[4])
 param_ids.append(id_sfclay)
 
 # Set directory names
-DIR_OUT = getcwd() + '/'  # Needs Editing
+DIR_RUNWRF = getcwd() + '/'  
 DIR_LOCAL_TMP = '../wrfout/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
                 (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
                  param_ids[2], param_ids[3], param_ids[4], param_ids[6])
@@ -291,9 +291,10 @@ else:
             print()
 
 # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
-CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s WRFdir=%s t_wrf2era_runwrf.ncl' % \
+chdir(DIR_RUNWRF)
+CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s WRFdir=%s wrf2era_runwrf.ncl' % \
              (forecast_start.strftime('%Y'), forecast_start.strftime('%m'),
               forecast_start.strftime('%d'), DIR_LOCAL_TMP)
-
+system('pwd')
 system(CMD_REGRID)
 print('Congrats, you pass the regridding test. Check mae_wrfyera.csv to see the result.')

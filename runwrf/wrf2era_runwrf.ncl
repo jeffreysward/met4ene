@@ -12,15 +12,16 @@
 ; by this function (t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE). 
 ;
 ;----------------------------------------------------------------------
-load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
-load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
-load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
-load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
+;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
+;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
+;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
+;load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
+;load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
 begin
 ;---WRF file containing source grid
-    WRFfile  = "wrfout_d03_" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_00:00:00"
+    WRFdir = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
+    WRFfile  = "wrfout_d03.nc"
     if (fileexists(WRFdir+WRFfile)) then
         sfile = addfile(WRFdir+WRFfile, "r")
     else
@@ -48,8 +49,10 @@ begin
     v100  = wrf_user_interp_level(v,z,100,False)
 
 ;---ERA data file(s)
-    if (getenv("HOSTNAME") .eq. "vis01.mae.cornell.edu") then
+    if (getenv("HOSTNAME") .eq. "en-cluster03.coecis.cornell.edu") then
         ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA/" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
+    else if (getenv("HOSTNAME") .eq. "vis01.mae.cornell.edu") then
+        ERAdir   = "/magma-dirs/mzhang/jas983/wrf_data/data/ERA/" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
     else
         ERAdir   = "/gpfs/fs1/collections/rda/data/ds630.0/e5.oper.an.sfc/" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
     end if

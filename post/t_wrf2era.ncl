@@ -1,7 +1,7 @@
 load "./wrf2era.ncl"
 
 begin
-    MAE = wrf2era(2011,1,10)
+    MAE = wrf2era(2011,1,16)
     t2_MAE = MAE[0]
     u10_MAE = MAE[1]
     v10_MAE = MAE[2]
