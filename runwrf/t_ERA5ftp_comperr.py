@@ -221,21 +221,21 @@ else:
         print(ret.text)
         exit(1)
 
-    # Download files from RDA server
-    for erafile in filelist:
-        filename = dspath + erafile
-        file_base = os.path.basename(erafile)
-        print('Downloading', file_base)
-        req = requests.get(filename, cookies=ret.cookies, allow_redirects=True, stream=True)
-        filesize = int(req.headers['Content-length'])
-        with open(file_base, 'wb') as outfile:
-            chunk_size = 1048576
-            for chunk in req.iter_content(chunk_size=chunk_size):
-                outfile.write(chunk)
-                if chunk_size < filesize:
-                    check_file_status(file_base, filesize)
-        check_file_status(file_base, filesize)
-        print()
+   # # Download files from RDA server
+   # for erafile in filelist:
+   #     filename = dspath + erafile
+   #    file_base = os.path.basename(erafile)
+   #     print('Downloading', file_base)
+   #    req = requests.get(filename, cookies=ret.cookies, allow_redirects=True, stream=True)
+   #    filesize = int(req.headers['Content-length'])
+   #    with open(file_base, 'wb') as outfile:
+   #        chunk_size = 1048576
+   #        for chunk in req.iter_content(chunk_size=chunk_size):
+   #            outfile.write(chunk)
+   #             if chunk_size < filesize:
+   #                check_file_status(file_base, filesize)
+   #    check_file_status(file_base, filesize)
+   #     print()
 
 # Download ERA5 data for benchmarking
 if on_cheyenne:
@@ -249,9 +249,11 @@ else:
     datpfx4 = 'e5.oper.an.sfc.228_246_100u.regn320sc.'
     datpfx5 = 'e5.oper.an.sfc.228_247_100v.regn320sc.'
     if not path.exists(ERA5_ROOT + datpfx1 + forecast_start.strftime('%Y')
-                    + forecast_start.strftime('%m') + '0100_'
-                    + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc'):
+                       + forecast_start.strftime('%m') + '0100_'
+                       + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc'):
 
+        # Change into the ERA5 data directory
+        chdir(ERA5_ROOT)
         # The following define paths to the required data on the RDA site
         dspath = 'http://rda.ucar.edu/data/ds630.0/'
         DATA_ROOT1 = 'e5.oper.an.sfc/' + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
@@ -287,3 +289,11 @@ else:
                         check_file_status(file_base, filesize)
             check_file_status(file_base, filesize)
             print()
+
+# Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
+CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s WRFdir=%s t_wrf2era_runwrf.ncl' % \
+             (forecast_start.strftime('%Y'), forecast_start.strftime('%m'),
+              forecast_start.strftime('%d'), DIR_LOCAL_TMP)
+
+system(CMD_REGRID)
+print('Congrats you pass the regridding test')
