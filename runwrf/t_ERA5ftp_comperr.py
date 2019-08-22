@@ -296,4 +296,4 @@ CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s WRFdir=%s t_wrf2era_runwrf.ncl' % \
               forecast_start.strftime('%d'), DIR_LOCAL_TMP)
 
 system(CMD_REGRID)
-print('Congrats you pass the regridding test')
+print('Congrats, you pass the regridding test. Check mae_wrfyera.csv to see the result.')
