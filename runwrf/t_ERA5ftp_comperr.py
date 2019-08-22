@@ -248,36 +248,34 @@ else:
     datpfx3 = 'e5.oper.an.sfc.128_167_2t.regn320sc.'
     datpfx4 = 'e5.oper.an.sfc.228_246_100u.regn320sc.'
     datpfx5 = 'e5.oper.an.sfc.228_247_100v.regn320sc.'
-    try:
-        path.exists(ERA5_ROOT + datpfx1 + forecast_start.strftime('%Y')
+    if not path.exists(ERA5_ROOT + datpfx1 + forecast_start.strftime('%Y')
                     + forecast_start.strftime('%m') + '0100_'
-                    + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc')
-    except:
+                    + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc'):
+
         # The following define paths to the required data on the RDA site
         dspath = 'http://rda.ucar.edu/data/ds630.0/'
         DATA_ROOT1 = 'e5.oper.an.sfc/' + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
 
         # Build the file list to be downloaded from the RDA
-        filelist = []
-        filelist.append(DATA_ROOT1 + datpfx1 + forecast_start.strftime('%Y')
-                        + forecast_start.strftime('%m') + '0100_'
-                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc')
-        filelist.append(DATA_ROOT1 + datpfx2 + forecast_start.strftime('%Y')
-                        + forecast_start.strftime('%m') + '0100_'
-                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc')
-        filelist.append(DATA_ROOT1 + datpfx3 + forecast_start.strftime('%Y')
-                        + forecast_start.strftime('%m') + '0100_'
-                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc')
-        filelist.append(DATA_ROOT1 + datpfx4 + forecast_start.strftime('%Y')
-                        + forecast_start.strftime('%m') + '0100_'
-                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc')
-        filelist.append(DATA_ROOT1 + datpfx5 + forecast_start.strftime('%Y')
-                        + forecast_start.strftime('%m') + '0100_'
-                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc')
+        filelist = [DATA_ROOT1 + datpfx1 + forecast_start.strftime('%Y')
+                    + forecast_start.strftime('%m') + '0100_'
+                    + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc',
+                    DATA_ROOT1 + datpfx2 + forecast_start.strftime('%Y')
+                    + forecast_start.strftime('%m') + '0100_'
+                    + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc',
+                    DATA_ROOT1 + datpfx3 + forecast_start.strftime('%Y')
+                    + forecast_start.strftime('%m') + '0100_'
+                    + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc',
+                    DATA_ROOT1 + datpfx4 + forecast_start.strftime('%Y')
+                    + forecast_start.strftime('%m') + '0100_'
+                    + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc',
+                    DATA_ROOT1 + datpfx5 + forecast_start.strftime('%Y')
+                    + forecast_start.strftime('%m') + '0100_'
+                    + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc']
 
-        for file in filelist:
-            filename = dspath + file
-            file_base = os.path.basename(file)
+        for era5file in filelist:
+            filename = dspath + era5file
+            file_base = os.path.basename(era5file)
             print('Downloading', file_base)
             req = requests.get(filename, cookies=ret.cookies, allow_redirects=True, stream=True)
             filesize = int(req.headers['Content-length'])
