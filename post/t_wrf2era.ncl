@@ -1,4 +1,4 @@
-load "./wrf2era.ncl"
+load "./ncar_wrf2era.ncl"
 
 begin
     MAE = wrf2era(2011,1,16)

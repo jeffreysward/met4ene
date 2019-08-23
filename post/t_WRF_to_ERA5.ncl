@@ -32,8 +32,9 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
 begin
 ;---WRF file containing source grid
-    WRFdir   = "/glade/scratch/sward/tmp/2012-08-10_00-00-00/"
-    WRFfile  = "wrfout_d03_2012-08-10_00:00:00"
+    WRFdir   = "/magma-dirs/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
+;    WRFdir   = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
+    WRFfile  = "wrfout_d03.nc"
     if (fileexists(WRFdir+WRFfile)) then
         sfile = addfile(WRFdir+WRFfile, "r")
     else
@@ -49,8 +50,9 @@ begin
     src_lon = sfile->XLONG(0,:,:)             ;;---Change (maybe)
 
 ;---Data file containing destination grid
-    ERAdir   = "/gpfs/fs1/collections/rda/data/ds630.0/e5.oper.an.sfc/201208/"
-    ERAfile  = "e5.oper.an.sfc.128_167_2t.regn320sc.2012080100_2012083123.nc"
+    ERAdir   = "/magma-dirs/jas983/wrf_data/data/ERA5/"
+;    ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA5/"
+    ERAfile  = "EastUS_e5.oper.an.sfc.128_167_2t.regn320sc.2011010100_2011013123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile = addfile(ERAdir+ERAfile, "r")
     else
@@ -71,7 +73,7 @@ begin
     Opt                   = True
 
 ;---"bilinear" is the default. "patch" and "conserve" are other options.
-    Opt@InterpMethod      = "bilinear"        ;;---Change (maybe)
+    Opt@InterpMethod      = "patch"        ;;---Change (maybe)
 
     Opt@WgtFileName       = "WRF_to_ERA5.nc"
 

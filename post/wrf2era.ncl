@@ -18,11 +18,12 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
-undef("wrf2era")
-function wrf2era(in_yr, in_mo, in_da)
+;undef("wrf2era")
+;function wrf2era(in_yr, in_mo, in_da)
 begin
 ;---WRF file containing source grid
-    WRFdir   = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_10mp1lw1sw2lsm2pbl2cu/"
+;    WRFdir = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
+;    WRFdir   = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_10mp1lw1sw2lsm2pbl2cu/"
     WRFfile  = "wrfout_d03.nc"
     if (fileexists(WRFdir+WRFfile)) then
         sfile = addfile(WRFdir+WRFfile, "r")
@@ -53,7 +54,7 @@ begin
 ;---ERA data file(s)
     ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA5/" 
     ;---2m temperature
-    ERAfile  = "e5.oper.an.sfc.128_167_2t.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.128_167_2t.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile1 = addfile(ERAdir+ERAfile, "r")
     else
@@ -63,7 +64,7 @@ begin
         exit
     end if 
     ;---10m U wind component
-    ERAfile  = "e5.oper.an.sfc.128_165_10u.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.128_165_10u.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile2 = addfile(ERAdir+ERAfile, "r")
     else
@@ -73,7 +74,7 @@ begin
         exit
     end if
     ;---10m V wind component
-    ERAfile  = "e5.oper.an.sfc.128_166_10v.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.128_166_10v.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile3 = addfile(ERAdir+ERAfile, "r")
     else
@@ -83,7 +84,7 @@ begin
         exit
     end if
     ;---100m U wind component
-    ERAfile  = "e5.oper.an.sfc.228_246_100u.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.228_246_100u.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile4 = addfile(ERAdir+ERAfile, "r")
     else
@@ -93,7 +94,7 @@ begin
         exit
     end if
     ;---100m V wind component
-    ERAfile  = "e5.oper.an.sfc.228_247_100v.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.228_247_100v.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile5 = addfile(ERAdir+ERAfile, "r")
     else
@@ -346,5 +347,5 @@ begin
         write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
     end if
 
-    return( [/ t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE /] ) 
+;    return( [/ t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE /] ) 
 end
