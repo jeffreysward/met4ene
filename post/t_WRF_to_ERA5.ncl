@@ -24,16 +24,16 @@
 ; This script uses built-in functions that are only available in 
 ; NCL V6.1.0-beta and later.
 ;----------------------------------------------------------------------
-load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
-load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
-load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
-load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
+;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
+;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
+;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
+;load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
+;load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
 begin
 ;---WRF file containing source grid
-    WRFdir   = "/magma-dirs/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
-;    WRFdir   = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
+;    WRFdir   = "/magma-dirs/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
+    WRFdir   = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
     WRFfile  = "wrfout_d03.nc"
     if (fileexists(WRFdir+WRFfile)) then
         sfile = addfile(WRFdir+WRFfile, "r")
@@ -50,8 +50,8 @@ begin
     src_lon = sfile->XLONG(0,:,:)             ;;---Change (maybe)
 
 ;---Data file containing destination grid
-    ERAdir   = "/magma-dirs/jas983/wrf_data/data/ERA5/"
-;    ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA5/"
+;    ERAdir   = "/magma-dirs/jas983/wrf_data/data/ERA5/"
+    ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA5/"
     ERAfile  = "EastUS_e5.oper.an.sfc.128_167_2t.regn320sc.2011010100_2011013123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile = addfile(ERAdir+ERAfile, "r")
@@ -73,7 +73,7 @@ begin
     Opt                   = True
 
 ;---"bilinear" is the default. "patch" and "conserve" are other options.
-    Opt@InterpMethod      = "patch"        ;;---Change (maybe)
+    Opt@InterpMethod      = "bilinear"        ;;---Change (maybe)
 
     Opt@WgtFileName       = "WRF_to_ERA5.nc"
 

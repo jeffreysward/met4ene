@@ -1,0 +1,17 @@
+# sub.interactive -- submits an interactive job to condor 
+
+# Set the universe, define the executable, and specify computer resource requirements
+universe                = vanilla
+getenv                  = True
+InteractiveJob		= True
+request_cpus            = 1
+request_memory          = 25 GB
+
+# Define output files and options
+log                     = /dev/null
+output                  = /dev/null
+error                   = /dev/null
+should_transfer_files   = No
+
+# Add the job to the condor queue
+queue
