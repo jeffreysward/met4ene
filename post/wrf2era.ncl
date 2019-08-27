@@ -195,53 +195,53 @@ begin
     v10_MAE = 0
     u100_MAE = 0
     v100_MAE = 0
-;    do iwrf = 0,ntimes-1,72                       ; TIME LOOP
-;        iera = str_match_ind(date_str, wrf_time(iwrf))
-;
-;        ;---Compute difference between ERA5 variable and WRF variable(s)
-;        t2_diff = abs(t2_regrid(iwrf,:,:) - ERA_2tC(iera,:,:)) 
-;        t2_diff!0 = "lat"
-;        t2_diff!1 = "lon"
-;        t2_diff&lat = ERA_lat     
-;        t2_diff&lon = ERA_lon     
-;        ;printVarSummary(t2_diff)
-;
-;        u10_diff = abs(u10_regrid(iwrf,:,:) - ERA_u10(iera,:,:))
-;        u10_diff!0 = "lat"
-;        u10_diff!1 = "lon"
-;        u10_diff&lat = ERA_lat
-;        u10_diff&lon = ERA_lon
-;        ;printVarSummary(u10_diff)
-;
-;        v10_diff = abs(v10_regrid(iwrf,:,:) - ERA_v10(iera,:,:))
-;        v10_diff!0 = "lat"
-;        v10_diff!1 = "lon"
-;        v10_diff&lat = ERA_lat
-;        v10_diff&lon = ERA_lon
-;        ;printVarSummary(v10_diff)
-;
-;        u100_diff = abs(u100_regrid(iwrf,:,:) - ERA_u100(iera,:,:))
-;        u100_diff!0 = "lat"
-;        u100_diff!1 = "lon"
-;        u100_diff&lat = ERA_lat
-;        u100_diff&lon = ERA_lon
-;        ;printVarSummary(u100_diff)
-;
-;        v100_diff = abs(v100_regrid(iwrf,:,:) - ERA_v100(iera,:,:))
-;        v100_diff!0 = "lat"
-;        v100_diff!1 = "lon"
-;        v100_diff&lat = ERA_lat
-;        v100_diff&lon = ERA_lon
-;        ;printVarSummary(v100_diff)
-;
-;        ;---Sum all computed biases across the domain
-;        ;***May need to set the missing values for all the *_diff variables.
-;        t2_MAE := t2_MAE + sum(t2_diff)
-;        u10_MAE := u10_MAE + sum(u10_diff)
-;        v10_MAE := v10_MAE + sum(v10_diff)
-;        u100_MAE := u100_MAE + sum(u100_diff)
-;        v100_MAE := v100_MAE + sum(v100_diff)
-;
+    do iwrf = 0,ntimes-1,72                       ; TIME LOOP
+        iera = str_match_ind(date_str, wrf_time(iwrf))
+
+        ;---Compute difference between ERA5 variable and WRF variable(s)
+        t2_diff = abs(t2_regrid(iwrf,:,:) - ERA_2tC(iera,:,:)) 
+        t2_diff!0 = "lat"
+        t2_diff!1 = "lon"
+        t2_diff&lat = ERA_lat     
+        t2_diff&lon = ERA_lon     
+        ;printVarSummary(t2_diff)
+
+        u10_diff = abs(u10_regrid(iwrf,:,:) - ERA_u10(iera,:,:))
+        u10_diff!0 = "lat"
+        u10_diff!1 = "lon"
+        u10_diff&lat = ERA_lat
+        u10_diff&lon = ERA_lon
+        ;printVarSummary(u10_diff)
+
+        v10_diff = abs(v10_regrid(iwrf,:,:) - ERA_v10(iera,:,:))
+        v10_diff!0 = "lat"
+        v10_diff!1 = "lon"
+        v10_diff&lat = ERA_lat
+        v10_diff&lon = ERA_lon
+        ;printVarSummary(v10_diff)
+
+        u100_diff = abs(u100_regrid(iwrf,:,:) - ERA_u100(iera,:,:))
+        u100_diff!0 = "lat"
+        u100_diff!1 = "lon"
+        u100_diff&lat = ERA_lat
+        u100_diff&lon = ERA_lon
+        ;printVarSummary(u100_diff)
+
+        v100_diff = abs(v100_regrid(iwrf,:,:) - ERA_v100(iera,:,:))
+        v100_diff!0 = "lat"
+        v100_diff!1 = "lon"
+        v100_diff&lat = ERA_lat
+        v100_diff&lon = ERA_lon
+        ;printVarSummary(v100_diff)
+
+        ;---Sum all computed biases across the domain
+        ;***May need to set the missing values for all the *_diff variables.
+        t2_MAE := t2_MAE + sum(t2_diff)
+        u10_MAE := u10_MAE + sum(u10_diff)
+        v10_MAE := v10_MAE + sum(v10_diff)
+        u100_MAE := u100_MAE + sum(u100_diff)
+        v100_MAE := v100_MAE + sum(v100_diff)
+
         ;----------------------------------------------------------------------
         ; Plotting section
         ;
@@ -320,32 +320,32 @@ begin
         ;    overlay(plot_diff)
         ;draw(plot_diff)
         ;frame(wks)
-;        n := n + 1
-;    end do        ; END OF TIME LOOP
-;
+        n := n + 1
+    end do        ; END OF TIME LOOP
+
 ;---Compute the mean bias and save/print    
-;    n := n - 1
-;    t2_MAE := t2_MAE/n
-;    u10_MAE := u10_MAE/n
-;    v10_MAE := v10_MAE/n
-;    u100_MAE := u100_MAE/n
-;    v100_MAE := v100_MAE/n
-;    
-;    dq = str_get_dq()                ; double quote character
-;    csv_filename = "mae_wrfyera.csv"
-;
-;    fields = (/"t2_MAE", "u10_MAE", "v10_MAE", "u100_MAE", "v100_MAE"/)
-;    fields = dq + fields + dq                      ; Pre/append quotes to field names
-;    header = [/str_join(fields,", ")/]             ; Header is field names separated by commas.
-;    alist  = [/t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE/]   ; List of variables to write.
-;    format = "%7.2f,%7.2f,%7.2f,%7.2f,%7.2f"       ; Format to use for each variable.
-;
-;    if (fileexists(csv_filename)) then
-;        write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
-;    else
-;        write_table(csv_filename, "w", header, "%s")   ; Write header to CSV file.
-;        write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
-;    end if
-;
+    n := n - 1
+    t2_MAE := t2_MAE/n
+    u10_MAE := u10_MAE/n
+    v10_MAE := v10_MAE/n
+    u100_MAE := u100_MAE/n
+    v100_MAE := v100_MAE/n
+    
+    dq = str_get_dq()                ; double quote character
+    csv_filename = "mae_wrfyera.csv"
+
+    fields = (/"t2_MAE", "u10_MAE", "v10_MAE", "u100_MAE", "v100_MAE"/)
+    fields = dq + fields + dq                      ; Pre/append quotes to field names
+    header = [/str_join(fields,", ")/]             ; Header is field names separated by commas.
+    alist  = [/t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE/]   ; List of variables to write.
+    format = "%7.2f,%7.2f,%7.2f,%7.2f,%7.2f"       ; Format to use for each variable.
+
+    if (fileexists(csv_filename)) then
+        write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
+    else
+        write_table(csv_filename, "w", header, "%s")   ; Write header to CSV file.
+        write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
+    end if
+
 ;    return( [/ t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE /] ) 
 end
