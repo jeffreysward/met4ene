@@ -292,9 +292,10 @@ else:
 
 # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
 chdir(DIR_RUNWRF)
-CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s WRFdir=%s wrf2era_runwrf.ncl' % \
+CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' wrf2era.ncl' % \
              (forecast_start.strftime('%Y'), forecast_start.strftime('%m'),
               forecast_start.strftime('%d'), DIR_LOCAL_TMP)
 system('pwd')
 system(CMD_REGRID)
 print('Congrats, you pass the regridding test. Check mae_wrfyera.csv to see the result.')
+
