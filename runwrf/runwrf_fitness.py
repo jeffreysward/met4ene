@@ -16,6 +16,38 @@ import requests
 import csv
 
 
+def read_last_line(file_name):
+    with open(file_name, mode='r') as infile:
+        lines = infile.readlines()
+        last_line = lines[-1]
+    return last_line
+
+
+def read_2nd2_last_line(file_name):
+    with open(file_name, mode='r') as infile:
+        lines = infile.readlines()
+        second2_last_line = lines[-2]
+    return second2_last_line
+
+
+def runwrf_finish_check(program):
+    if program == 'geogrid':
+        msg = read_2nd2_last_line('output.geogrid')
+        complete = 'Successful completion of geogrid' in msg
+    elif program == 'metgrid':
+        msg = read_2nd2_last_line('output.metgrid')
+        complete = 'Successful completion of metgrid' in msg
+    elif program == 'real':
+        msg = read_last_line('rsl.out.0000')
+        complete = 'SUCCESS COMPLETE REAL' in msg
+    elif program == 'wrf':
+        msg = read_last_line('rsl.out.0000')
+        complete = 'SUCCESS COMPLETE WRF' in msg
+    else:
+        complete = False
+    return complete
+
+
 def check_file_status(filepath, filesize):
     sys.stdout.write('\r')
     sys.stdout.flush()
@@ -509,70 +541,61 @@ print('Done writing WRF namelist')
 system(CMD_LINK_GRIB)
 
 # Run geogrid if it has not already been run
-startTime = int(time())
+startTime = datetime.now()
+startTimeInt = int(time())
 print('Starting Geogrid at: ' + str(startTime))
 system(CMD_GEOGRID)
-
-while not path.exists(DIR_LOCAL_TMP + 'geo_em.d03.nc'):
-    if int(time()) - startTime < 2000:
-        tm.sleep(10)
+while not runwrf_finish_check('geogrid'):
+    if (int(time()) - startTimeInt) < 1800:
+        tm.sleep(2)
     else:
-        print('ERROR: Geogrid took more than 2000s to run... exiting.')
+        print('ERROR: Geogrid took more than 30min to run... exiting.')
         exit()
-
-elapsed = int(time()) - startTime
+elapsed = datetime.now() - startTime
 print('Geogrid ran in: ' + str(elapsed))
 
 # Run ungrib and metgrid
-startTime = int(time())
+startTime = datetime.now()
+startTimeInt = int(time())
 print('Starting Ungrib and Metgrid at: ' + str(startTime))
 system(CMD_UNGMETG)
-
-while not path.exists(DIR_LOCAL_TMP + 'met_em.d03.' + forecast_end.strftime('%Y')
-                      + '-' + forecast_end.strftime('%m') + '-' + forecast_end.strftime('%d') + '_00:00:00.nc'):
-    if int(time()) - startTime < 10000:
-        tm.sleep(10)
+while not runwrf_finish_check('metgrid'):
+    if (int(time()) - startTimeInt) < 3600:
+        tm.sleep(2)
     else:
-        print('ERROR: Ungrib and Metgrid took more than 10000s to run... exiting.')
+        print('ERROR: Ungrib and Metgrid took more than 1hr to run... exiting.')
         exit()
-
-elapsed = int(time()) - startTime
+elapsed = datetime.now() - startTime
 print('Ungrib and Metgrid ran in: ' + str(elapsed))
 
-# Run real and wrf
-startTime = int(time())
+# Run real
+startTime = datetime.now()
+startTimeInt = int(time())
 print('Starting Real at: ' + str(startTime))
 system(CMD_REAL)
-while not path.exists(DIR_LOCAL_TMP + 'wrfinput_d03'):
-    if int(time()) - startTime < 10000:
-        tm.sleep(10)
+while not runwrf_finish_check('real'):
+    if (int(time()) - startTimeInt) < 3600:
+        tm.sleep(2)
     else:
-        print('ERROR: Real took more than 10000s to run... exiting.')
+        print('ERROR: Real took more than 1hr to run... exiting.')
         exit()
-
-elapsed = int(time()) - startTime
+elapsed = datetime.now() - startTime
 print('Real ran in: ' + str(elapsed) + ' seconds')
 
-StartTime = tm.localtime()
-time_str = tm.strftime("%m/%d/%Y, %H:%M:%S", StartTime)
-startTime = int(time())
-print('Starting WRF at: ' + time_str)
+# Run wrf
+startTime = datetime.now()
+startTimeInt = int(time())
+print('Starting WRF at: ' + str(startTime))
 system(CMD_WRF)
-while not path.exists(DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
-                      + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d') + '_00:00:00'):
-    if tm.mktime(tm.localtime()) - tm.mktime(StartTime) < 604800:
-        tm.sleep(60)
+while not runwrf_finish_check('wrf'):
+    if (int(time()) - startTimeInt) < 86400:
+        tm.sleep(10)
     else:
-        print('ERROR: WRF took more than 604800s to run... exiting.')
+        print('ERROR: WRF took more than 24hrs to run... exiting.')
         exit()
-
-EndTime = tm.localtime()
-time_str = tm.strftime("%m/%d/%Y, %H:%M:%S", EndTime)
-print('WRF finished running at: ' + time_str)
-elapsed = tm.mktime(EndTime) - tm.mktime(StartTime)
-elapsed_hours = round(elapsed / 3600)
-elapsed_minutes = round((elapsed - (elapsed_hours * 3600)) / 60)
-print('WRF ran in: ' + str(elapsed_hours) + ' hours ' + str(elapsed_minutes) + ' minutes')
+print('WRF finished running at: ' + str(datetime.now()))
+elapsed = datetime.now() - startTime
+print('WRF ran in: ' + str(elapsed))
 
 # Rename the wrfout files.
 system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d01_' + forecast_start.strftime('%Y')
@@ -651,4 +674,3 @@ CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' wrf2era.ncl' % \
               forecast_start.strftime('%d'), DIR_LOCAL_TMP)
 system('pwd')
 system(CMD_REGRID)
-
