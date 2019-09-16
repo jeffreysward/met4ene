@@ -509,49 +509,52 @@ print('Done writing WRF namelist')
 system(CMD_LINK_GRIB)
 
 # Run geogrid if it has not already been run
-startTime = int(time())
-print('Starting Geogrid at: ' + str(startTime))
+startTime = datetime.now() 
+startTime_int = int(time())
+print('Starting Geogrid at: ' + startTime)
 system(CMD_GEOGRID)
 
-while not path.exists(DIR_LOCAL_TMP + 'geo_em.d03.nc'):
-    if int(time()) - startTime < 2000:
+while not path.exists(DIR_LOCAL_TMP + 'geo_em.d01.nc'):
+    if (int(time()) - startTime_int) < 2000:
         tm.sleep(10)
     else:
         print('ERROR: Geogrid took more than 2000s to run... exiting.')
         exit()
 
-elapsed = int(time()) - startTime
-print('Geogrid ran in: ' + str(elapsed))
+elapsed = datetime.now() - startTime
+print('Geogrid ran in: ' + elapsed)
 
 # Run ungrib and metgrid
-startTime = int(time())
-print('Starting Ungrib and Metgrid at: ' + str(startTime))
+startTime = datetime.now()
+startTime_int = int(time())
+print('Starting Ungrib and Metgrid at: ' + startTime)
 system(CMD_UNGMETG)
 
 while not path.exists(DIR_LOCAL_TMP + 'met_em.d03.' + forecast_end.strftime('%Y')
                       + '-' + forecast_end.strftime('%m') + '-' + forecast_end.strftime('%d') + '_00:00:00.nc'):
-    if int(time()) - startTime < 10000:
+    if (int(time()) - startTime_int) < 10000:
         tm.sleep(10)
     else:
         print('ERROR: Ungrib and Metgrid took more than 10000s to run... exiting.')
         exit()
 
-elapsed = int(time()) - startTime
-print('Ungrib and Metgrid ran in: ' + str(elapsed))
+elapsed = datetime.now() - startTime
+print('Ungrib and Metgrid ran in: ' + elapsed)
 
 # Run real and wrf
-startTime = int(time())
-print('Starting Real at: ' + str(startTime))
+startTime = datetime.now()
+startTime_int = int(time())
+print('Starting Real at: ' + startTime)
 system(CMD_REAL)
 while not path.exists(DIR_LOCAL_TMP + 'wrfinput_d03'):
-    if int(time()) - startTime < 10000:
+    if (int(time()) - startTime_int) < 10000:
         tm.sleep(10)
     else:
         print('ERROR: Real took more than 10000s to run... exiting.')
         exit()
 
-elapsed = int(time()) - startTime
-print('Real ran in: ' + str(elapsed) + ' seconds')
+elapsed = datetime.now() - startTime
+print('Real ran in: ' + elapsed)
 
 StartTime = tm.localtime()
 time_str = tm.strftime("%m/%d/%Y, %H:%M:%S", StartTime)

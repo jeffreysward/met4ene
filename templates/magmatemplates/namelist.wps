@@ -1,6 +1,6 @@
 &share
  wrf_core = 'ARW',
- max_dom = 3,
+ max_dom = 1,
 %DATES%
  interval_seconds = 10800
  io_form_geogrid = 2,
