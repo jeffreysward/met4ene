@@ -19,14 +19,20 @@ import csv
 def read_last_line(file_name):
     with open(file_name, mode='r') as infile:
         lines = infile.readlines()
-        last_line = lines[-1]
+        try:
+            last_line = lines[-1]
+        except IndexError:
+            last_line = 'No last line appears to exist in this file.'
     return last_line
 
 
 def read_2nd2_last_line(file_name):
     with open(file_name, mode='r') as infile:
         lines = infile.readlines()
-        second2_last_line = lines[-2]
+        try:
+            second2_last_line = lines[-2]
+        except IndexError:
+            second2_last_line = 'There do not appear to be at least two lines in this file.'
     return second2_last_line
 
 
