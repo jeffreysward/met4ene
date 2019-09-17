@@ -4,12 +4,12 @@
 universe                = vanilla
 getenv                  = True
 executable              = ./wrf.csh
-request_cpus            = 32
-request_memory          = 100 GB
+request_cpus            = 8 
+request_memory          = 30 GB
 
 # Define output files and options
-log                     = /dev/null
-output                  = output.wrf
+log                     = log.wrf
+output                  = /dev/null
 error                   = errors.wrf
 should_transfer_files   = No
 

@@ -20,12 +20,13 @@ def read_last_line(file_name):
     try:
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
-            try:
-                last_line = lines[-1]
-            except IndexError:
-                last_line = 'No last line appears to exist in this file.'
     except IOError:
         last_line = 'This file does not exist.'
+	return last_line
+    try:
+        last_line = lines[-1]
+    except IndexError:
+        last_line = 'No last line appears to exist in this file.'
     return last_line
 
 
@@ -33,12 +34,13 @@ def read_2nd2_last_line(file_name):
     try:
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
-            try:
-                second2_last_line = lines[-2]
-            except IndexError:
-                second2_last_line = 'There do not appear to be at least two lines in this file.'
     except IOError:
         second2_last_line = 'This file does not exist.'
+	return second2_last_line
+    try:
+        second2_last_line = lines[-2]
+    except IndexError:
+        second2_last_line = 'There do not appear to be at least two lines in this file.'
     return second2_last_line
 
 
@@ -51,6 +53,7 @@ def runwrf_finish_check(program):
         complete = 'Successful completion of metgrid' in msg
     elif program == 'real':
         msg = read_last_line('rsl.out.0000')
+	print(msg)
         complete = 'SUCCESS COMPLETE REAL' in msg
     elif program == 'wrf':
         msg = read_last_line('rsl.out.0000')
@@ -599,6 +602,8 @@ startTime = datetime.now()
 startTimeInt = int(time())
 print('Starting WRF at: ' + str(startTime))
 system(CMD_WRF)
+# Make the script sleep for 5 minutes to allow for the rsl.out.0000 file to reset.
+tm.sleep(300)
 while not runwrf_finish_check('wrf'):
     if (int(time()) - startTimeInt) < 86400:
         tm.sleep(10)
