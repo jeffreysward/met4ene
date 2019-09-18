@@ -16,6 +16,10 @@ import requests
 import csv
 
 
+# Set parameters here that should be set automatically eventually
+remove_DIR_DATA = False
+
+
 def read_last_line(file_name):
     try:
         with open(file_name, mode='r') as infile:
@@ -179,7 +183,7 @@ else:
     print(param_ids)
 
 # Write parameter combinations to CSV
-# (if you would like to restart this, you must manually delete this CSV)
+# (if you would like to restart this, you must manually delete this CSV; should change this eventuallly)
 runwrfcsv = 'paramfeed_runwrf.csv'
 if not path.exists(runwrfcsv):
     csvData = [['ra_lw_physics', 'ra_sw_physics', 'sf_surface_physics',
@@ -197,7 +201,7 @@ id_sfclay = pbl2sfclay(param_ids[4])
 param_ids.append(id_sfclay)
 
 # Set directory names
-DIR_OUT = getcwd() + '/'  # Needs Editing
+DIR_OUT = getcwd() + '/'  # Needs Editing (maybe)
 DIR_LOCAL_TMP = '../wrfout/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
                 (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
                  param_ids[2], param_ids[3], param_ids[4], param_ids[6])
@@ -277,11 +281,14 @@ else:
     MAX_DOMAINS = 3
 
 # Try to remove the data dir, and print 'DIR_DATA not deleted' if you cannot. Then remake the dir, and enter it.
-try:
-    rmtree(DIR_DATA)
-except:
-    print(DIR_DATA + ' not deleted')
-makedirs(DIR_DATA, 0755)
+if remove_DIR_DATA:
+    try:
+        rmtree(DIR_DATA)
+    except:
+        print(DIR_DATA + ' not deleted')
+
+if not path.exists(DIR_DATA):
+    makedirs(DIR_DATA, 0755)
 chdir(DIR_DATA)
 i = int(forecast_start.day)
 n = int(forecast_start.day) + int(delt.days)
@@ -298,7 +305,7 @@ if on_cheyenne:
         os.system(cmd)
         i += 1
 else:
-    # Build the file list to be downloaded from the RDA
+    # Build the file list required for the WRF run.
     hrs = ['00', '06', '12', '18']
     filelist = []
     while i <= n:
@@ -310,6 +317,11 @@ else:
             filelist.append(DATA_ROOT2 + datpfx3 + forecast_start.strftime('%Y')
                             + forecast_start.strftime('%m') + str(i) + hr)
         i += 1
+
+    # Check to see if these files alread exist in DIR_DATA.
+
+
+    # Download non-existent files from RDA. Probably put this into its own method...
     pswd = 'mkjmJ17'
     url = 'https://rda.ucar.edu/cgi-bin/login'
     values = {'email': 'jas983@cornell.edu', 'passwd': pswd, 'action': 'login'}
@@ -615,21 +627,17 @@ elapsed = datetime.now() - startTime
 print('WRF ran in: ' + str(elapsed))
 
 # Rename the wrfout files.
-system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d01_' + forecast_start.strftime('%Y')
-                 + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
-                 + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d01.nc'))
-# system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d02_' + forecast_start.strftime('%Y')
-#                  + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
-#                  + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d02.nc'))
-# system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
-#                  + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
-#                  + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d03.nc'))
+for n in range(1, MAX_DOMAINS + 1):
+    system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d0' + str(n) + '_' + forecast_start.strftime('%Y')
+                     + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
+                     + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d0' + str(n) + '.nc'))
 
 # Remove the data directory after the WRF run
-try:
-    rmtree(DIR_DATA)
-except:
-    print(DIR_DATA + ' not deleted')
+if remove_DIR_DATA:
+    try:
+        rmtree(DIR_DATA)
+    except:
+        print(DIR_DATA + ' not deleted')
 
 # Download ERA5 data for benchmarking
 if on_cheyenne:
