@@ -22,7 +22,7 @@ def read_last_line(file_name):
             lines = infile.readlines()
     except IOError:
         last_line = 'This file does not exist.'
-	return last_line
+        return last_line
     try:
         last_line = lines[-1]
     except IndexError:
@@ -36,7 +36,7 @@ def read_2nd2_last_line(file_name):
             lines = infile.readlines()
     except IOError:
         second2_last_line = 'This file does not exist.'
-	return second2_last_line
+        return second2_last_line
     try:
         second2_last_line = lines[-2]
     except IndexError:
@@ -53,7 +53,7 @@ def runwrf_finish_check(program):
         complete = 'Successful completion of metgrid' in msg
     elif program == 'real':
         msg = read_last_line('rsl.out.0000')
-	print(msg)
+        print(msg)
         complete = 'SUCCESS COMPLETE REAL' in msg
     elif program == 'wrf':
         msg = read_last_line('rsl.out.0000')
@@ -618,12 +618,12 @@ print('WRF ran in: ' + str(elapsed))
 system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d01_' + forecast_start.strftime('%Y')
                  + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
                  + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d01.nc'))
-system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d02_' + forecast_start.strftime('%Y')
-                 + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
-                 + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d02.nc'))
-system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
-                 + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
-                 + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d03.nc'))
+# system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d02_' + forecast_start.strftime('%Y')
+#                  + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
+#                  + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d02.nc'))
+# system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
+#                  + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
+#                  + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d03.nc'))
 
 # Remove the data directory after the WRF run
 try:

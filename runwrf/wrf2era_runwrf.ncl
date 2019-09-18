@@ -21,7 +21,7 @@
 begin
 ;---WRF file containing source grid
     WRFdir = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
-    WRFfile  = "wrfout_d03.nc"
+    WRFfile  = "wrfout_d01.nc"
     if (fileexists(WRFdir+WRFfile)) then
         sfile = addfile(WRFdir+WRFfile, "r")
     else
