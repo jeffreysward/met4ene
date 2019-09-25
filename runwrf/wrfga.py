@@ -1,6 +1,6 @@
 import random
 import time
-import statistics
+import wrfparams
 import sys
 from bisect import bisect_left
 from math import exp
@@ -14,15 +14,54 @@ class Chromosome:
         self.Age = 0
 
 
-# This function provides a way to generate a random string from the set of genes
-def generate_parent(length, gene_set):
-    genes = []
-    while len(genes) < length:
-        sample_size = min(length - len(genes), len(gene_set))
-        genes.extend(random.sample(gene_set, sample_size))
-    return Chromosome(genes)
+def display(individual):
+    print("Genes:{}\tFitness: {}".format(
+        ''.join(str(individual.Genes)), individual.Fitness))
 
 
+# This method provides a way to randomly generate an initial population for the GA
+def generate_population(pop_size):
+    population = []
+    while len(population) < pop_size:
+        rand_params = wrfparams.generate()
+        new_individual = wrfparams.name2num(mp_in=rand_params[0], lw_in=rand_params[1],
+                                            sw_in=rand_params[2], lsm_in=rand_params[3],
+                                            pbl_in=rand_params[4], clo_in=rand_params[5])
+        # print('From wrfparams.generate: {}'.format(new_individual))
+        new_individual = Chromosome(new_individual)
+        population.append(new_individual)
+    return population
+
+
+# The selection operator carries out a tournament selection,
+# by selecting the fittest individual among a group of randomly selected individuals, to create the mating population.
+def selection(population, pop_size):
+
+    if 1 < pop_size < 30:
+        mating_pop_size = int(0.5 * pop_size)
+        tournament_size = int(0.5 * pop_size)
+    elif pop_size is 1:
+        mating_pop_size = 1
+        tournament_size = 1
+    else:
+        mating_pop_size = int(0.5 * pop_size)
+        tournament_size = int(0.1 * pop_size)
+
+    mating_population = []
+    while len(mating_population) < mating_pop_size:
+        tournament_pop_idx = random.sample(range(0, pop_size), tournament_size)
+        print('Tournament population indices: {}'.format(tournament_pop_idx))
+        tournament_pop = [population[i] for i in tournament_pop_idx]
+        print('Tournament population...')
+        for i in range(0, tournament_size):
+            display(population[i])
+            time.sleep(1)
+        mating_population.append(get_best(tournament_pop))
+    return mating_population
+
+
+# The crossover operator takes in the genes of two parent individuals
+# and randomly exchanges one gene between the two producing two offspring.
 def crossover(parent_genes, index, parents, get_fitness, crossover, mutate, generate_parent):
     donor_index = random.randrange(0, len(parents))
     if donor_index == index:
@@ -36,7 +75,8 @@ def crossover(parent_genes, index, parents, get_fitness, crossover, mutate, gene
     return Chromosome(child_genes, fitness)
 
 
-# A new Chromosome/individual can be created by mutating the current individual
+# The mutate operator takes in the genes of one offspring
+# and randomly replaces one of the genes from the set of choices.
 def mutate(parent, gene_set):
     # Set the child genes to that of the parent
     child_genes = parent.Genes[:]
@@ -49,32 +89,36 @@ def mutate(parent, gene_set):
     return Chromosome(child_genes)
 
 
-# Function that finds the best individual within the population
-def get_best(get_fitness, target_len, optimal_fitness, gene_set,
-             display, max_age=None, pool_size=1, crossover=None, max_seconds=None):
+# Function that finds the location of the best individual within the population
+def get_best(population):
+    best_individual = min(i for i in population[:].Fitness)
+    return best_individual
 
-    random.seed()
-
-    def fn_mutate(parent):
-        return mutate(parent, gene_set)
-
-    def fn_generate_parent():
-        return generate_parent(target_len, gene_set)
-
-    if crossover is not None:
-
-        def fn_new_child(parent, index, parents):
-            return random.choice(used_strategies)(parent, index, parents)
-    else:
-        def fn_new_child(parent, index, parents):
-            return fn_mutate(parent)
-
-    for timed_out, improvement in get_improvement(fn_new_child, fn_generate_parent, max_age, pool_size, max_seconds):
-        if timed_out:
-            return improvement
-        display(improvement)
-        if not optimal_fitness > improvement.Fitness:
-            return improvement
+# def get_best(get_fitness, target_len, optimal_fitness, gene_set,
+#              display, max_age=None, pool_size=1, crossover=None, max_seconds=None):
+#
+#     random.seed()
+#
+#     def fn_mutate(parent):
+#         return mutate(parent, gene_set)
+#
+#     def fn_generate_parent():
+#         return generate_parent(target_len, gene_set)
+#
+#     if crossover is not None:
+#
+#         def fn_new_child(parent, index, parents):
+#             return random.choice(used_strategies)(parent, index, parents)
+#     else:
+#         def fn_new_child(parent, index, parents):
+#             return fn_mutate(parent)
+#
+#     for timed_out, improvement in get_improvement(fn_new_child, fn_generate_parent, max_age, pool_size, max_seconds):
+#         if timed_out:
+#             return improvement
+#         display(improvement)
+#         if not optimal_fitness > improvement.Fitness:
+#             return improvement
 
 
 def get_improvement(new_child, generate_parent, max_age, pool_size, max_seconds):

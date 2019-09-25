@@ -3,15 +3,15 @@ Overview:
 
 - This module deals with wrf's input parameters.
 
-- wrfparams_generate() can be used to generate a random set of parameters
+- wrfparams.generate() can be used to generate a random set of parameters
 
-- wrfparams_name2num() is used to map the name of the parameterization,
+- wrfparams.name2num() is used to map the name of the parameterization,
 which is defined generally by the name of the individual or
 institution that designed the scheme, to the namelist.input value.
 The default value of these parameterization schemes is set by those that
 were originally used by ICF in the study over NYC.
 
-- pbl2sfclay() is used to assign the surface layer scheme based on the
+- wrfparams.pbl2sfclay() is used to assign the surface layer scheme based on the
 specified or randomly selected PBL scheme. If multiple surface layer
 schemes are available, one may be selected at random by setting rnd = True.
 Otherwise, sf_sfclay defaults to option 1 (the revised MM5 scheme).
@@ -29,7 +29,7 @@ import yaml
 import random
 
 
-def generate(in_yaml):
+def generate(in_yaml='params.yml'):
     with open(in_yaml, 'r') as params_file:
         try:
             params = yaml.safe_load(params_file)
@@ -54,7 +54,7 @@ def generate(in_yaml):
     return param_list
 
 
-def name2num(in_yaml, use_defaults=True, mp_in="morrison2mom", lw_in="rrtm", sw_in="dudia",
+def name2num(in_yaml='params.yml', use_defaults=True, mp_in="morrison2mom", lw_in="rrtm", sw_in="dudia",
              lsm_in="noah", pbl_in="myj", clo_in="grell-freitas"):
     with open(in_yaml, 'r') as params_file:
         try:
