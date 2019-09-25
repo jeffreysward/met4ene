@@ -25,15 +25,24 @@ def display(individual, start_time):
         ''.join(str(individual.Genes)), individual.Fitness, time_diff))
 
 
+def display_pop(populaiton, start_time):
+    for i in range(0, len(populaiton)):
+        display(populaiton[i], start_time)
+
+
+
 class WRFGATests(unittest.TestCase):
     def test(self):
         start_time = datetime.datetime.now()
         pop_size = 10
-        n_generations = 2
+        n_generations = 1
         optimal_fitness = 0
 
         def fn_display(individual):
             display(individual, start_time)
+
+        def fn_display_pop(populaiton):
+            display_pop(populaiton, start_time)
 
         # Create an initial population
         population = wrfga.generate_population(pop_size)
@@ -42,14 +51,16 @@ class WRFGATests(unittest.TestCase):
         print('Calculating the fitness of the initial population...')
         for i in range(0, pop_size):
             population[i].Fitness = get_fitness()
-            fn_display(population[i])
-            time.sleep(0.1)
+        fn_display_pop(population)
 
         # Until the specified generation number is reached,
         gen = 1
         while gen <= n_generations:
+            print('\n------ Starting generation {} ------'.format(gen))
             # Select the mating population
             mating_pop = wrfga.selection(population, pop_size)
+            print('The mating population is:')
+            fn_display_pop(mating_pop)
             # Carry out crossover
 
             # Carry out mutation

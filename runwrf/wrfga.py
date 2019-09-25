@@ -50,12 +50,7 @@ def selection(population, pop_size):
     mating_population = []
     while len(mating_population) < mating_pop_size:
         tournament_pop_idx = random.sample(range(0, pop_size), tournament_size)
-        print('Tournament population indices: {}'.format(tournament_pop_idx))
         tournament_pop = [population[i] for i in tournament_pop_idx]
-        print('Tournament population...')
-        for i in range(0, tournament_size):
-            display(population[i])
-            time.sleep(1)
         mating_population.append(get_best(tournament_pop))
     return mating_population
 
@@ -91,7 +86,12 @@ def mutate(parent, gene_set):
 
 # Function that finds the location of the best individual within the population
 def get_best(population):
-    best_individual = min(i for i in population[:].Fitness)
+    fitness = [population[i].Fitness for i in range(0, len(population))]
+    print('The tournament fitness values are: {}'.format(fitness))
+    best_fitness = min(fitness)
+    print('The best fitness is: {}'.format(best_fitness))
+    best_index = fitness.index(best_fitness)
+    best_individual = population[best_index]
     return best_individual
 
 # def get_best(get_fitness, target_len, optimal_fitness, gene_set,
