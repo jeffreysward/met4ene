@@ -44,14 +44,17 @@ class WRFGATests(unittest.TestCase):
         def fn_display_pop(population):
             display_pop(population, fn_display)
 
+        def fn_get_pop_fitness(pop):
+            for ii in range(0, len(pop)):
+                pop[ii].Fitness = get_fitness()
+            fn_display_pop(pop)
+
         # Create an initial population
         population = wrfga.generate_population(pop_size)
 
         # Calculate the fitness of the initial population
         print('Calculating the fitness of the initial population...')
-        for i in range(0, pop_size):
-            population[i].Fitness = get_fitness()
-        fn_display_pop(population)
+        fn_get_pop_fitness(population)
 
         # Until the specified generation number is reached,
         gen = 1
@@ -69,10 +72,12 @@ class WRFGATests(unittest.TestCase):
                     offspring_pop.extend(offspring)
             print('The offspring population is:')
             fn_display_pop(offspring_pop)
-
             # Give a chance for mutation on each member of the offspring population
-
+            offspring_pop = wrfga.mutate(offspring_pop)
+            fn_display_pop(offspring_pop)
             # Calculate the fitness of the population
+            print('Calculating the fitness of the generation {} population...'.format(gen))
+            fn_get_pop_fitness(offspring_pop)
 
             gen += 1
 

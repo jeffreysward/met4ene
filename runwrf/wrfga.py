@@ -19,14 +19,19 @@ def display(individual):
         ''.join(str(individual.Genes)), individual.Fitness))
 
 
+def generate_genes():
+    rand_params = wrfparams.generate()
+    new_individual = wrfparams.name2num(mp_in=rand_params[0], lw_in=rand_params[1],
+                                        sw_in=rand_params[2], lsm_in=rand_params[3],
+                                        pbl_in=rand_params[4], clo_in=rand_params[5])
+    return new_individual
+
+
 # This method provides a way to randomly generate an initial population for the GA
 def generate_population(pop_size):
     population = []
     while len(population) < pop_size:
-        rand_params = wrfparams.generate()
-        new_individual = wrfparams.name2num(mp_in=rand_params[0], lw_in=rand_params[1],
-                                            sw_in=rand_params[2], lsm_in=rand_params[3],
-                                            pbl_in=rand_params[4], clo_in=rand_params[5])
+        new_individual = generate_genes()
         # print('From wrfparams.generate: {}'.format(new_individual))
         new_individual = Chromosome(new_individual)
         population.append(new_individual)
@@ -74,16 +79,14 @@ def crossover(mating_population):
 
 # The mutate operator takes in the genes of one offspring
 # and randomly replaces one of the genes from the set of choices.
-# def mutate(parent, gene_set):
-#     # Set the child genes to that of the parent
-#     child_genes = parent.Genes[:]
-#     # Randomly select a gene from the child to mutate
-#     index = random.randrange(0, child_genes)
-#     new_gene, alternate = random.sample(gene_set, 2)
-#     child_genes[index] = alternate \
-#         if new_gene == child_genes[index] \
-#         else new_gene
-#     return Chromosome(child_genes)
+def mutate(offspring_population):
+    for child in offspring_population:
+        if random.randint(1, len(offspring_population)) is 1:
+            new_child = generate_genes()
+            gene_idx = random.randint(0, len(new_child) - 1)
+            print('--> Mutating gene in position {} in child {}.'.format(gene_idx, child.Genes))
+            child.Genes[gene_idx] = new_child[gene_idx]
+    return offspring_population
 
 
 # Function that finds the location of the best individual within the population
@@ -95,60 +98,6 @@ def get_best(population):
     best_index = fitness.index(best_fitness)
     best_individual = population[best_index]
     return best_individual
-
-
-# def get_improvement(new_child, generate_parent, max_age, pool_size, max_seconds):
-#     # Start a timer for time_out purposes
-#     start_time = time.time()
-#     # Initialize parents with the best parent
-#     best_parent = generate_parent()
-#     yield max_seconds is not None and time.time() - start_time > max_seconds, best_parent
-#     parents = [best_parent]
-#     historical_fitness = [best_parent.Fitness]
-#     # Populate the parents array by generating new random parents
-#     for _ in range(pool_size - 1):
-#         parent = generate_parent()
-#         if max_seconds is not None and time.time() - start_time > max_seconds:
-#             yield True, parent
-#         if parent.Fitness > best_parent.Fitness:
-#             yield False, parent
-#             best_parent = parent
-#             historical_fitness.append(parent.Fitness)
-#         parents.append(parent)
-#     # Since we have an array of parents, each time through the loop we select a different one to be the current parent
-#     last_parent_index = pool_size - 1
-#     pindex = 1
-#     while True:
-#         if max_seconds is not None and time.time() - start_time > max_seconds:
-#             yield True, best_parent
-#         pindex = pindex - 1 if pindex > 0 else last_parent_index
-#         parent = parents[pindex]
-#         child = new_child(parent, pindex, parents)
-#         if parent.Fitness > child.Fitness:
-#             if max_age is None:
-#                 continue
-#             parent.Age += 1
-#             if max_age > parent.Age:
-#                 continue
-#             index = bisect_left(historical_fitness, child.Fitness, 0, len(historical_fitness))
-#             proportion_similar = index / len(historical_fitness)
-#             if random.random() < exp(-proportion_similar):
-#                 parents[pindex] = child
-#                 continue
-#             best_parent.Age = 0
-#             parents[pindex] = best_parent
-#             continue
-#         if not child.Fitness > parent.Fitness:
-#             # same fitness
-#             child.Age = parent.Age + 1
-#             parents[pindex] = child
-#             continue
-#         child.Age = 0
-#         parents[pindex] = child
-#         if child.Fitness > best_parent.Fitness:
-#             best_parent = child
-#             yield False, best_parent
-#             historical_fitness.append(best_parent.Fitness)
 
 
 class Benchmark:
