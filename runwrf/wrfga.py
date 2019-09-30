@@ -8,7 +8,7 @@ from math import exp
 
 # Define a Chromosome class the provides information about each unique individual
 class Chromosome:
-    def __init__(self, genes, fitness=10**6):
+    def __init__(self, genes, fitness=None):
         self.Genes = genes
         self.Fitness = fitness
         self.Age = 0
@@ -94,10 +94,17 @@ def get_best(population):
     fitness = [population[i].Fitness for i in range(0, len(population))]
     print('The tournament fitness values are: {}'.format(fitness))
     best_fitness = min(fitness)
-    print('The best fitness is: {}'.format(best_fitness))
     best_index = fitness.index(best_fitness)
     best_individual = population[best_index]
     return best_individual
+
+
+def find_elites(population, n_elites, fn_display_pop):
+    order = sorted(population, key=lambda x: x.Fitness)
+    elites = order[0:n_elites]
+    print('The elites moving to the next generation are: ')
+    fn_display_pop(elites)
+    return elites
 
 
 class Benchmark:
