@@ -197,12 +197,15 @@ begin
     v10_MAE = 0
     u100_MAE = 0
     v100_MAE = 0
-    do iwrf = 0,ntimes-1,24                       ; TIME LOOP
+    do iwrf = 0,ntimes-1,1                       ; TIME LOOP
         iera = str_match_ind(date_str, wrf_time(iwrf))
         time_numeric = cd_inv_string( wrf_time(iwrf), "%Y-%N-%D_%H:%M:%S")  ;; will return in hours since 1800-01-01 unless specified otherwise
     	offset = 5                                  ; hours
     	time_numeric = time_numeric - offset
     	time_str = cd_string( time_numeric, "%c %D, %Y %H:%M")
+
+	print("Working on time: " + time_str )
+	outfile = "./met_plots/WRF_ERA5diff."+sprinti("%0.3i", n)
 
         ;---Compute difference between ERA5 variable and WRF variable(s)
         t2_diff = abs(t2_regrid(iwrf,:,:) - ERA_2tC(iera,:,:)) 
@@ -257,7 +260,7 @@ begin
         t2@lat2d = wrf_lat     ; Needed for plotting. "t2_regrid" 
         t2@lon2d = wrf_lon     ; already has these attrs attached.
 
-        wks = gsn_open_wks("x11","WRF_to_curv")
+        wks = gsn_open_wks("x11", outfile)
 
         res                       = True
         res@gsnMaximize           = True
@@ -294,8 +297,8 @@ begin
         ;d_res@cnMinLevelValF      = -mnmxint(1)
         ;d_res@cnMaxLevelValF      = mnmxint(1)
         ;d_res@cnLevelSpacingF     = mnmxint(2)
-        d_res@cnMinLevelValF      = -15
-        d_res@cnMaxLevelValF      = 15
+        d_res@cnMinLevelValF      = -10
+        d_res@cnMaxLevelValF      = 10
         d_res@cnLevelSpacingF     = 2
 
         ;---Resources for plotting regridded data
@@ -314,11 +317,12 @@ begin
         d_res@gsnAddCyclic           = False            ;;---Change (maybe)
         d_res@tiMainString 	     = "WRF & ERA5 Difference"
         d_res@lbTitleString          = "Temperature Difference (C)"
-	d_res@lbTitleOffsetF         = -0.35	;-- move the color bar label down
+	d_res@lbTitleOffsetF         = -0.25	;-- move the color bar label down
         d_res@lbTitleFontHeightF     = 0.02
         d_res@lbLabelFontHeightF     = 0.012
         cmap = read_colormap_file("BlueDarkRed18")      ;-- so we can subset later
         d_res@cnFillPalette          = cmap(:,:)        ;-- subset the color map
+	d_res@pmLabelBarOrthogonalPosF = 0.15   ;-- move th color bar down
 
         plot_diff = gsn_csm_contour_map(wks,t2_diff,d_res)  
 
