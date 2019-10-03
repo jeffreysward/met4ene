@@ -19,18 +19,6 @@ def get_fitness():
     return random.randrange(0, 100)
 
 
-def display(individual, start_time):
-    time_diff = datetime.datetime.now() - start_time
-    print("Genes:{}\tFitness: {}\tElapsed Time: {}".format(
-        ''.join(str(individual.Genes)), individual.Fitness, time_diff))
-
-
-def display_pop(population, fn_display):
-    for i in range(0, len(population)):
-        fn_display(population[i])
-
-
-
 class WRFGATests(unittest.TestCase):
     def test(self):
         start_time = datetime.datetime.now()
@@ -41,10 +29,10 @@ class WRFGATests(unittest.TestCase):
         optimal_fitness = 0
 
         def fn_display(individual):
-            display(individual, start_time)
+            wrfga.display(individual, start_time)
 
         def fn_display_pop(pop):
-            display_pop(pop, fn_display)
+            wrfga.display_pop(pop, fn_display)
 
         def fn_get_pop_fitness(pop):
             for ii in range(0, len(pop)):

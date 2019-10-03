@@ -2,8 +2,7 @@ import random
 import time
 import wrfparams
 import sys
-from bisect import bisect_left
-from math import exp
+import datetime
 
 
 # Define a Chromosome class the provides information about each unique individual
@@ -14,9 +13,15 @@ class Chromosome:
         self.Age = 0
 
 
-def display(individual):
-    print("Genes:{}\tFitness: {}".format(
-        ''.join(str(individual.Genes)), individual.Fitness))
+def display(individual, start_time):
+    time_diff = datetime.datetime.now() - start_time
+    print("Genes:{}\tFitness: {}\tElapsed Time: {}".format(
+        ''.join(str(individual.Genes)), individual.Fitness, time_diff))
+
+
+def display_pop(population, fn_display):
+    for i in range(0, len(population)):
+        fn_display(population[i])
 
 
 def generate_genes():

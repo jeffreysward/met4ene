@@ -654,3 +654,5 @@ def wrf_fitness(start_date='Jan 15 2011', end_date='Jan 16 2011', in_yaml='param
                   forecast_start.strftime('%d'), DIR_LOCAL_TMP)
     system('pwd')
     system(CMD_REGRID)
+
+    # Extract the total error after the script has run
