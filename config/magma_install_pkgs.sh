@@ -67,19 +67,19 @@ tar xzvf jasper-1.900.1.tar.gz
 cd jasper-1.900.1
 ./configure --prefix=$DIR/grib2
 make && make install
-cd ../.. #change back into the Build_WRF dir
+cd ../../.. #change back into the wrf dir
 
 # Clone the WRF repository and compile the executables
-git clone https://github.com/wrf-model/WRF
-cd WRF
+#git clone https://github.com/wrf-model/WRF
+cd WRFV3
 ./configure #Choose options 34 and 1
-./compile em_real >& log.compile
+./compile em_real >& log.compile.em_real
 cd ..
 
 # Clone the WPS repository 
-git clone https://github.com/wrf-model/WPS
-cd WPS
-./configure #Choose option 1
-./compile >& log.compile
-cd ../..
+#git clone https://github.com/wrf-model/WPS
+#cd WPS
+#./configure #Choose option 1
+#./compile >& log.compile
+#cd ../..
 
