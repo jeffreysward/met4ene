@@ -152,7 +152,9 @@ def wrf_fitness(start_date='Jan 15 2011', end_date='Jan 16 2011', in_yaml='param
                                   sw_in="None", lsm_in="None", pbl_in="None", clo_in=cu)
             param_ids = combine(param_ids, param_ids6)
         param_ids = filldefault(in_yaml, param_ids)
-        print('The following parameters were chosen: {}'.format(param_ids))
+	paramstr = '%dmp%dlw%dsw%dlsm%dpbl%dcu' % \
+	           (param_ids[0], param_ids[1], param_ids[2], param_ids[3], param_ids[4], param_ids[6])
+        print('The following parameters were chosen: ' + paramstr)
 
     # Set the sf_sfclay_pysics option based on that selected for PBL
     id_sfclay = pbl2sfclay(param_ids[4])
@@ -174,40 +176,33 @@ def wrf_fitness(start_date='Jan 15 2011', end_date='Jan 16 2011', in_yaml='param
 
     # Set working and WRF model directory names
     DIR_OUT = getcwd() + '/'  # Needs Editing (maybe)
-    DIR_LOCAL_TMP = '../wrfout/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
-                    (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
-                     param_ids[2], param_ids[3], param_ids[4], param_ids[6])
+    DIR_LOCAL_TMP = '../wrfout/%s_' + paramstr % \
+                    (forecast_start.strftime('%Y-%m-%d'))
     if on_cheyenne:
         DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
         DIR_WPS = DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
         DIR_WRF = DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
         DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
-        DIR_DATA = '/glade/scratch/sward/data/' + str(bc_data) + '/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
-                   (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1], param_ids[2],
-                    param_ids[3], param_ids[4], param_ids[6])
-        DIR_LOCAL_TMP = '/glade/scratch/sward/met4ene/wrfout/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
-                        (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
-                         param_ids[2], param_ids[3], param_ids[4], param_ids[6])
+        DIR_DATA = '/glade/scratch/sward/data/' + str(bc_data) + '/%s_' + paramstr % \
+                   (forecast_start.strftime('%Y-%m-%d'))
+        DIR_LOCAL_TMP = '/glade/scratch/sward/met4ene/wrfout/%s_' + paramstr % \
+                        (forecast_start.strftime('%Y-%m-%d'))
     elif on_aws:
         DIR_WPS = '/home/ec2-user/environment/Build_WRF/WPS/'
         DIR_WRF = '/home/ec2-user/environment/Build_WRF/WRF/'
         DIR_WPS_GEOG = '/home/ec2-user/environment/data/WPS_GEOG'
-        DIR_DATA = '/home/ec2-user/environment/data/' + str(bc_data) + '/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
-                   (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1], param_ids[2],
-                    param_ids[3], param_ids[4], param_ids[6])
-        DIR_LOCAL_TMP = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
-                        (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
-                         param_ids[2], param_ids[3], param_ids[4], param_ids[6])
+        DIR_DATA = '/home/ec2-user/environment/data/' + str(bc_data) + '/%s_' + paramstr % \
+                   (forecast_start.strftime('%Y-%m-%d'))
+        DIR_LOCAL_TMP = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_' % \
+                        (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
     else:
         DIR_WPS = '/home/jas983/models/wrf/WPS-3.8.1/'
         DIR_WRF = '/home/jas983/models/wrf/WRFV3/'
         DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
-        DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(bc_data) + '/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
-                   (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1], param_ids[2],
-                    param_ids[3], param_ids[4], param_ids[6])
-        DIR_LOCAL_TMP = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
-                        (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
-                         param_ids[2], param_ids[3], param_ids[4], param_ids[6])
+        DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(bc_data) + '/%s_' % \
+                   (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
+        DIR_LOCAL_TMP = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
+                        (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
 
     # Define a directory containing:
     # a) namelist.wps and namelist.input templates
@@ -649,9 +644,9 @@ def wrf_fitness(start_date='Jan 15 2011', end_date='Jan 16 2011', in_yaml='param
 
     # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
     chdir(DIR_RUNWRF)
-    CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' wrf2era.ncl' % \
+    CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'paramstr="%s"\' wrf2era_error.ncl' % \
                  (forecast_start.strftime('%Y'), forecast_start.strftime('%m'),
-                  forecast_start.strftime('%d'), DIR_LOCAL_TMP)
+                  forecast_start.strftime('%d'), DIR_LOCAL_TMP, paramstr)
     system('pwd')
     system(CMD_REGRID)
 

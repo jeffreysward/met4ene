@@ -70,16 +70,16 @@ make && make install
 cd ../../.. #change back into the wrf dir
 
 # Clone the WRF repository and compile the executables
-#git clone https://github.com/wrf-model/WRF
-cd WRFV3
+git clone https://github.com/wrf-model/WRF
+cd WRF
 ./configure #Choose options 34 and 1
 ./compile em_real >& log.compile.em_real
 cd ..
 
 # Clone the WPS repository 
-#git clone https://github.com/wrf-model/WPS
-#cd WPS
-#./configure #Choose option 1
-#./compile >& log.compile
-#cd ../..
+git clone https://github.com/wrf-model/WPS
+cd WPS
+./configure #Choose option 1
+./compile >& log.compile
+cd ../..
 

@@ -1,26 +1,31 @@
 ;----------------------------------------------------------------------
-; wrf2era.ncl
+; wrf2era_error.ncl
 ;
 ; This is an NCL/ESMF regridding from a WRF 
 ; (curvilinear) grid to the ERA5 grid. It uses
 ; ESMF_regrid to do the regridding.
 ;
-; This script takes the year, month, and day - so it can locate the
-; wrfout file and the corresponding ERA5 data - as inputs and computes
-; a single mean absolute error (MAE) across the entire domain for 
-; several different meteorological variables, which are then returned 
-; by this function (t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE). 
+; This function takes the year, month, day, WRFdir - so it can locate the
+; wrfout file and the corresponding ERA5 data - and paramstr to define 
+; the output file name as inputs and computes a single mean absolute 
+; error (MAE) across the entire domain for several different meteorological variables, 
+; (t2_MAE, u10_MAE, v10_MAE, u100_MAE, v100_MAE),
+; which are written to a csv file named mae_wrf2era_<parmstr>.csv.
+;
+; Here is a syntax example of calling this script:
+; ncl in_yr=2011 in_mo=01 in_da=10 'WRFdir="/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-10_10mp1lw1sw2lsm2pbl2cu/"' 'paramstr="10mp1lw1sw2lsm2pbl2cu"' wrf2era_error.ncl
 ;
 ;----------------------------------------------------------------------
-;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
-;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
-;load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
-;load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
 begin
 ;---WRF file containing source grid
-    WRFdir = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
+;    WRFdir = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
+;    WRFdir   = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_10mp1lw1sw2lsm2pbl2cu/"
     WRFfile  = "wrfout_d01.nc"
     if (fileexists(WRFdir+WRFfile)) then
         sfile = addfile(WRFdir+WRFfile, "r")
@@ -49,16 +54,10 @@ begin
     v100  = wrf_user_interp_level(v,z,100,False)
 
 ;---ERA data file(s)
-    if (getenv("HOSTNAME") .eq. "en-cluster03.coecis.cornell.edu") then
-        ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA/" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
-    else if (getenv("HOSTNAME") .eq. "vis01.mae.cornell.edu") then
-        ERAdir   = "/magma-dirs/mzhang/jas983/wrf_data/data/ERA/" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
-    else
-        ERAdir   = "/gpfs/fs1/collections/rda/data/ds630.0/e5.oper.an.sfc/" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "/"
-    end if
-
+    ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA5/" 
+    
     ;---2m temperature
-    ERAfile  = "e5.oper.an.sfc.128_167_2t.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.128_167_2t.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile1 = addfile(ERAdir+ERAfile, "r")
     else
@@ -67,8 +66,9 @@ begin
         print("")
         exit
     end if 
+    
     ;---10m U wind component
-    ERAfile  = "e5.oper.an.sfc.128_165_10u.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.128_165_10u.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile2 = addfile(ERAdir+ERAfile, "r")
     else
@@ -77,8 +77,9 @@ begin
         print("")
         exit
     end if
+    
     ;---10m V wind component
-    ERAfile  = "e5.oper.an.sfc.128_166_10v.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.128_166_10v.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile3 = addfile(ERAdir+ERAfile, "r")
     else
@@ -87,8 +88,9 @@ begin
         print("")
         exit
     end if
+    
     ;---100m U wind component
-    ERAfile  = "e5.oper.an.sfc.228_246_100u.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.228_246_100u.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile4 = addfile(ERAdir+ERAfile, "r")
     else
@@ -97,8 +99,9 @@ begin
         print("")
         exit
     end if
+
     ;---100m V wind component
-    ERAfile  = "e5.oper.an.sfc.228_247_100v.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.228_247_100v.regn320sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile5 = addfile(ERAdir+ERAfile, "r")
     else
@@ -159,7 +162,7 @@ begin
     Opt                   = True
 
     ;---"bilinear" is the default. "patch" and "conserve" are other options.
-    Opt@InterpMethod      = "bilinear"        ;;---Change (maybe)
+    Opt@InterpMethod      = "patch"        ;;---Change (maybe)
 
     Opt@WgtFileName       = "WRF_to_ERA5.nc"
 
@@ -258,7 +261,7 @@ begin
     v100_MAE := v100_MAE/n
     
     dq = str_get_dq()                ; double quote character
-    csv_filename = "mae_wrfyera.csv"
+    csv_filename = "mae_wrfyera_" + paramstr + ".csv"
 
     fields = (/"t2_MAE", "u10_MAE", "v10_MAE", "u100_MAE", "v100_MAE"/)
     fields = dq + fields + dq                      ; Pre/append quotes to field names
