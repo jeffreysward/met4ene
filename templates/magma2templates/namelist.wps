@@ -1,6 +1,6 @@
 &share
  wrf_core = 'ARW',
- max_dom = 3,
+ max_dom = 1,
 %DATES%
  interval_seconds = 10800
  io_form_geogrid = 2,
@@ -24,7 +24,7 @@
  stand_lon = -97.0,
  ref_x     = -11.5,
  ref_y     =  84.5,
- geog_data_path = '/glade/u/home/wrfhelp/WPS_GEOG'
+%GEOG%
 /
 
 &ungrib

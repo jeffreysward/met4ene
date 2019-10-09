@@ -223,8 +223,8 @@ elif on_aws:
                     (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1],
                      param_ids[2], param_ids[3], param_ids[4], param_ids[6])
 else:
-    DIR_WPS = '/home/jas983/models/wrf/WPS-3.8.1/'
-    DIR_WRF = '/home/jas983/models/wrf/WRFV3/'
+    DIR_WPS = '/home/jas983/models/wrf/WPS/'
+    DIR_WRF = '/home/jas983/models/wrf/WRF/'
     DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
     DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(args.b) + '/%s_%dmp%dlw%dsw%dlsm%dpbl%dcu/' % \
                (forecast_start.strftime('%Y-%m-%d'), param_ids[0], param_ids[1], param_ids[2],
@@ -244,7 +244,7 @@ else:
     elif on_aws:
         DIR_TEMPLATES = '/home/ec2-user/environment/met4ene/templates/awstemplates/'
     else:
-        DIR_TEMPLATES = '/share/mzhang/jas983/wrf_data/met4ene/templates/magmatemplates/'
+        DIR_TEMPLATES = '/share/mzhang/jas983/wrf_data/met4ene/templates/magma2templates/'
 print('Using template directory:')
 print(DIR_TEMPLATES)
 
@@ -265,10 +265,10 @@ elif on_aws:
     CMD_REAL = './template_runreal.csh'
     CMD_WRF = './template_runwrf.csh'
 else:
-    CMD_GEOGRID = 'condor_submit sub.geogrid'
-    CMD_UNGMETG = 'condor_submit sub.metgrid'
-    CMD_REAL = 'condor_submit sub.real'
-    CMD_WRF = 'condor_submit sub.wrf'
+    CMD_GEOGRID = 'sbatch template_rungeogrid.csh'
+    CMD_UNGMETG = 'sbatch template_runungmetg.csh'
+    CMD_REAL = 'sbatch template_runreal.csh'
+    CMD_WRF = 'sbatch template_runwrf.csh'
 
 # Set the number of domains to that input, or default to a single domain. 
 if args.d is not None and args.d > 0:

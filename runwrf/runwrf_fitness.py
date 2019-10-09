@@ -196,8 +196,8 @@ def wrf_fitness(start_date='Jan 15 2011', end_date='Jan 16 2011', in_yaml='param
         DIR_LOCAL_TMP = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_' % \
                         (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
     else:
-        DIR_WPS = '/home/jas983/models/wrf/WPS-3.8.1/'
-        DIR_WRF = '/home/jas983/models/wrf/WRFV3/'
+        DIR_WPS = '/home/jas983/models/wrf/WPS/'
+        DIR_WRF = '/home/jas983/models/wrf/WRF/'
         DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
         DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(bc_data) + '/%s_' % \
                    (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
@@ -215,7 +215,7 @@ def wrf_fitness(start_date='Jan 15 2011', end_date='Jan 16 2011', in_yaml='param
         elif on_aws:
             DIR_TEMPLATES = '/home/ec2-user/environment/met4ene/templates/awstemplates/'
         else:
-            DIR_TEMPLATES = '/share/mzhang/jas983/wrf_data/met4ene/templates/magmatemplates/'
+            DIR_TEMPLATES = '/share/mzhang/jas983/wrf_data/met4ene/templates/magma2templates/'
     print('Using template directory: {}'.format(DIR_TEMPLATES))
 
     # Define linux command aliai
@@ -235,10 +235,10 @@ def wrf_fitness(start_date='Jan 15 2011', end_date='Jan 16 2011', in_yaml='param
         CMD_REAL = './template_runreal.csh'
         CMD_WRF = './template_runwrf.csh'
     else:
-        CMD_GEOGRID = 'condor_submit sub.geogrid'
-        CMD_UNGMETG = 'condor_submit sub.metgrid'
-        CMD_REAL = 'condor_submit sub.real'
-        CMD_WRF = 'condor_submit sub.wrf'
+	CMD_GEOGRID = 'sbatch template_rungeogrid.csh'
+	CMD_UNGMETG = 'sbatch template_runungmetg.csh'
+	CMD_REAL = 'sbatch template_runreal.csh'
+	CMD_WRF = 'sbatch template_runwrf.csh'
 
     # Try to remove the data dir, and print 'DIR_DATA not deleted' if you cannot. Then remake the dir, and enter it.
     if remove_DIR_DATA:
