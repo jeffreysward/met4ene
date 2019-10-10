@@ -21,12 +21,12 @@ def read_last_line(file_name):
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
     except IOError:
-        last_line = 'This file does not exist.'
+	last_line = 'Finish Check: this file does not exist.'
         return last_line
     try:
         last_line = lines[-1]
     except IndexError:
-        last_line = 'No last line appears to exist in this file.'
+	last_line = 'Finish Check: no last line appears to exist in this file.'
     return last_line
 
 
@@ -35,12 +35,12 @@ def read_2nd2_last_line(file_name):
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
     except IOError:
-        second2_last_line = 'This file does not exist.'
+	second2_last_line = 'Finish Check: this file does not yet exist.'
         return second2_last_line
     try:
         second2_last_line = lines[-2]
     except IndexError:
-        second2_last_line = 'There do not appear to be at least two lines in this file.'
+	second2_last_line = 'Finish Check: there do not appear to be at least two lines in this file.'
     return second2_last_line
 
 
