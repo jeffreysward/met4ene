@@ -428,43 +428,36 @@ for i in range(0, MAX_DOMAINS):
 wps_dates = wps_dates + '\n end_date                     = '
 for i in range(0, MAX_DOMAINS):
     wps_dates = wps_dates + forecast_end.strftime("'%Y-%m-%d_%H:%M:%S', ")
+with open(DIR_LOCAL_TMP + 'namelist.wps', 'w') as namelist:
+    namelist.write(NAMELIST_WPS.replace('%DATES%', wps_dates))
 
-try:
-    with open('namelist.wps', 'w') as namelist:
-        namelist.write(NAMELIST_WPS.replace('%DATES%', wps_dates))
-except IOError as e:
-    print(e.errno)
-    print(e)
-    exit()
-
+# Write the GEOG data path to the WPS Namelist
 with open(DIR_LOCAL_TMP + 'namelist.wps', 'r') as namelist:
     NAMELIST_WPS = namelist.read()
 
-# Write the GEOG data path to the WPS Namelist
 geog_data = " geog_data_path = '" + DIR_WPS_GEOG + "'"
-try:
-    with open('namelist.wps', 'w') as namelist:
-        namelist.write(NAMELIST_WPS.replace('%GEOG%', geog_data))
-except IOError as e:
-    print(e.errno)
-    print(e)
-    exit()
+with open(DIR_LOCAL_TMP + 'namelist.wps', 'w') as namelist:
+    namelist.write(NAMELIST_WPS.replace('%GEOG%', geog_data))
+
+
+# Write the number of domains to the WPS Namelist
+with open(DIR_LOCAL_TMP + 'namelist.wps', 'r') as namelist:
+    NAMELIST_WPS = namelist.read()
+
+wps_domains = 'max_dom                             = ' + str(MAX_DOMAINS) + ','
+with open(DIR_LOCAL_TMP + 'namelist.wps', 'w') as namelist:
+    namelist.write(NAMELIST_WPS.replace('%DOMAIN%', wps_domains))
+print('Done writing WPS namelist')
 
 # Write the runtime info and start dates and times to the WRF Namelist
 wrf_runtime = ' run_days                            = ' + str(delt.days - 1) + ',\n'
 wrf_runtime = wrf_runtime + ' run_hours                           = ' + '0' + ',\n'
 wrf_runtime = wrf_runtime + ' run_minutes                         = ' + '0' + ',\n'
 wrf_runtime = wrf_runtime + ' run_seconds                         = ' + '0' + ','
+with open(DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
+    namelist.write(NAMELIST_WRF.replace('%RUNTIME%', wrf_runtime))
 
-try:
-    with open('namelist.input', 'w') as namelist:
-        namelist.write(NAMELIST_WRF.replace('%RUNTIME%', wrf_runtime))
-except IOError as e:
-    print(e.errno)
-    print(e)
-    exit()
-
-with open('namelist.input', 'r') as namelist:
+with open(DIR_LOCAL_TMP + 'namelist.input', 'r') as namelist:
     NAMELIST_WRF = namelist.read()
 
 wrf_dates = ' start_year                          = '
@@ -503,12 +496,11 @@ for i in range(0, MAX_DOMAINS):
 wrf_dates = wrf_dates + '\n end_second                          = '
 for i in range(0, MAX_DOMAINS):
     wrf_dates = wrf_dates + '00, '
-
-with open('namelist.input', 'w') as namelist:
+with open(DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
     namelist.write(NAMELIST_WRF.replace('%DATES%', wrf_dates))
 
 # Write the physics paramerization scheme info to the WRF Namelist
-with open('namelist.input', 'r') as namelist:
+with open(DIR_LOCAL_TMP + 'namelist.input', 'r') as namelist:
     NAMELIST_WRF = namelist.read()
 
 wrf_physics = ' mp_physics                          = '
@@ -546,9 +538,16 @@ if param_ids[5] in [93]:
     wrf_physics = wrf_physics + '\n maxens2                             = 3,'
     wrf_physics = wrf_physics + '\n maxens3                             = 16,'
     wrf_physics = wrf_physics + '\n ensdim                              = 144,'
-
-with open('namelist.input', 'w') as namelist:
+with open(DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
     namelist.write(NAMELIST_WRF.replace('%PARAMS%', wrf_physics))
+
+# Write the number of domains to the namelist
+with open(DIR_LOCAL_TMP + 'namelist.input', 'r') as namelist:
+    NAMELIST_WRF = namelist.read()
+
+wrf_domains = 'max_dom                             = ' + str(MAX_DOMAINS) + ','
+with open(DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
+    namelist.write(NAMELIST_WRF.replace('%DOMAIN%', wrf_domains))
 print('Done writing WRF namelist')
 
 # LINK REMAING FILES, AND RUN THE WPS AND WRF EXECUTABLES
