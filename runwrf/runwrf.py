@@ -614,15 +614,10 @@ elapsed = datetime.now() - startTime
 print('WRF ran in: ' + str(elapsed))
 
 # Rename the wrfout files.
-system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d01_' + forecast_start.strftime('%Y')
+for i in range(1, MAX_DOMAINS + 1):
+    system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d0' + str(i) + '_' + forecast_start.strftime('%Y')
                  + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
-                 + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d01.nc'))
-system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d02_' + forecast_start.strftime('%Y')
-                 + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
-                 + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d02.nc'))
-system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d03_' + forecast_start.strftime('%Y')
-                 + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
-                 + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d03.nc'))
+                 + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d0' + str(i) + '.nc'))
 
 try:
     rmtree(DIR_DATA)

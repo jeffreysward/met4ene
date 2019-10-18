@@ -20,7 +20,7 @@
  time_step                           = 45,
  time_step_fract_num                 = 0,
  time_step_fract_den                 = 1,
- max_dom                             = 1,
+%DOMAIN%
  e_we                                = 192,   232,  145,
  e_sn                                = 192,   256,  184,
  e_vert                              = 46, 46, 46,
