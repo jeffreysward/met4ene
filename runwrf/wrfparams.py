@@ -27,6 +27,7 @@ functions in the same module work.
 
 import yaml
 import random
+import os
 
 
 def generate(in_yaml='params.yml'):
@@ -169,3 +170,63 @@ def pbl2sfclay(id_pbl, rnd=False):
         id_sfclay = 0
 
     return id_sfclay
+
+
+def flexible_generate(generate_params, mp, lw, sw, lsm, pbl, cu, in_yaml='params.yml'):
+    # Generate a parameter combination of the 6 core parameters if the user has specified this option.
+    # Otherwise, use specified input parameters and use defaults for the remaining paramters.
+    if generate_params:
+        rand_params = generate(in_yaml)
+        print('The following random parameters were generated: ')
+        param_ids = name2num(in_yaml, mp_in=rand_params[0], lw_in=rand_params[1],
+                             sw_in=rand_params[2], lsm_in=rand_params[3],
+                             pbl_in=rand_params[4], clo_in=rand_params[5])
+        print(param_ids)
+    else:
+        param_ids = [None, None, None, None, None, None]
+        if mp is not None:
+            param_ids1 = name2num(in_yaml, use_defaults=False, mp_in=mp, lw_in="None",
+                                  sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+            param_ids = combine(param_ids, param_ids1)
+        if lw is not None:
+            param_ids2 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in=lw,
+                                  sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+            param_ids = combine(param_ids, param_ids2)
+        if sw is not None:
+            param_ids3 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
+                                  sw_in=sw, lsm_in="None", pbl_in="None", clo_in="None")
+            param_ids = combine(param_ids, param_ids3)
+        if lsm is not None:
+            param_ids4 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
+                                  sw_in="None", lsm_in=lsm, pbl_in="None", clo_in="None")
+            param_ids = combine(param_ids, param_ids4)
+        if pbl is not None:
+            param_ids5 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
+                                  sw_in="None", lsm_in="None", pbl_in=pbl, clo_in="None")
+            param_ids = combine(param_ids, param_ids5)
+        if cu is not None:
+            param_ids6 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
+                                  sw_in="None", lsm_in="None", pbl_in="None", clo_in=cu)
+            param_ids = combine(param_ids, param_ids6)
+        param_ids = filldefault(in_yaml, param_ids)
+    paramstr = '%dmp%dlw%dsw%dlsm%dpbl%dcu' % \
+               (param_ids[0], param_ids[1], param_ids[2], param_ids[3], param_ids[4], param_ids[6])
+    print('The following parameters were chosen: ' + paramstr)
+
+    # Set the sf_sfclay_pysics option based on that selected for PBL
+    id_sfclay = pbl2sfclay(param_ids[4])
+    param_ids.append(id_sfclay)
+    return
+
+def write_param_csv(param_ids):
+    runwrfcsv = 'paramfeed_runwrf.csv'
+    if not os.path.exists(runwrfcsv):
+        csvData = [['ra_lw_physics', 'ra_sw_physics', 'sf_surface_physics',
+                    'bl_pbl_physics', 'cu_physics', 'sf_sfclay_physics'], param_ids]
+        with open(runwrfcsv, 'w') as csvFile:
+            writer = csv.writer(csvFile)
+            writer.writerows(csvData)
+    else:
+        with open(runwrfcsv, 'a') as csvFile:
+            writer = csv.writer(csvFile)
+            writer.writerow(param_ids)

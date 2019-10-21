@@ -1,11 +1,8 @@
-from argparse import ArgumentParser
-from datetime import datetime, timedelta
-from os import chdir, getcwd, mkdir, makedirs, system, path, environ
+from datetime import datetime
+from os import chdir, getcwd, makedirs, system, path, environ
 from shutil import rmtree
-from socket import gethostname
-from subprocess import call
 from sys import exit
-from time import localtime, strftime, strptime, time
+from time import time
 import time as tm
 from wrfparams import name2num, generate, combine, filldefault, pbl2sfclay
 import sys
@@ -91,7 +88,7 @@ def wrf_fitness(start_date='Jan 15 2011', end_date='Jan 16 2011', in_yaml='param
     forecast_start = datetime.strptime(start_date, '%b %d %Y')
     forecast_end = datetime.strptime(end_date, '%b %d %Y')
     delt = forecast_end - forecast_start
-    print('Forecast statting on: {}'.format(forecast_start))
+    print('Forecast starting on: {}'.format(forecast_start))
     print('Forecast ending on: {}'.format(forecast_end))
 
     # Next, define the data directories and file prefixes on RDA which correspond
