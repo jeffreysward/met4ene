@@ -43,6 +43,7 @@ else: lsm = None
 if args.pbl is not None: pbl = args.pbl
 else: pbl = None
 if args.cu is not None: cu = args.cu
+else: cu = None
 # Set the number of domains to user specification, or default to a single domain.
 if args.d is not None and args.d > 0:
     MAX_DOMAINS = int(args.d)

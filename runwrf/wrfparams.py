@@ -210,13 +210,13 @@ def flexible_generate(generate_params, mp, lw, sw, lsm, pbl, cu, in_yaml='params
             param_ids = combine(param_ids, param_ids6)
         param_ids = filldefault(in_yaml, param_ids)
     paramstr = '%dmp%dlw%dsw%dlsm%dpbl%dcu' % \
-               (param_ids[0], param_ids[1], param_ids[2], param_ids[3], param_ids[4], param_ids[6])
+               (param_ids[0], param_ids[1], param_ids[2], param_ids[3], param_ids[4], param_ids[5])
     print('The following parameters were chosen: ' + paramstr)
 
     # Set the sf_sfclay_pysics option based on that selected for PBL
     id_sfclay = pbl2sfclay(param_ids[4])
     param_ids.append(id_sfclay)
-    return
+    return param_ids, paramstr
 
 def write_param_csv(param_ids):
     runwrfcsv = 'paramfeed_runwrf.csv'
