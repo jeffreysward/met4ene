@@ -127,7 +127,7 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
 
     # Define a directory containing:
     # a) namelist.wps and namelist.input templates
-    # b) qsub template csh scripts for running geogrid, ungrib & metgrid, and real & wrf.
+    # b) batch submission template csh scripts for running geogrid, ungrib & metgrid, and real & wrf.
     if template_dir is not None:
         DIR_TEMPLATES = template_dir + '/'
     else:
@@ -137,7 +137,6 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
             DIR_TEMPLATES = '/home/ec2-user/environment/met4ene/templates/awstemplates/'
         else:
             DIR_TEMPLATES = '/share/mzhang/jas983/wrf_data/met4ene/templates/magma2templates/'
-    print('Using template directory: {}'.format(DIR_TEMPLATES))
 
     # Define linux command aliai
     CMD_LN = 'ln -sf %s %s'
@@ -192,8 +191,8 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt, remove_DI
         vtable_sfx = 'ERA-interim.pl'
     else:
         vtable_sfx = bc_data
-    print('Using Vtable: {}'.format(vtable_sfx))
-    return vtable_sfx
+    print('Using {} data for boundary condidions'.format(bc_data))
+    print('The corresponding Vtable is: {}\n'.format(vtable_sfx))
 
     # If specified, remove the existing data directory
     if remove_DIR_DATA:
@@ -242,7 +241,9 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt, remove_DI
         data_exists = []
         for file in file_check:
             data_exists.append(os.path.exists(file))
-        if sum(file_check) is len(file_check):
+	    print(data_exists)
+	    print(data_exists.count(True))
+        if data_exists.count(True) is len(file_check):
             print('Boundary condition data was previously downloaded from RDA.')
             exit(0)
 
@@ -273,6 +274,7 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt, remove_DI
                         check_file_status(file_base, filesize)
             check_file_status(file_base, filesize)
             print()
+    return vtable_sfx
 
 
 def wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx):
