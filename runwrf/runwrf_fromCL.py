@@ -48,8 +48,6 @@ if args.d is not None and args.d > 0:
 else:
     MAX_DOMAINS = 3
 
-# Set parameters here that should be set automatically eventually
-remove_DIR_DATA = False
 
 # Format the forecast start/end and determine the total time.
 forecast_start = datetime.strptime(args.s, '%b %d %Y')
@@ -68,7 +66,7 @@ write_param_csv(param_ids)
 
 # Next, get boundary condition data for the simulation
 # ERA is the only supported data type right now.
-vtable_sfx = rw.get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt, remove_DIR_DATA)
+vtable_sfx = rw.get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt)
 
 # Setup the working directory to run the simulation
 rw.wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx)

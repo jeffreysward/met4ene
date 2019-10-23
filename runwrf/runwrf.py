@@ -73,6 +73,36 @@ def runwrf_finish_check(program):
     return complete
 
 
+def rda_download(filelist, dspath):
+    # Specify login information and url for RDA
+    pswd = 'mkjmJ17'
+    url = 'https://rda.ucar.edu/cgi-bin/login'
+    values = {'email': 'jas983@cornell.edu', 'passwd': pswd, 'action': 'login'}
+
+    # RDA user authentication
+    ret = requests.post(url, data=values)
+    if ret.status_code != 200:
+        print('Bad Authentication')
+        print(ret.text)
+        exit(1)
+
+    # Download files from RDA server
+    for datafile in filelist:
+        filename = dspath + datafile
+        file_base = os.path.basename(datafile)
+        print('Downloading', file_base)
+        req = requests.get(filename, cookies=ret.cookies, allow_redirects=True, stream=True)
+        filesize = int(req.headers['Content-length'])
+        with open(file_base, 'wb') as outfile:
+            chunk_size = 1048576
+            for chunk in req.iter_content(chunk_size=chunk_size):
+                outfile.write(chunk)
+                if chunk_size < filesize:
+                    check_file_status(file_base, filesize)
+        check_file_status(file_base, filesize)
+        print()
+
+
 def check_file_status(filepath, filesize):
     sys.stdout.write('\r')
     sys.stdout.flush()
@@ -107,21 +137,24 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
         DIR_WPS = DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
         DIR_WRF = DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
         DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
-        DIR_DATA = '/glade/scratch/sward/data/' + str(bc_data) + '/'
+        DIR_DATA = '/glade/scratch/sward/data/' + str(bc_data) + '/%s_' % \
+                   (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
         DIR_LOCAL_TMP = '/glade/scratch/sward/met4ene/wrfout/%s_' + paramstr % \
                         (forecast_start.strftime('%Y-%m-%d'))
     elif on_aws:
         DIR_WPS = '/home/ec2-user/environment/Build_WRF/WPS/'
         DIR_WRF = '/home/ec2-user/environment/Build_WRF/WRF/'
         DIR_WPS_GEOG = '/home/ec2-user/environment/data/WPS_GEOG'
-        DIR_DATA = '/home/ec2-user/environment/data/' + str(bc_data) + '/'
+        DIR_DATA = '/home/ec2-user/environment/data/' + str(bc_data) + '/%s_' % \
+                   (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
         DIR_LOCAL_TMP = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_' % \
                         (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
     else:
         DIR_WPS = '/home/jas983/models/wrf/WPS/'
         DIR_WRF = '/home/jas983/models/wrf/WRF/'
         DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
-        DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(bc_data) + '/'
+        DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(bc_data) + '/%s_' % \
+                   (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
         DIR_LOCAL_TMP = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
                         (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
 
@@ -164,7 +197,7 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
            CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF
 
 
-def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt, remove_DIR_DATA):
+def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt):
     # Determine which computing resource we are using
     on_aws, on_cheyenne = determine_computer()
 
@@ -194,9 +227,8 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt, remove_DI
     print('Using {} data for boundary condidions'.format(bc_data))
     print('The corresponding Vtable is: {}\n'.format(vtable_sfx))
 
-    # If specified, remove the existing data directory
-    if remove_DIR_DATA:
-        lh.remove_dir(DIR_DATA)
+    # Make sure any existing data directory has been removed
+    lh.remove_dir(DIR_DATA)
 
     # If no data directory exists, create one
     if not os.path.exists(DIR_DATA):
@@ -247,33 +279,8 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt, remove_DI
             print('Boundary condition data was previously downloaded from RDA.')
             exit(0)
 
-        # Specify login information and url for RDA
-        pswd = 'mkjmJ17'
-        url = 'https://rda.ucar.edu/cgi-bin/login'
-        values = {'email': 'jas983@cornell.edu', 'passwd': pswd, 'action': 'login'}
-
-        # RDA user authentication
-        ret = requests.post(url, data=values)
-        if ret.status_code != 200:
-            print('Bad Authentication')
-            print(ret.text)
-            exit(1)
-
-        # Download files from RDA server
-        for erafile in filelist:
-            filename = dspath + erafile
-            file_base = os.path.basename(erafile)
-            print('Downloading', file_base)
-            req = requests.get(filename, cookies=ret.cookies, allow_redirects=True, stream=True)
-            filesize = int(req.headers['Content-length'])
-            with open(file_base, 'wb') as outfile:
-                chunk_size = 1048576
-                for chunk in req.iter_content(chunk_size=chunk_size):
-                    outfile.write(chunk)
-                    if chunk_size < filesize:
-                        check_file_status(file_base, filesize)
-            check_file_status(file_base, filesize)
-            print()
+        # Download the data from the RDA
+        rda_download(filelist, dspath)
     return vtable_sfx
 
 
@@ -525,6 +532,9 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
     elapsed = datetime.datetime.now() - startTime
     print('Ungrib and Metgrid ran in: ' + str(elapsed))
 
+    # Remove the data directory after WPS has run
+    lh.remove_dir(DIR_DATA)
+
 
 def run_real(paramstr, forecast_start, bc_data, template_dir):
     # Get the directory and command aliai
@@ -575,3 +585,65 @@ def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
         os.system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d0' + str(n) + '_' + forecast_start.strftime('%Y')
                          + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
                          + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d0' + str(n) + '.nc'))
+
+
+def wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir):
+    # Determine which computing resource we are using
+    on_aws, on_cheyenne = determine_computer()
+
+    # Get the directory and command aliai
+    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, \
+    CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
+    CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
+        dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
+
+    # Download ERA5 data for benchmarking
+    if on_cheyenne:
+        DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds630.0/e5.oper.an.sfc/'
+        DATA_ROOT1 = DATA_ROOT1 + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
+    else:
+        ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
+        datpfx1 = 'e5.oper.an.sfc.128_165_10u.regn320sc.'
+        datpfx2 = 'e5.oper.an.sfc.128_166_10v.regn320sc.'
+        datpfx3 = 'e5.oper.an.sfc.128_167_2t.regn320sc.'
+        datpfx4 = 'e5.oper.an.sfc.228_246_100u.regn320sc.'
+        datpfx5 = 'e5.oper.an.sfc.228_247_100v.regn320sc.'
+        if not os.path.exists(ERA5_ROOT + datpfx1 + forecast_start.strftime('%Y')
+                              + forecast_start.strftime('%m') + '0100_'
+                              + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc'):
+
+            # Change into the ERA5 data directory
+            os.chdir(ERA5_ROOT)
+            # The following define paths to the required data on the RDA site
+            dspath = 'http://rda.ucar.edu/data/ds630.0/'
+            DATA_ROOT1 = 'e5.oper.an.sfc/' + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
+
+            # Build the file list to be downloaded from the RDA
+            filelist = [DATA_ROOT1 + datpfx1 + forecast_start.strftime('%Y')
+                        + forecast_start.strftime('%m') + '0100_'
+                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc',
+                        DATA_ROOT1 + datpfx2 + forecast_start.strftime('%Y')
+                        + forecast_start.strftime('%m') + '0100_'
+                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc',
+                        DATA_ROOT1 + datpfx3 + forecast_start.strftime('%Y')
+                        + forecast_start.strftime('%m') + '0100_'
+                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc',
+                        DATA_ROOT1 + datpfx4 + forecast_start.strftime('%Y')
+                        + forecast_start.strftime('%m') + '0100_'
+                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc',
+                        DATA_ROOT1 + datpfx5 + forecast_start.strftime('%Y')
+                        + forecast_start.strftime('%m') + '0100_'
+                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc']
+
+            # Download the data from the RDA
+            rda_download(filelist, dspath)
+
+    # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
+    os.chdir(DIR_LOCAL_TMP)
+    CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'paramstr="%s"\' wrf2era_error.ncl' % \
+                 (forecast_start.strftime('%Y'), forecast_start.strftime('%m'),
+                  forecast_start.strftime('%d'), DIR_LOCAL_TMP, paramstr)
+    os.system('pwd')
+    os.system(CMD_REGRID)
+
+    # Extract the total error after the script has run
