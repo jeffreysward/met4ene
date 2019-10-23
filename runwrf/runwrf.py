@@ -346,6 +346,11 @@ def wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx):
 
 def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
                       bc_data, template_dir, MAX_DOMAINS):
+    def read_namelist(namelist_file):
+        with open(DIR_LOCAL_TMP + namelist_file, 'r') as namelist:
+            NAMELIST = namelist.read()
+        return NAMELIST
+
     # Get the directory and command aliai
     DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, \
         CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
@@ -354,10 +359,8 @@ def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
 
     # Try to open WPS and WRF namelists as readonly, and print an error if you cannot.
     try:
-        with open(DIR_LOCAL_TMP + 'namelist.wps', 'r') as namelist:
-            NAMELIST_WPS = namelist.read()
-        with open(DIR_LOCAL_TMP + 'namelist.input', 'r') as namelist:
-            NAMELIST_WRF = namelist.read()
+        NAMELIST_WPS = read_namelist('namelist.wps')
+        NAMELIST_WRF = read_namelist('namelist.input')
     except IOError as e:
         print(e.errno)
         print(e)
@@ -370,45 +373,31 @@ def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
     wps_dates = wps_dates + '\n end_date                     = '
     for i in range(0, MAX_DOMAINS):
         wps_dates = wps_dates + forecast_end.strftime("'%Y-%m-%d_%H:%M:%S', ")
-
-    try:
-        with open('namelist.wps', 'w') as namelist:
-            namelist.write(NAMELIST_WPS.replace('%DATES%', wps_dates))
-    except IOError as e:
-        print(e.errno)
-        print(e)
-        exit()
-
-    with open(DIR_LOCAL_TMP + 'namelist.wps', 'r') as namelist:
-        NAMELIST_WPS = namelist.read()
+    with open('namelist.wps', 'w') as namelist:
+        namelist.write(NAMELIST_WPS.replace('%DATES%', wps_dates))
 
     # Write the GEOG data path to the WPS Namelist
+    NAMELIST_WPS = read_namelist('namelist.wps')
     geog_data = " geog_data_path = '" + DIR_WPS_GEOG + "'"
-    try:
-        with open('namelist.wps', 'w') as namelist:
-            namelist.write(NAMELIST_WPS.replace('%GEOG%', geog_data))
-    except IOError as e:
-        print(e.errno)
-        print(e)
-        exit()
+    with open('namelist.wps', 'w') as namelist:
+        namelist.write(NAMELIST_WPS.replace('%GEOG%', geog_data))
+
+    # Write the number of domains to the WPS Namelist
+    NAMELIST_WPS = read_namelist('namelist.wps')
+    wps_domains = 'max_dom                             = ' + str(MAX_DOMAINS) + ','
+    with open(DIR_LOCAL_TMP + 'namelist.wps', 'w') as namelist:
+        namelist.write(NAMELIST_WPS.replace('%DOMAIN%', wps_domains))
+    print('Done writing WPS namelist')
 
     # Write the runtime info and start dates and times to the WRF Namelist
     wrf_runtime = ' run_days                            = ' + str(delt.days - 1) + ',\n'
     wrf_runtime = wrf_runtime + ' run_hours                           = ' + '0' + ',\n'
     wrf_runtime = wrf_runtime + ' run_minutes                         = ' + '0' + ',\n'
     wrf_runtime = wrf_runtime + ' run_seconds                         = ' + '0' + ','
+    with open('namelist.input', 'w') as namelist:
+        namelist.write(NAMELIST_WRF.replace('%RUNTIME%', wrf_runtime))
 
-    try:
-        with open('namelist.input', 'w') as namelist:
-            namelist.write(NAMELIST_WRF.replace('%RUNTIME%', wrf_runtime))
-    except IOError as e:
-        print(e.errno)
-        print(e)
-        exit()
-
-    with open('namelist.input', 'r') as namelist:
-        NAMELIST_WRF = namelist.read()
-
+    NAMELIST_WRF = read_namelist('namelist.input')
     wrf_dates = ' start_year                          = '
     for i in range(0, MAX_DOMAINS):
         wrf_dates = wrf_dates + forecast_start.strftime('%Y, ')
@@ -445,14 +434,11 @@ def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
     wrf_dates = wrf_dates + '\n end_second                          = '
     for i in range(0, MAX_DOMAINS):
         wrf_dates = wrf_dates + '00, '
-
     with open('namelist.input', 'w') as namelist:
         namelist.write(NAMELIST_WRF.replace('%DATES%', wrf_dates))
 
     # Write the physics parametrization scheme info to the WRF Namelist
-    with open('namelist.input', 'r') as namelist:
-        NAMELIST_WRF = namelist.read()
-
+    NAMELIST_WRF = read_namelist('namelist.input')
     wrf_physics = ' mp_physics                          = '
     for i in range(0, MAX_DOMAINS):
         wrf_physics = wrf_physics + str(param_ids[0]) + ', '
@@ -488,10 +474,15 @@ def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
         wrf_physics = wrf_physics + '\n maxens2                             = 3,'
         wrf_physics = wrf_physics + '\n maxens3                             = 16,'
         wrf_physics = wrf_physics + '\n ensdim                              = 144,'
-
     with open('namelist.input', 'w') as namelist:
         namelist.write(NAMELIST_WRF.replace('%PARAMS%', wrf_physics))
-    print('Done writing WRF namelist')
+
+    # Write the number of domains to the namelist
+    NAMELIST_WRF = read_namelist('namelist.input')
+    wrf_domains = 'max_dom                             = ' + str(MAX_DOMAINS) + ','
+    with open(DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
+        namelist.write(NAMELIST_WRF.replace('%DOMAIN%', wrf_domains))
+    print('Done writing WRF namelist\n')
 
 
 def run_wps(paramstr, forecast_start, bc_data, template_dir):

@@ -2,7 +2,6 @@
 
 from argparse import ArgumentParser
 from datetime import datetime
-from shutil import rmtree
 from wrfparams import flexible_generate, write_param_csv
 import runwrf as rw
 import linuxhelper as lh
@@ -87,7 +86,3 @@ rw.run_real(paramstr, forecast_start, bc_data, template_dir)
 
 # RUN WRF
 rw.run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS)
-
-# Remove the data directory after the WRF run
-if remove_DIR_DATA:
-    lh.remove_dir(DIR_DATA)
