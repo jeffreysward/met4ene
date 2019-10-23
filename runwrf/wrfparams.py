@@ -28,6 +28,7 @@ functions in the same module work.
 import yaml
 import random
 import os
+import csv 
 
 
 def generate(in_yaml='params.yml'):
