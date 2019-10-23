@@ -4,7 +4,6 @@ from argparse import ArgumentParser
 from datetime import datetime
 from wrfparams import flexible_generate, write_param_csv
 import runwrf as rw
-import linuxhelper as lh
 
 
 # Define command line input options
