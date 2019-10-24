@@ -23,12 +23,12 @@ def read_last_line(file_name):
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
     except IOError:
-        last_line = 'Finish Check: this file does not exist.'
+        last_line = 'IOEror in read_last_line: this file does not exist.'
         return last_line
     try:
         last_line = lines[-1]
     except IndexError:
-        last_line = 'Finish Check: no last line appears to exist in this file.'
+        last_line = 'IndexError in read_last_line: no last line appears to exist in this file.'
     return last_line
 
 
@@ -37,12 +37,13 @@ def read_2nd2_last_line(file_name):
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
     except IOError:
-        second2_last_line = 'Finish Check: this file does not yet exist.'
+        second2_last_line = 'IOError in read_2nd2_last_line: this file does not currently exist.'
         return second2_last_line
     try:
         second2_last_line = lines[-2]
     except IndexError:
-        second2_last_line = 'Finish Check: there do not appear to be at least two lines in this file.'
+        second2_last_line = 'IndexError in read_2nd2_last_line: ' \
+                            'there do not appear to be at least two lines in this file.'
     return second2_last_line
 
 
@@ -271,10 +272,10 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt):
 
         # Check to see if all these files already exist in the data directory
         data_exists = []
-        for file in file_check:
-            data_exists.append(os.path.exists(file))
-	    print(data_exists)
-	    print(data_exists.count(True))
+        for data_file in file_check:
+            data_exists.append(os.path.exists(data_file))
+        print(data_exists)
+        print(data_exists.count(True))
         if data_exists.count(True) is len(file_check):
             print('Boundary condition data was previously downloaded from RDA.')
             exit(0)
@@ -647,3 +648,13 @@ def wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir):
     os.system(CMD_REGRID)
 
     # Extract the total error after the script has run
+    error_file = 'mae_wrfyera_' + paramstr + '.csv'
+    while not os.path.exists(error_file):
+        time.sleep(1)
+    mae = read_last_line(error_file)
+    mae = mae.split(',')
+    mae[-1] = mae[-1].strip()
+    mae = [float(i) for i in mae]
+    total_error = sum(mae)
+    print('Parameters {} have a total error {}'.format(paramstr, mae))
+    return total_error

@@ -1,20 +1,9 @@
 from datetime import datetime
-from os import chdir, getcwd, makedirs, system, path, environ
-from shutil import rmtree
-from sys import exit
-from time import time
-import time as tm
-import os
-import requests
 from wrfparams import flexible_generate, write_param_csv
 import runwrf as rw
 
 
-# Set parameters here that should be set automatically eventually
-remove_DIR_DATA = False
-
-
-def wrf_fitness(start_date='Jan 15 2011', end_date='Jan 16 2011', in_yaml='params.yml', generate_params=True,
+def wrf_fitness(start_date='Jan 15 2011', end_date='Jan 16 2011', generate_params=True,
                 bc_data='ERA', MAX_DOMAINS=1, template_dir=None,
                 mp=None, lw=None, sw=None, lsm=None, pbl=None, cu=None):
 
@@ -35,7 +24,7 @@ def wrf_fitness(start_date='Jan 15 2011', end_date='Jan 16 2011', in_yaml='param
 
     # Next, get boundary condition data for the simulation
     # ERA is the only supported data type right now.
-    vtable_sfx = rw.get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt, remove_DIR_DATA)
+    vtable_sfx = rw.get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt)
 
     # Setup the working directory to run the simulation
     rw.wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx)
@@ -53,5 +42,6 @@ def wrf_fitness(start_date='Jan 15 2011', end_date='Jan 16 2011', in_yaml='param
     # RUN WRF
     rw.run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS)
 
-    # Compute the error between WRF run and ERA5 dataset
-    rw.wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir)
+    # Compute the error between WRF run and ERA5 dataset and return fitness
+    fitness = rw.wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir)
+    return fitness
