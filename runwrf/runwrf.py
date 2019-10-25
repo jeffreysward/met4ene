@@ -104,7 +104,6 @@ def runwrf_finish_check(program):
         return 'running'
 
 
-
 def rda_download(filelist, dspath):
     # Specify login information and url for RDA
     pswd = 'mkjmJ17'
@@ -114,7 +113,7 @@ def rda_download(filelist, dspath):
     # RDA user authentication
     ret = requests.post(url, data=values)
     if ret.status_code != 200:
-        print('Bad Authentication')
+        print('Bad Authentication for RDA')
         print(ret.text)
         exit(1)
 
@@ -122,7 +121,7 @@ def rda_download(filelist, dspath):
     for datafile in filelist:
         filename = dspath + datafile
         file_base = os.path.basename(datafile)
-        print('Downloading', file_base)
+        # print('Downloading', file_base)
         req = requests.get(filename, cookies=ret.cookies, allow_redirects=True, stream=True)
         filesize = int(req.headers['Content-length'])
         with open(file_base, 'wb') as outfile:
@@ -132,7 +131,7 @@ def rda_download(filelist, dspath):
                 if chunk_size < filesize:
                     check_file_status(file_base, filesize)
         check_file_status(file_base, filesize)
-        print()
+        # print()
 
 
 def check_file_status(filepath, filesize):
@@ -270,7 +269,7 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt):
     n = int(forecast_start.day) + int(delt.days)
     if on_cheyenne:
         # Copy desired data files from RDA
-        ##### THIS ONLY WORKS IF YOU WANT TO RUN WITHIN A SINGLE MONTH
+        # THIS ONLY WORKS IF YOU WANT TO RUN WITHIN A SINGLE MONTH!
         while i <= n:
             cmd = CMD_CP % (DATA_ROOT1 + datpfx1 + forecast_start.strftime('%Y')
                             + forecast_start.strftime('%m') + str(i) + '*', DIR_DATA)
@@ -305,11 +304,9 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt):
         data_exists = []
         for data_file in file_check:
             data_exists.append(os.path.exists(data_file))
-        print(data_exists)
-        print(data_exists.count(True))
         if data_exists.count(True) is len(file_check):
             print('Boundary condition data was previously downloaded from RDA.')
-            exit(0)
+            return vtable_sfx
 
         # Download the data from the RDA
         rda_download(filelist, dspath)
@@ -656,6 +653,8 @@ def wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir):
                               + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc'):
 
             # Change into the ERA5 data directory
+            if not os.path.exists(ERA5_ROOT):
+                os.mkdir(ERA5_ROOT)
             os.chdir(ERA5_ROOT)
             # The following define paths to the required data on the RDA site
             dspath = 'http://rda.ucar.edu/data/ds630.0/'
