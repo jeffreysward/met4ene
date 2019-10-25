@@ -42,16 +42,21 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
                          bc_data, template_dir, MAX_DOMAINS)
 
     # RUN WPS
-    rw.run_wps(paramstr, forecast_start, bc_data, template_dir)
+    success = rw.run_wps(paramstr, forecast_start, bc_data, template_dir)
 
     # RUN REAL
-    rw.run_real(paramstr, forecast_start, bc_data, template_dir)
+    if success:
+        success = rw.run_real(paramstr, forecast_start, bc_data, template_dir)
 
     # RUN WRF
-    rw.run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS)
+    if success:
+        success = rw.run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS)
 
     # Compute the error between WRF run and ERA5 dataset and return fitness
-    fitness = rw.wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir)
+    if success:
+        fitness = rw.wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir)
+    else:
+        fitness = 10**10
 
     # Write parameter combinations to CSV
     # (if you would like to restart this, you must manually delete this CSV)

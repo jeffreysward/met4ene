@@ -1,8 +1,34 @@
 """
-Overview:
+Overview: This module provides methods which support running WRF withing other scripts.
+The following functions are available.
 
-- This module provides methods which support running WRF withing other scripts
+- read_last_line()
 
+- read_2nd2_last_line()
+
+- runwrf_finish_check()
+
+- rda_download()
+
+- check_file_status()
+
+- determine_computer()
+
+- dirsandcommand_aliai()
+
+- get_bc_data()
+
+- wrfdir_setup()
+
+- prepare_namelists()
+
+- run_wps()
+
+- run_real()
+
+- run_wrf()
+
+- wrf_era5_diff()
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 Known Issues:
 
@@ -51,11 +77,13 @@ def runwrf_finish_check(program):
     if program == 'geogrid':
         msg = read_2nd2_last_line('output.geogrid')
         complete = 'Successful completion of geogrid' in msg
-        failed = '-------------------------------------------' in msg  # Not sure if this is actually the correct failure message
+        # Not sure if this is actually the correct failure message
+        failed = '-------------------------------------------' in msg
     elif program == 'metgrid':
         msg = read_2nd2_last_line('output.metgrid')
         complete = 'Successful completion of metgrid' in msg
-        failed = '-------------------------------------------' in msg  # Not sure if this is actually the correct failure message
+        # Not sure if this is actually the correct failure message
+        failed = '-------------------------------------------' in msg
     elif program == 'real':
         msg = read_last_line('rsl.out.0000')
         print(msg)
@@ -511,11 +539,11 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
     print('Starting Geogrid at: ' + str(startTime))
     os.system(CMD_GEOGRID)
     while not runwrf_finish_check('geogrid'):
-        if (int(time.time()) - startTimeInt) < 1800:
+        if (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
         else:
-            print('ERROR: Geogrid took more than 30min to run... exiting.')
-            exit()
+            print('TimeoutError in run_wps: Geogrid took more than 10min to run... exiting.')
+            return False
     elapsed = datetime.datetime.now() - startTime
     print('Geogrid ran in: ' + str(elapsed))
 
@@ -525,11 +553,11 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
     print('Starting Ungrib and Metgrid at: ' + str(startTime))
     os.system(CMD_UNGMETG)
     while not runwrf_finish_check('metgrid'):
-        if (int(time.time()) - startTimeInt) < 1800:
+        if (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
         else:
-            print('ERROR: Ungrib and Metgrid took more than 30min to run... exiting.')
-            exit()
+            print('TimeoutError in run_wps: Ungrib and Metgrid took more than 10min to run... exiting.')
+            return False
     elapsed = datetime.datetime.now() - startTime
     print('Ungrib and Metgrid ran in: ' + str(elapsed))
 
@@ -549,11 +577,11 @@ def run_real(paramstr, forecast_start, bc_data, template_dir):
     print('Starting Real at: ' + str(startTime))
     os.system(CMD_REAL)
     while not runwrf_finish_check('real'):
-        if (int(time.time()) - startTimeInt) < 1800:
+        if (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
         else:
-            print('ERROR: Real took more than 30min to run... exiting.')
-            exit()
+            print('TimeoutError in run_real: Real took more than 10min to run... exiting.')
+            return False
     elapsed = datetime.datetime.now() - startTime
     print('Real ran in: ' + str(elapsed) + ' seconds')
 
@@ -572,11 +600,11 @@ def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
     # Make the script sleep for 5 minutes to allow for the rsl.out.0000 file to reset.
     time.sleep(300)
     while not runwrf_finish_check('wrf'):
-        if (int(time.time()) - startTimeInt) < 86400:
+        if (int(time.time()) - startTimeInt) < 7200:
             time.sleep(10)
         else:
-            print('ERROR: WRF took more than 24hrs to run... exiting.')
-            exit()
+            print('TimeoutError in run_wrf: WRF took more than 2hrs to run... exiting.')
+            return False
     print('WRF finished running at: ' + str(datetime.datetime.now()))
     elapsed = datetime.datetime.now() - startTime
     print('WRF ran in: ' + str(elapsed))
