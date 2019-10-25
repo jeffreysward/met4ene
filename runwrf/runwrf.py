@@ -563,6 +563,7 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
 
     # Remove the data directory after WPS has run
     lh.remove_dir(DIR_DATA)
+    return True
 
 
 def run_real(paramstr, forecast_start, bc_data, template_dir):
@@ -584,6 +585,7 @@ def run_real(paramstr, forecast_start, bc_data, template_dir):
             return False
     elapsed = datetime.datetime.now() - startTime
     print('Real ran in: ' + str(elapsed) + ' seconds')
+    return True
 
 
 def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
@@ -614,6 +616,7 @@ def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
         os.system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d0' + str(n) + '_' + forecast_start.strftime('%Y')
                          + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
                          + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d0' + str(n) + '.nc'))
+    return True
 
 
 def wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir):
