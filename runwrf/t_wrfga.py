@@ -43,14 +43,17 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
 
     # RUN WPS
     success = rw.run_wps(paramstr, forecast_start, bc_data, template_dir)
+    print('WPS ran successfully? {}'.format(success))
 
     # RUN REAL
     if success:
         success = rw.run_real(paramstr, forecast_start, bc_data, template_dir)
+        print('Real ran successfully? {}'.format(success))
 
     # RUN WRF
     if success:
         success = rw.run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS)
+        print('WRF ran successfully? {}'.format(success))
 
     # Compute the error between WRF run and ERA5 dataset and return fitness
     if success:
