@@ -25,10 +25,7 @@ def display_pop(population, fn_display):
 
 
 def generate_genes():
-    rand_params = wrfparams.generate()
-    new_individual = wrfparams.name2num(mp_in=rand_params[0], lw_in=rand_params[1],
-                                        sw_in=rand_params[2], lsm_in=rand_params[3],
-                                        pbl_in=rand_params[4], clo_in=rand_params[5])
+    new_individual = wrfparams.flexible_generate()
     return new_individual
 
 
@@ -37,7 +34,6 @@ def generate_population(pop_size):
     population = []
     while len(population) < pop_size:
         new_individual = generate_genes()
-        # print('From wrfparams.generate: {}'.format(new_individual))
         new_individual = Chromosome(new_individual)
         population.append(new_individual)
     return population

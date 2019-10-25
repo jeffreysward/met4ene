@@ -173,16 +173,15 @@ def pbl2sfclay(id_pbl, rnd=False):
     return id_sfclay
 
 
-def flexible_generate(generate_params, mp, lw, sw, lsm, pbl, cu, in_yaml='params.yml'):
+def flexible_generate(generate_params=True, mp=None, lw=None, sw=None,
+                      lsm=None, pbl=None, cu=None, in_yaml='params.yml'):
     # Generate a parameter combination of the 6 core parameters if the user has specified this option.
     # Otherwise, use specified input parameters and use defaults for the remaining paramters.
     if generate_params:
         rand_params = generate(in_yaml)
-        print('The following random parameters were generated: ')
         param_ids = name2num(in_yaml, mp_in=rand_params[0], lw_in=rand_params[1],
                              sw_in=rand_params[2], lsm_in=rand_params[3],
                              pbl_in=rand_params[4], clo_in=rand_params[5])
-        print(param_ids)
     else:
         param_ids = [None, None, None, None, None, None]
         if mp is not None:
@@ -210,20 +209,26 @@ def flexible_generate(generate_params, mp, lw, sw, lsm, pbl, cu, in_yaml='params
                                   sw_in="None", lsm_in="None", pbl_in="None", clo_in=cu)
             param_ids = combine(param_ids, param_ids6)
         param_ids = filldefault(in_yaml, param_ids)
-    paramstr = '%dmp%dlw%dsw%dlsm%dpbl%dcu' % \
-               (param_ids[0], param_ids[1], param_ids[2], param_ids[3], param_ids[4], param_ids[5])
-    print('The following parameters were chosen: ' + paramstr)
 
     # Set the sf_sfclay_pysics option based on that selected for PBL
     id_sfclay = pbl2sfclay(param_ids[4])
     param_ids.append(id_sfclay)
-    return param_ids, paramstr
+    print('The following parameters were generated: {}'.format(param_ids))
+    return param_ids
 
-def write_param_csv(param_ids):
+
+def ids2str(param_ids):
+    paramstr = '%dmp%dlw%dsw%dlsm%dpbl%dcu' % \
+               (param_ids[0], param_ids[1], param_ids[2],
+                param_ids[3], param_ids[4], param_ids[5])
+    return paramstr
+
+
+def write_param_csv(param_ids, fitness):
     runwrfcsv = 'paramfeed_runwrf.csv'
     if not os.path.exists(runwrfcsv):
         csvData = [['ra_lw_physics', 'ra_sw_physics', 'sf_surface_physics',
-                    'bl_pbl_physics', 'cu_physics', 'sf_sfclay_physics'], param_ids]
+                    'bl_pbl_physics', 'cu_physics', 'sf_sfclay_physics', 'FITNESS'], [param_ids, fitness]]
         with open(runwrfcsv, 'w') as csvFile:
             writer = csv.writer(csvFile)
             writer.writerows(csvData)
