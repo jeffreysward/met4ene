@@ -131,7 +131,7 @@ def rda_download(filelist, dspath):
                 if chunk_size < filesize:
                     check_file_status(file_base, filesize)
         check_file_status(file_base, filesize)
-        # print()
+        print()
 
 
 def check_file_status(filepath, filesize):
@@ -139,7 +139,7 @@ def check_file_status(filepath, filesize):
     sys.stdout.flush()
     size = int(os.stat(filepath).st_size)
     percent_complete = (size / filesize) * 100
-    sys.stdout.write('%.3f %s' % (percent_complete, '% Completed'))
+    # sys.stdout.write('%.3f %s' % (percent_complete, '% Completed'))
     sys.stdout.flush()
 
 
@@ -613,7 +613,7 @@ def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
         elif (int(time.time()) - startTimeInt) < 7200:
             time.sleep(10)
         else:
-            print('TimeoutError in run_wrf: WRF took more than 2hrs to run... exiting.')
+	    print('TimeoutError in run_wrf at {}: WRF took more than 2hrs to run... exiting.'.format(datetime.datetime.now()))
             return False
     print('WRF finished running at: ' + str(datetime.datetime.now()))
     elapsed = datetime.datetime.now() - startTime

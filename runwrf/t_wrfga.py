@@ -70,10 +70,10 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
 class WRFGATests(unittest.TestCase):
     def test(self):
         start_time = datetime.datetime.now()
-        pop_size = 6
+        pop_size = 5
         n_elites = int(0.34*pop_size) if int(0.34*pop_size) > 0 else 1
         print('The number of elites is {}'.format(n_elites))
-        n_generations = 3
+        n_generations = 1
         optimal_fitness = 0
 
         def fn_display(individual):
