@@ -18,4 +18,4 @@ def remove_dir(directory):
     try:
         rmtree(directory)
     except OSError as e:
-        print ("Error in remove_dir: %s - %s." % (e.filename, e.strerror))
+        print ("OSError in remove_dir: %s - %s." % (e.filename, e.strerror))

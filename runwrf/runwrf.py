@@ -131,11 +131,11 @@ def rda_download(filelist, dspath):
                 if chunk_size < filesize:
                     check_file_status(file_base, filesize)
         check_file_status(file_base, filesize)
-        print()
+    print('Done downloading data from RDA!')
 
 
 def check_file_status(filepath, filesize):
-    sys.stdout.write('\r')
+    # sys.stdout.write('\r')
     sys.stdout.flush()
     size = int(os.stat(filepath).st_size)
     percent_complete = (size / filesize) * 100
@@ -330,7 +330,7 @@ def wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx):
 
     # Link WRF tables, data, and executables.
     cmd = CMD_LN % (DIR_WRF + 'run/aerosol*', './')
-    # cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/BROADBAND*', './')
+    cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/BROADBAND*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/bulk*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/CAM*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/capacity*', './')
@@ -339,19 +339,19 @@ def wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx):
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/co2*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/coeff*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/constants*', './')
-    # cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/create*', './')
+    cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/create*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/ETAMPNEW*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/GENPARM*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/grib2map*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/gribmap*', './')
-    # cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/HLC*', './')
-    # cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/ishmael*', './')
+    cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/HLC*', './')
+    cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/ishmael*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/kernels*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/LANDUSE*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/masses*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/MPTABLE*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/ozone*', './')
-    # cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/p3_lookup*', './')
+    cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/p3_lookup*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/RRTM*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/SOILPARM*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/termvels*', './')
@@ -360,7 +360,7 @@ def wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx):
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/VEGPARM*', './')
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/*exe', './')
     os.system(cmd)
-    print(os.getcwd())
+    print('Your wrfout directory is:\n{}'.format(os.getcwd()))
 
     # Copy over namelists and submission scripts
     if on_cheyenne:
@@ -610,10 +610,10 @@ def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
     while runwrf_finish_check('wrf') is not 'complete':
         if runwrf_finish_check('wrf') is 'failed':
             return False
-        elif (int(time.time()) - startTimeInt) < 7200:
+        elif (int(time.time()) - startTimeInt) < 10800:
             time.sleep(10)
         else:
-	    print('TimeoutError in run_wrf at {}: WRF took more than 2hrs to run... exiting.'.format(datetime.datetime.now()))
+	    print('TimeoutError in run_wrf at {}: WRF took more than 3hrs to run... exiting.'.format(datetime.datetime.now()))
             return False
     print('WRF finished running at: ' + str(datetime.datetime.now()))
     elapsed = datetime.datetime.now() - startTime

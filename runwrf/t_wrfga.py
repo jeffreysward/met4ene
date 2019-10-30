@@ -26,6 +26,8 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     forecast_start = datetime.datetime.strptime(start_date, '%b %d %Y')
     forecast_end = datetime.datetime.strptime(end_date, '%b %d %Y')
     delt = forecast_end - forecast_start
+    print('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -')
+    print('\nCalculating fitness for: {}'.format(param_ids))
     print('Forecast starting on: {}'.format(forecast_start))
     print('Forecast ending on: {}'.format(forecast_end))
     paramstr = ids2str(param_ids)
