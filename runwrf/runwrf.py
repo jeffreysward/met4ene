@@ -73,6 +73,22 @@ def read_2nd2_last_line(file_name):
     return second2_last_line
 
 
+def print_last_3lines(file_name):
+    try:
+        with open(file_name, mode='r') as infile:
+            lines = infile.readlines()
+    except IOError:
+        print('IOError in print_last_3lines: this file does not currently exist.')
+        return
+    try:
+        txt = lines[-3:-1]
+        print(txt)
+    except IndexError:
+        print('IndexError in print_last_3lines: there do not appear to be at least three lines in this file.')
+        return
+    return
+
+
 def runwrf_finish_check(program):
     if program == 'geogrid':
         msg = read_2nd2_last_line('output.geogrid')
@@ -540,6 +556,7 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
     os.system(CMD_GEOGRID)
     while runwrf_finish_check('geogrid') is not 'complete':
         if runwrf_finish_check('geogrid') is 'failed':
+            print_last_3lines('output.geogrid')
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
@@ -556,6 +573,7 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
     os.system(CMD_UNGMETG)
     while runwrf_finish_check('metgrid') is not 'complete':
         if runwrf_finish_check('metgrid') is 'failed':
+            print_last_3lines('output.metgrid')
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
@@ -583,6 +601,7 @@ def run_real(paramstr, forecast_start, bc_data, template_dir):
     os.system(CMD_REAL)
     while runwrf_finish_check('real') is not 'complete':
         if runwrf_finish_check('real') is 'failed':
+            print_last_3lines('rsl.out.0000')
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
@@ -609,6 +628,7 @@ def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
     time.sleep(300)
     while runwrf_finish_check('wrf') is not 'complete':
         if runwrf_finish_check('wrf') is 'failed':
+            print_last_3lines('rsl.out.0000')
             return False
         elif (int(time.time()) - startTimeInt) < 10800:
             time.sleep(10)
