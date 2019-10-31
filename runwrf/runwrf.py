@@ -86,7 +86,6 @@ def print_last_3lines(file_name):
     except IndexError:
         print('IndexError in print_last_3lines: there do not appear to be at least three lines in this file.')
         return
-    return
 
 
 def runwrf_finish_check(program):
@@ -131,7 +130,7 @@ def rda_download(filelist, dspath):
     if ret.status_code != 200:
         print('Bad Authentication for RDA')
         print(ret.text)
-        exit(1)
+        return
 
     # Download files from RDA server
     for datafile in filelist:
@@ -139,7 +138,11 @@ def rda_download(filelist, dspath):
         file_base = os.path.basename(datafile)
         # print('Downloading', file_base)
         req = requests.get(filename, cookies=ret.cookies, allow_redirects=True, stream=True)
-        filesize = int(req.headers['Content-length'])
+        try:
+            filesize = int(req.headers['Content-length'])
+        except KeyError as e:
+            print('KeyError in rda_download:\n%s\nCHECK THAT RDA IS WORKING!!!' % e)
+            return
         with open(file_base, 'wb') as outfile:
             chunk_size = 1048576
             for chunk in req.iter_content(chunk_size=chunk_size):
