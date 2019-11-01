@@ -191,6 +191,7 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
                    (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
         DIR_LOCAL_TMP = '/glade/scratch/sward/met4ene/wrfout/%s_' + paramstr % \
                         (forecast_start.strftime('%Y-%m-%d'))
+	DIR_RUNWRF = '/glade/scratch/sward/met4ene/runwrf/'
     elif on_aws:
         DIR_WPS = '/home/ec2-user/environment/Build_WRF/WPS/'
         DIR_WRF = '/home/ec2-user/environment/Build_WRF/WRF/'
@@ -199,6 +200,7 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
                    (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
         DIR_LOCAL_TMP = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_' % \
                         (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
+	DIR_RUNWRF = '/home/ec2-user/environment/met4ene/runwrf/'
     else:
         DIR_WPS = '/home/jas983/models/wrf/WPS/'
         DIR_WRF = '/home/jas983/models/wrf/WRF/'
@@ -207,6 +209,7 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
                    (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
         DIR_LOCAL_TMP = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
                         (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
+	DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
 
     # Define a directory containing:
     # a) namelist.wps and namelist.input templates
@@ -242,7 +245,7 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
         CMD_UNGMETG = 'sbatch template_runungmetg.csh'
         CMD_REAL = 'sbatch template_runreal.csh'
         CMD_WRF = 'sbatch template_runwrf.csh'
-    return DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, \
+    return DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
            CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
            CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF
 
@@ -252,7 +255,7 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt):
     on_aws, on_cheyenne = determine_computer()
 
     # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, \
+    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
         CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
         CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
         dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
@@ -337,7 +340,7 @@ def wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx):
     on_aws, on_cheyenne = determine_computer()
 
     # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, \
+    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
         CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
         CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
         dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
@@ -400,6 +403,10 @@ def wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx):
     cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'ungrib/Variable_Tables/Vtable.' + vtable_sfx, 'Vtable')
     os.system(cmd)
 
+    # Link the regridding script
+    cmd = CMD_LN % (DIR_RUNWRF + 'wrf2era_error.ncl', './')
+    os.system(cmd)
+
 
 def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
                       bc_data, template_dir, MAX_DOMAINS):
@@ -409,7 +416,7 @@ def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
         return NAMELIST
 
     # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, \
+    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
         CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
         CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
         dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
@@ -544,7 +551,7 @@ def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
 
 def run_wps(paramstr, forecast_start, bc_data, template_dir):
     # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, \
+    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
         CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
         CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
         dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
@@ -593,7 +600,7 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
 
 def run_real(paramstr, forecast_start, bc_data, template_dir):
     # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, \
+    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
     CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
     CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
         dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
@@ -618,7 +625,7 @@ def run_real(paramstr, forecast_start, bc_data, template_dir):
 
 def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
     # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, \
+    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
         CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
         CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
         dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
@@ -633,10 +640,10 @@ def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
         if runwrf_finish_check('wrf') is 'failed':
             print_last_3lines('rsl.out.0000')
             return False
-        elif (int(time.time()) - startTimeInt) < 10800:
+        elif (int(time.time()) - startTimeInt) < 14400:
             time.sleep(10)
         else:
-	    print('TimeoutError in run_wrf at {}: WRF took more than 3hrs to run... exiting.'.format(datetime.datetime.now()))
+	    print('TimeoutError in run_wrf at {}: WRF took more than 4hrs to run... exiting.'.format(datetime.datetime.now()))
             return False
     print('WRF finished running at: ' + str(datetime.datetime.now()))
     elapsed = datetime.datetime.now() - startTime
@@ -655,7 +662,7 @@ def wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir):
     on_aws, on_cheyenne = determine_computer()
 
     # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, \
+    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
     CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
     CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
         dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)

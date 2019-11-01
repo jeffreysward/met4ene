@@ -1,0 +1,118 @@
+The number of elites is 1
+The following parameters were generated: [4, 24, 0, 4, 6, 0, 5]
+The following parameters were generated: [8, 99, 5, 2, 1, 4, 1]
+The following parameters were generated: [10, 31, 99, 2, 5, 94, 1]
+The following parameters were generated: [22, 3, 7, 0, 6, 4, 5]
+The following parameters were generated: [19, 31, 1, 2, 9, 7, 1]
+Calculating the fitness of the initial population...
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Forecast starting on: 2011-01-15 00:00:00
+Forecast ending on: 2011-01-16 00:00:00
+Using ERA data for boundary condidions
+The corresponding Vtable is: ERA-interim.pl
+
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/data/ERA/2011-01-15_4mp24lw0sw4lsm6pbl0cu/ - No such file or directory.
+Submitted batch job 202
+Submitted batch job 203
+Submitted batch job 204
+Submitted batch job 205
+Done downloading data from RDA!
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_4mp24lw0sw4lsm6pbl0cu/ - No such file or directory.
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_4mp24lw0sw4lsm6pbl0cu
+Done writing WPS namelist
+Done writing WRF namelist
+
+Starting Geogrid at: 2019-10-30 13:27:07.084523
+Geogrid ran in: 0:03:02.516124
+Starting Ungrib and Metgrid at: 2019-10-30 13:30:09.600786
+Ungrib and Metgrid ran in: 0:01:44.797275
+WPS ran successfully? True
+Starting Real at: 2019-10-30 13:31:55.130941
+Real ran in: 0:00:14.063240 seconds
+Real ran successfully? True
+Starting WRF at: 2019-10-30 13:32:09.194710
+wrf has failed. Last message:
+-------------------------------------------
+
+wrf has failed. Last message:
+-------------------------------------------
+
+WRF ran successfully? False
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Forecast starting on: 2011-01-15 00:00:00
+Forecast ending on: 2011-01-16 00:00:00
+Using ERA data for boundary condidions
+The corresponding Vtable is: ERA-interim.pl
+
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/data/ERA/2011-01-15_8mp99lw5sw2lsm1pbl4cu/ - No such file or directory.
+Submitted batch job 206
+Submitted batch job 207
+Submitted batch job 208
+Submitted batch job 209
+Done downloading data from RDA!
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_8mp99lw5sw2lsm1pbl4cu/ - No such file or directory.
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_8mp99lw5sw2lsm1pbl4cu
+Done writing WPS namelist
+Done writing WRF namelist
+
+Starting Geogrid at: 2019-10-30 13:37:52.208568
+Geogrid ran in: 0:02:44.449337
+Starting Ungrib and Metgrid at: 2019-10-30 13:40:36.658051
+Ungrib and Metgrid ran in: 0:01:44.999773
+WPS ran successfully? True
+Starting Real at: 2019-10-30 13:42:22.411120
+Real ran in: 0:00:12.183342 seconds
+Real ran successfully? True
+Starting WRF at: 2019-10-30 13:42:34.594958
+TimeoutError in run_wrf at 2019-10-30 16:42:38.506631: WRF took more than 3hrs to run... exiting.
+WRF ran successfully? False
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Forecast starting on: 2011-01-15 00:00:00
+Forecast ending on: 2011-01-16 00:00:00
+Using ERA data for boundary condidions
+The corresponding Vtable is: ERA-interim.pl
+
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/data/ERA/2011-01-15_10mp31lw99sw2lsm5pbl94cu/ - No such file or directory.
+Submitted batch job 210
+Submitted batch job 211
+Submitted batch job 212
+Submitted batch job 213
+E
+======================================================================
+ERROR: test (t_wrfga.WRFGATests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "t_wrfga.py", line 97, in test
+  File "t_wrfga.py", line 89, in fn_get_pop_fitness
+  File "t_wrfga.py", line 61, in get_wrf_fitness
+  File "runwrf.py", line 681, in wrf_era5_diff
+  File "runwrf.py", line 126, in rda_download
+  File "/home/jas983/.conda/envs/wrfga/lib/python2.7/site-packages/requests/structures.py", line 52, in __getitem__
+    return self._store[key.lower()][1]
+KeyError: 'content-length'
+
+----------------------------------------------------------------------
+Ran 1 test in 15777.355s
+
+FAILED (errors=1)
+Done downloading data from RDA!
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_10mp31lw99sw2lsm5pbl94cu/ - No such file or directory.
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_10mp31lw99sw2lsm5pbl94cu
+Done writing WPS namelist
+Done writing WRF namelist
+
+Starting Geogrid at: 2019-10-30 16:43:22.571549
+Geogrid ran in: 0:03:00.566026
+Starting Ungrib and Metgrid at: 2019-10-30 16:46:23.137705
+Ungrib and Metgrid ran in: 0:01:44.798234
+WPS ran successfully? True
+Starting Real at: 2019-10-30 16:48:08.679049
+Real ran in: 0:00:16.064458 seconds
+Real ran successfully? True
+Starting WRF at: 2019-10-30 16:48:24.744004
+WRF finished running at: 2019-10-30 17:49:19.906147
+WRF ran in: 1:00:55.162394
+WRF ran successfully? True
