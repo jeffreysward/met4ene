@@ -57,7 +57,7 @@ begin
     ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA5/" 
     
     ;---2m temperature
-    ERAfile  = "e5.oper.an.sfc.128_167_2t.ll025sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.128_167_2t.ll025sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile1 = addfile(ERAdir+ERAfile, "r")
     else
@@ -68,7 +68,7 @@ begin
     end if 
     
     ;---10m U wind component
-    ERAfile  = "e5.oper.an.sfc.128_165_10u.ll025sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.128_165_10u.ll025sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile2 = addfile(ERAdir+ERAfile, "r")
     else
@@ -79,7 +79,7 @@ begin
     end if
     
     ;---10m V wind component
-    ERAfile  = "e5.oper.an.sfc.128_166_10v.ll025sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.128_166_10v.ll025sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile3 = addfile(ERAdir+ERAfile, "r")
     else
@@ -90,7 +90,7 @@ begin
     end if
     
     ;---100m U wind component
-    ERAfile  = "e5.oper.an.sfc.228_246_100u.ll025sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.228_246_100u.ll025sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile4 = addfile(ERAdir+ERAfile, "r")
     else
@@ -101,7 +101,7 @@ begin
     end if
 
     ;---100m V wind component
-    ERAfile  = "e5.oper.an.sfc.228_247_100v.ll025sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
+    ERAfile  = "EastUS_e5.oper.an.sfc.228_247_100v.ll025sc." + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) + "0100_" + sprinti("%0.4i", in_yr) + sprinti("%0.2i", in_mo) +  "3123.nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile5 = addfile(ERAdir+ERAfile, "r")
     else
