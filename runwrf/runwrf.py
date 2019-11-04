@@ -669,15 +669,15 @@ def wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir):
 
     # Download ERA5 data for benchmarking
     if on_cheyenne:
-        DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds630.0/e5.oper.an.sfc/'
+        DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds633.0/e5.oper.an.sfc/'
         DATA_ROOT1 = DATA_ROOT1 + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
     else:
         ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
-        datpfx1 = 'e5.oper.an.sfc.128_165_10u.regn320sc.'
-        datpfx2 = 'e5.oper.an.sfc.128_166_10v.regn320sc.'
-        datpfx3 = 'e5.oper.an.sfc.128_167_2t.regn320sc.'
-        datpfx4 = 'e5.oper.an.sfc.228_246_100u.regn320sc.'
-        datpfx5 = 'e5.oper.an.sfc.228_247_100v.regn320sc.'
+        datpfx1 = 'e5.oper.an.sfc.128_165_10u.ll025sc.'
+        datpfx2 = 'e5.oper.an.sfc.128_166_10v.ll025sc.'
+        datpfx3 = 'e5.oper.an.sfc.128_167_2t.ll025sc.'
+        datpfx4 = 'e5.oper.an.sfc.228_246_100u.ll025sc.'
+        datpfx5 = 'e5.oper.an.sfc.228_247_100v.ll025sc.'
         if not os.path.exists(ERA5_ROOT + datpfx1 + forecast_start.strftime('%Y')
                               + forecast_start.strftime('%m') + '0100_'
                               + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc'):
@@ -687,7 +687,7 @@ def wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir):
                 os.mkdir(ERA5_ROOT)
             os.chdir(ERA5_ROOT)
             # The following define paths to the required data on the RDA site
-            dspath = 'http://rda.ucar.edu/data/ds630.0/'
+            dspath = 'http://rda.ucar.edu/data/ds633.0/'
             DATA_ROOT1 = 'e5.oper.an.sfc/' + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
 
             # Build the file list to be downloaded from the RDA
@@ -706,7 +706,7 @@ def wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir):
                         DATA_ROOT1 + datpfx5 + forecast_start.strftime('%Y')
                         + forecast_start.strftime('%m') + '0100_'
                         + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc']
-
+            print(filelist)
             # Download the data from the RDA
             rda_download(filelist, dspath)
 
