@@ -81,8 +81,8 @@ def print_last_3lines(file_name):
         print('IOError in print_last_3lines: this file does not currently exist.')
         return
     try:
-        txt = lines[-3:-1]
-        print(txt)
+        txt = lines[-4:-1]
+        print('\n'.join(txt))
     except IndexError:
         print('IndexError in print_last_3lines: there do not appear to be at least three lines in this file.')
         return
@@ -111,7 +111,7 @@ def runwrf_finish_check(program):
         complete = False
         failed = False
     if failed:
-        print('{} has failed. Last message:\n{}'.format(program, msg))
+	print('ERROR: {} has failed. Last message was:\n{}'.format(program, msg))
         return 'failed'
     elif complete:
         return 'complete'
@@ -564,12 +564,14 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
     startTimeInt = int(time.time())
     print('Starting Geogrid at: ' + str(startTime))
     os.system(CMD_GEOGRID)
-    while runwrf_finish_check('geogrid') is not 'complete':
-        if runwrf_finish_check('geogrid') is 'failed':
+    geogrid_sim = runwrf_finish_check('geogrid')
+    while geogrid_sim is not 'complete':
+        if geogrid_sim is 'failed':
             print_last_3lines('output.geogrid')
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
+	    geogrid_sim = runwrf_finish_check('geogrid')
         else:
             print('TimeoutError in run_wps: Geogrid took more than 10min to run... exiting.')
             return False
@@ -581,12 +583,14 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
     startTimeInt = int(time.time())
     print('Starting Ungrib and Metgrid at: ' + str(startTime))
     os.system(CMD_UNGMETG)
-    while runwrf_finish_check('metgrid') is not 'complete':
-        if runwrf_finish_check('metgrid') is 'failed':
+    metgrid_sim = runwrf_finish_check('metgrid')
+    while metgrid_sim is not 'complete':
+        if metgrid_sim is 'failed':
             print_last_3lines('output.metgrid')
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
+	    metgrid_sim = runwrf_finish_check('metgrid')
         else:
             print('TimeoutError in run_wps: Ungrib and Metgrid took more than 10min to run... exiting.')
             return False
@@ -609,12 +613,14 @@ def run_real(paramstr, forecast_start, bc_data, template_dir):
     startTimeInt = int(time.time())
     print('Starting Real at: ' + str(startTime))
     os.system(CMD_REAL)
-    while runwrf_finish_check('real') is not 'complete':
-        if runwrf_finish_check('real') is 'failed':
+    real_sim = runwrf_finish_check('real')
+    while real_sim is not 'complete':
+        if real_sim is 'failed':
             print_last_3lines('rsl.out.0000')
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
+	    real_sim = runwrf_finish_check('real')
         else:
             print('TimeoutError in run_real: Real took more than 10min to run... exiting.')
             return False
@@ -636,14 +642,16 @@ def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
     os.system(CMD_WRF)
     # Make the script sleep for 5 minutes to allow for the rsl.out.0000 file to reset.
     time.sleep(300)
-    while runwrf_finish_check('wrf') is not 'complete':
-        if runwrf_finish_check('wrf') is 'failed':
+    wrf_sim = runwrf_finish_check('wrf')
+    while wrf_sim is not 'complete':
+        if wrf_sim is 'failed':
             print_last_3lines('rsl.out.0000')
             return False
-        elif (int(time.time()) - startTimeInt) < 14400:
+        elif (int(time.time()) - startTimeInt) < 7200:
             time.sleep(10)
+	    wrf_sim = runwrf_finish_check('wrf')
         else:
-	    print('TimeoutError in run_wrf at {}: WRF took more than 4hrs to run... exiting.'.format(datetime.datetime.now()))
+	    print('TimeoutError in run_wrf at {}: WRF took more than 2hrs to run... exiting.'.format(datetime.datetime.now()))
             return False
     print('WRF finished running at: ' + str(datetime.datetime.now()))
     elapsed = datetime.datetime.now() - startTime
@@ -727,5 +735,6 @@ def wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir):
     mae[-1] = mae[-1].strip()
     mae = [float(i) for i in mae]
     total_error = sum(mae)
-    print('Parameters {} have a total error {}'.format(paramstr, mae))
+    print('!!! Parameters {} have a total error {}'.format(paramstr, mae))
+    os.chdir(DIR_RUNWRF)
     return total_error
