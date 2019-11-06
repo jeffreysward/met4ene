@@ -167,7 +167,7 @@ def pbl2sfclay(id_pbl, rnd=False):
     elif id_pbl == 12:
         id_sfclay = 1
     else:
-        print('No valid PBL scheme specified; turning off surface layer schemem.')
+        print('No valid PBL scheme specified; turning off surface layer scheme.')
         id_sfclay = 0
 
     return id_sfclay
