@@ -2,6 +2,7 @@ import unittest
 import wrfga
 import datetime
 import random
+import os
 from wrfparams import ids2str, write_param_csv
 import runwrf as rw
 
@@ -78,6 +79,9 @@ class WRFGATests(unittest.TestCase):
         n_generations = 1
         optimal_fitness = 0
 
+	def fn_chdir_runwrf():
+	    os.chdir('/share/mzhang/jas983/wrf_data/met4ene/runwrf')
+
         def fn_display(individual):
             wrfga.display(individual, start_time)
 
@@ -101,6 +105,8 @@ class WRFGATests(unittest.TestCase):
         gen = 1
         while gen <= n_generations:
             print('\n------ Starting generation {} ------'.format(gen))
+	    # Make sure you're in the runwrf dir
+	    fn_chdir_runwrf()
             # Select the mating population
             mating_pop = wrfga.selection(population, pop_size)
             print('The mating population is:')

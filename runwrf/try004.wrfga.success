@@ -1,0 +1,362 @@
+The number of elites is 1
+The following parameters were generated: [17, 4, 5, 8, 10, 14, 10]
+The following parameters were generated: [4, 24, 99, 8, 11, 93, 1]
+The following parameters were generated: [28, 3, 0, 2, 11, 6, 1]
+The following parameters were generated: [7, 7, 24, 8, 1, 6, 1]
+The following parameters were generated: [2, 7, 5, 2, 9, 3, 1]
+Calculating the fitness of the initial population...
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Calculating fitness for: [17, 4, 5, 8, 10, 14, 10]
+Forecast starting on: 2011-01-15 00:00:00
+Forecast ending on: 2011-01-16 00:00:00
+Using ERA data for boundary condidions
+The corresponding Vtable is: ERA-interim.pl
+
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/data/ERA/2011-01-15_17mp4lw5sw8lsm10pbl14cu/ - No such file or directory.
+Submitted batch job 261
+Submitted batch job 262
+Submitted batch job 263
+Done downloading data from RDA!
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_17mp4lw5sw8lsm10pbl14cu/ - No such file or directory.
+Your wrfout directory is:
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_17mp4lw5sw8lsm10pbl14cu
+Done writing WPS namelist
+Done writing WRF namelist
+
+Starting Geogrid at: 2019-11-05 13:09:46.431723
+Geogrid ran in: 0:03:00.455655
+Starting Ungrib and Metgrid at: 2019-11-05 13:12:46.887787
+Ungrib and Metgrid ran in: 0:01:44.522971
+WPS ran successfully? True
+Starting Real at: 2019-11-05 13:14:32.106949
+ERROR: real has failed. Last message was:
+-------------------------------------------
+
+-------------- FATAL CALLED ---------------
+
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2686
+
+The first two eta levels are too shallow for SSIB LSM scheme.
+
+Real ran successfully? False
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Calculating fitness for: [4, 24, 99, 8, 11, 93, 1]
+Forecast starting on: 2011-01-15 00:00:00
+Forecast ending on: 2011-01-16 00:00:00
+Using ERA data for boundary condidions
+The corresponding Vtable is: ERA-interim.pl
+
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/data/ERA/2011-01-15_4mp24lw99sw8lsm11pbl93cu/ - No such file or directory.
+Submitted batch job 264
+Submitted batch job 265
+Submitted batch job 266
+Done downloading data from RDA!
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_4mp24lw99sw8lsm11pbl93cu/ - No such file or directory.
+Your wrfout directory is:
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_4mp24lw99sw8lsm11pbl93cu
+Done writing WPS namelist
+Done writing WRF namelist
+
+Starting Geogrid at: 2019-11-05 13:15:24.113060
+Geogrid ran in: 0:02:42.363830
+Starting Ungrib and Metgrid at: 2019-11-05 13:18:06.477024
+Ungrib and Metgrid ran in: 0:01:44.759077
+WPS ran successfully? True
+Starting Real at: 2019-11-05 13:19:51.924568
+ERROR: real has failed. Last message was:
+-------------------------------------------
+
+-------------- FATAL CALLED ---------------
+
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2686
+
+The first two eta levels are too shallow for SSIB LSM scheme.
+
+Real ran successfully? False
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Calculating fitness for: [28, 3, 0, 2, 11, 6, 1]
+Forecast starting on: 2011-01-15 00:00:00
+Forecast ending on: 2011-01-16 00:00:00
+Using ERA data for boundary condidions
+The corresponding Vtable is: ERA-interim.pl
+
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/data/ERA/2011-01-15_28mp3lw0sw2lsm11pbl6cu/ - No such file or directory.
+Submitted batch job 267
+Submitted batch job 268
+Submitted batch job 269
+Submitted batch job 270
+Done downloading data from RDA!
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_28mp3lw0sw2lsm11pbl6cu/ - No such file or directory.
+Your wrfout directory is:
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_28mp3lw0sw2lsm11pbl6cu
+Done writing WPS namelist
+Done writing WRF namelist
+
+Starting Geogrid at: 2019-11-05 13:20:56.697103
+Geogrid ran in: 0:02:44.375379
+Starting Ungrib and Metgrid at: 2019-11-05 13:23:41.072629
+Ungrib and Metgrid ran in: 0:01:44.913224
+WPS ran successfully? True
+Starting Real at: 2019-11-05 13:25:26.686020
+Real ran in: 0:00:22.071593 seconds
+Real ran successfully? True
+Starting WRF at: 2019-11-05 13:25:48.758154
+TimeoutError in run_wrf at 2019-11-05 15:25:56.896783: WRF took more than 2hrs to run... exiting.
+WRF ran successfully? False
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Calculating fitness for: [7, 7, 24, 8, 1, 6, 1]
+Forecast starting on: 2011-01-15 00:00:00
+Forecast ending on: 2011-01-16 00:00:00
+Using ERA data for boundary condidions
+The corresponding Vtable is: ERA-interim.pl
+
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/data/ERA/2011-01-15_7mp7lw24sw8lsm1pbl6cu/ - No such file or directory.
+Submitted batch job 271
+Submitted batch job 272
+Submitted batch job 273
+Done downloading data from RDA!
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_7mp7lw24sw8lsm1pbl6cu/ - No such file or directory.
+Your wrfout directory is:
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_7mp7lw24sw8lsm1pbl6cu
+Done writing WPS namelist
+Done writing WRF namelist
+
+Starting Geogrid at: 2019-11-05 15:26:38.994736
+Geogrid ran in: 0:03:32.545296
+Starting Ungrib and Metgrid at: 2019-11-05 15:30:11.540171
+Ungrib and Metgrid ran in: 0:01:44.329381
+WPS ran successfully? True
+Starting Real at: 2019-11-05 15:31:56.533378
+ERROR: real has failed. Last message was:
+-------------------------------------------
+
+-------------- FATAL CALLED ---------------
+
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2686
+
+The first two eta levels are too shallow for SSIB LSM scheme.
+
+Real ran successfully? False
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Calculating fitness for: [2, 7, 5, 2, 9, 3, 1]
+Forecast starting on: 2011-01-15 00:00:00
+Forecast ending on: 2011-01-16 00:00:00
+Using ERA data for boundary condidions
+The corresponding Vtable is: ERA-interim.pl
+
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/data/ERA/2011-01-15_2mp7lw5sw2lsm9pbl3cu/ - No such file or directory.
+Submitted batch job 274
+Submitted batch job 275
+Submitted batch job 276
+Submitted batch job 277
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_2mp7lw5sw2lsm9pbl3cu
+ Copyright (C) 1995-2019 - All Rights Reserved
+ University Corporation for Atmospheric Research
+ NCAR Command Language Version 6.6.2
+ The use of this software is governed by a License Agreement.
+ See http://www.ncl.ucar.edu/ for more details.
+Done downloading data from RDA!
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_2mp7lw5sw2lsm9pbl3cu/ - No such file or directory.
+Your wrfout directory is:
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_2mp7lw5sw2lsm9pbl3cu
+Done writing WPS namelist
+Done writing WRF namelist
+
+Starting Geogrid at: 2019-11-05 15:33:03.068919
+Geogrid ran in: 0:02:42.370348
+Starting Ungrib and Metgrid at: 2019-11-05 15:35:45.439478
+Ungrib and Metgrid ran in: 0:01:44.684977
+WPS ran successfully? True
+Starting Real at: 2019-11-05 15:37:30.822753
+Real ran in: 0:00:24.074437 seconds
+Real ran successfully? True
+Starting WRF at: 2019-11-05 15:37:54.897743
+WRF finished running at: 2019-11-05 17:11:52.278137
+WRF ran in: 1:33:57.380820
+WRF ran successfully? True
+!!! Parameters 2mp7lw5sw2lsm9pbl3cu have a total error [41440.57, 1979.03, 1963.02, 4052.63, 4263.36]
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: 10000000000	Elapsed Time: 4:03:43.837642
+Genes:[4, 24, 99, 8, 11, 93, 1]	Fitness: 10000000000	Elapsed Time: 4:03:43.837893
+Genes:[28, 3, 0, 2, 11, 6, 1]	Fitness: 10000000000	Elapsed Time: 4:03:43.837960
+Genes:[7, 7, 24, 8, 1, 6, 1]	Fitness: 10000000000	Elapsed Time: 4:03:43.838014
+Genes:[2, 7, 5, 2, 9, 3, 1]	Fitness: 53698.61	Elapsed Time: 4:03:43.838124
+
+------ Starting generation 1 ------
+The tournament fitness values are: [10000000000, 10000000000]
+The tournament fitness values are: [10000000000, 10000000000]
+The mating population is:
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: 10000000000	Elapsed Time: 4:03:43.838555
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: 10000000000	Elapsed Time: 4:03:43.838617
+The offspring population is:
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: None	Elapsed Time: 4:03:43.838876
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: None	Elapsed Time: 4:03:43.838936
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: None	Elapsed Time: 4:03:43.838986
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: None	Elapsed Time: 4:03:43.839076
+The following parameters were generated: [2, 3, 99, 5, 4, 3, 4]
+--> Mutating gene in position 0 in child [17, 4, 5, 8, 10, 14, 10].
+The offspring population after mutation is:
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: None	Elapsed Time: 4:03:43.923799
+Genes:[2, 4, 5, 8, 10, 14, 10]	Fitness: None	Elapsed Time: 4:03:43.923895
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: None	Elapsed Time: 4:03:43.923952
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: None	Elapsed Time: 4:03:43.924002
+The elites moving to the next generation are: 
+Genes:[2, 7, 5, 2, 9, 3, 1]	Fitness: 53698.61	Elapsed Time: 4:03:43.924191
+The offspring population after adding the elites is:
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: None	Elapsed Time: 4:03:43.924293
+Genes:[2, 4, 5, 8, 10, 14, 10]	Fitness: None	Elapsed Time: 4:03:43.924388
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: None	Elapsed Time: 4:03:43.924477
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: None	Elapsed Time: 4:03:43.924562
+Genes:[2, 7, 5, 2, 9, 3, 1]	Fitness: 53698.61	Elapsed Time: 4:03:43.924619
+Calculating the fitness of the generation 1 population...
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Calculating fitness for: [17, 4, 5, 8, 10, 14, 10]
+Forecast starting on: 2011-01-15 00:00:00
+Forecast ending on: 2011-01-16 00:00:00
+Using ERA data for boundary condidions
+The corresponding Vtable is: ERA-interim.pl
+
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/data/ERA/2011-01-15_17mp4lw5sw8lsm10pbl14cu/ - No such file or directory.
+Submitted batch job 278
+Submitted batch job 279
+Submitted batch job 280
+Done downloading data from RDA!
+Your wrfout directory is:
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_17mp4lw5sw8lsm10pbl14cu
+Done writing WPS namelist
+Done writing WRF namelist
+
+Starting Geogrid at: 2019-11-05 17:13:29.666784
+Geogrid ran in: 0:02:44.366529
+Starting Ungrib and Metgrid at: 2019-11-05 17:16:14.033552
+Ungrib and Metgrid ran in: 0:01:44.550523
+WPS ran successfully? True
+Starting Real at: 2019-11-05 17:17:59.278364
+ERROR: real has failed. Last message was:
+-------------------------------------------
+
+-------------- FATAL CALLED ---------------
+
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2686
+
+The first two eta levels are too shallow for SSIB LSM scheme.
+
+Real ran successfully? False
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Calculating fitness for: [2, 4, 5, 8, 10, 14, 10]
+Forecast starting on: 2011-01-15 00:00:00
+Forecast ending on: 2011-01-16 00:00:00
+Using ERA data for boundary condidions
+The corresponding Vtable is: ERA-interim.pl
+
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/data/ERA/2011-01-15_2mp4lw5sw8lsm10pbl14cu/ - No such file or directory.
+Submitted batch job 281
+Submitted batch job 282
+Submitted batch job 283
+Done downloading data from RDA!
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_2mp4lw5sw8lsm10pbl14cu/ - No such file or directory.
+Your wrfout directory is:
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_2mp4lw5sw8lsm10pbl14cu
+Done writing WPS namelist
+Done writing WRF namelist
+
+Starting Geogrid at: 2019-11-05 17:19:06.031825
+Geogrid ran in: 0:02:42.365357
+Starting Ungrib and Metgrid at: 2019-11-05 17:21:48.397354
+Ungrib and Metgrid ran in: 0:01:44.850813
+WPS ran successfully? True
+Starting Real at: 2019-11-05 17:23:33.930070
+ERROR: real has failed. Last message was:
+-------------------------------------------
+
+-------------- FATAL CALLED ---------------
+
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2686
+
+The first two eta levels are too shallow for SSIB LSM scheme.
+
+Real ran successfully? False
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Calculating fitness for: [17, 4, 5, 8, 10, 14, 10]
+Forecast starting on: 2011-01-15 00:00:00
+Forecast ending on: 2011-01-16 00:00:00
+Using ERA data for boundary condidions
+The corresponding Vtable is: ERA-interim.pl
+
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/data/ERA/2011-01-15_17mp4lw5sw8lsm10pbl14cu/ - No such file or directory.
+Submitted batch job 284
+Submitted batch job 285
+Submitted batch job 286
+Done downloading data from RDA!
+Your wrfout directory is:
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_17mp4lw5sw8lsm10pbl14cu
+Done writing WPS namelist
+Done writing WRF namelist
+
+Starting Geogrid at: 2019-11-05 17:24:37.977213
+Geogrid ran in: 0:02:44.368085
+Starting Ungrib and Metgrid at: 2019-11-05 17:27:22.345492
+Ungrib and Metgrid ran in: 0:01:44.648796
+WPS ran successfully? True
+Starting Real at: 2019-11-05 17:29:07.658490
+ERROR: real has failed. Last message was:
+-------------------------------------------
+
+-------------- FATAL CALLED ---------------
+
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2686
+
+The first two eta levels are too shallow for SSIB LSM scheme.
+
+Real ran successfully? False
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Calculating fitness for: [17, 4, 5, 8, 10, 14, 10]
+Forecast starting on: 2011-01-15 00:00:00
+Forecast ending on: 2011-01-16 00:00:00
+Using ERA data for boundary condidions
+The corresponding Vtable is: ERA-interim.pl
+
+OSError in remove_dir: /share/mzhang/jas983/wrf_data/data/ERA/2011-01-15_17mp4lw5sw8lsm10pbl14cu/ - No such file or directory.
+Submitted batch job 287
+Submitted batch job 288
+Submitted batch job 289
+.
+----------------------------------------------------------------------
+Ran 1 test in 15959.492s
+
+OK
+Done downloading data from RDA!
+Your wrfout directory is:
+/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_17mp4lw5sw8lsm10pbl14cu
+Done writing WPS namelist
+Done writing WRF namelist
+
+Starting Geogrid at: 2019-11-05 17:30:12.705282
+Geogrid ran in: 0:02:42.363479
+Starting Ungrib and Metgrid at: 2019-11-05 17:32:55.068898
+Ungrib and Metgrid ran in: 0:01:44.557437
+WPS ran successfully? True
+Starting Real at: 2019-11-05 17:34:40.320155
+ERROR: real has failed. Last message was:
+-------------------------------------------
+
+-------------- FATAL CALLED ---------------
+
+FATAL CALLED FROM FILE:  <stdin>  LINE:    2686
+
+The first two eta levels are too shallow for SSIB LSM scheme.
+
+Real ran successfully? False
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: 10000000000	Elapsed Time: 4:25:59.489831
+Genes:[2, 4, 5, 8, 10, 14, 10]	Fitness: 10000000000	Elapsed Time: 4:25:59.490064
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: 10000000000	Elapsed Time: 4:25:59.490153
+Genes:[17, 4, 5, 8, 10, 14, 10]	Fitness: 10000000000	Elapsed Time: 4:25:59.490209
+Genes:[2, 7, 5, 2, 9, 3, 1]	Fitness: 53698.61	Elapsed Time: 4:25:59.490259
