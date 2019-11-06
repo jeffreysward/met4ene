@@ -85,9 +85,9 @@ class WRFGATests(unittest.TestCase):
             wrfga.display_pop(pop, fn_display)
 
         def fn_get_pop_fitness(pop):
-            for ii in range(0, len(pop)):
-                if pop[ii].Fitness is None:
-                    pop[ii].Fitness = get_wrf_fitness(pop[ii].Genes)
+            for individual in pop:
+                if individual.Fitness is None:
+                    individual.Fitness = get_fitness(individual.Genes)
             fn_display_pop(pop)
 
         # Create an initial population
