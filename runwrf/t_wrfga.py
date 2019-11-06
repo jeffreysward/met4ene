@@ -1,8 +1,9 @@
 import unittest
-import wrfga
 import datetime
 import random
 import os
+import concurrent.futures
+import wrfga
 from wrfparams import ids2str, write_param_csv
 import runwrf as rw
 
@@ -79,8 +80,8 @@ class WRFGATests(unittest.TestCase):
         n_generations = 1
         optimal_fitness = 0
 
-	def fn_chdir_runwrf():
-	    os.chdir('/share/mzhang/jas983/wrf_data/met4ene/runwrf')
+        def fn_chdir_runwrf():
+            os.chdir('/share/mzhang/jas983/wrf_data/met4ene/runwrf')
 
         def fn_display(individual):
             wrfga.display(individual, start_time)
@@ -89,10 +90,17 @@ class WRFGATests(unittest.TestCase):
             wrfga.display_pop(pop, fn_display)
 
         def fn_get_pop_fitness(pop):
-            for individual in pop:
-                if individual.Fitness is None:
-                    individual.Fitness = get_fitness(individual.Genes)
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                for individual in pop:
+                    if individual.Fitness is None:
+                        fitness_thread = executor.submit(get_fitness, individual.Genes)
+                        individual.Fitness = fitness_thread.result()
             fn_display_pop(pop)
+            # # The following block is legacy code to run in serial
+            # for individual in pop:
+            #     if individual.Fitness is None:
+            #         individual.Fitness = get_fitness(individual.Genes)
+            # fn_display_pop(pop)
 
         # Create an initial population
         population = wrfga.generate_population(pop_size)
@@ -105,8 +113,8 @@ class WRFGATests(unittest.TestCase):
         gen = 1
         while gen <= n_generations:
             print('\n------ Starting generation {} ------'.format(gen))
-	    # Make sure you're in the runwrf dir
-	    fn_chdir_runwrf()
+            # # Make sure you're in the runwrf dir
+	        # fn_chdir_runwrf()
             # Select the mating population
             mating_pop = wrfga.selection(population, pop_size)
             print('The mating population is:')
@@ -135,6 +143,8 @@ class WRFGATests(unittest.TestCase):
             # Initialize the next generation
             population = offspring_pop
             gen += 1
+
+        print(f'...WRFga finished running in {datetime.datetime.now() - start_time}...')
 
         self.assertEqual(0, optimal_fitness)
 

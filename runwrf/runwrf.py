@@ -111,7 +111,7 @@ def runwrf_finish_check(program):
         complete = False
         failed = False
     if failed:
-	print('ERROR: {} has failed. Last message was:\n{}'.format(program, msg))
+        print('ERROR: {} has failed. Last message was:\n{}'.format(program, msg))
         return 'failed'
     elif complete:
         return 'complete'
@@ -191,7 +191,7 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
                    (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
         DIR_LOCAL_TMP = '/glade/scratch/sward/met4ene/wrfout/%s_' + paramstr % \
                         (forecast_start.strftime('%Y-%m-%d'))
-	DIR_RUNWRF = '/glade/scratch/sward/met4ene/runwrf/'
+        DIR_RUNWRF = '/glade/scratch/sward/met4ene/runwrf/'
     elif on_aws:
         DIR_WPS = '/home/ec2-user/environment/Build_WRF/WPS/'
         DIR_WRF = '/home/ec2-user/environment/Build_WRF/WRF/'
@@ -200,7 +200,7 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
                    (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
         DIR_LOCAL_TMP = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_' % \
                         (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
-	DIR_RUNWRF = '/home/ec2-user/environment/met4ene/runwrf/'
+        DIR_RUNWRF = '/home/ec2-user/environment/met4ene/runwrf/'
     else:
         DIR_WPS = '/home/jas983/models/wrf/WPS/'
         DIR_WRF = '/home/jas983/models/wrf/WRF/'
@@ -209,7 +209,7 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
                    (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
         DIR_LOCAL_TMP = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
                         (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
-	DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
+        DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
 
     # Define a directory containing:
     # a) namelist.wps and namelist.input templates
@@ -285,7 +285,7 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt):
 
     # If no data directory exists, create one
     if not os.path.exists(DIR_DATA):
-        os.makedirs(DIR_DATA, 0755)
+        os.makedirs(DIR_DATA, 0o755)
     os.chdir(DIR_DATA)
     i = int(forecast_start.day)
     n = int(forecast_start.day) + int(delt.days)
@@ -347,7 +347,7 @@ def wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx):
 
     # Clean potential old simulation dir, remake the dir, and enter it.
     lh.remove_dir(DIR_LOCAL_TMP)
-    os.makedirs(DIR_LOCAL_TMP, 0755)
+    os.makedirs(DIR_LOCAL_TMP, 0o755)
     os.chdir(DIR_LOCAL_TMP)
 
     # Link WRF tables, data, and executables.
@@ -571,7 +571,7 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
-	    geogrid_sim = runwrf_finish_check('geogrid')
+            geogrid_sim = runwrf_finish_check('geogrid')
         else:
             print('TimeoutError in run_wps: Geogrid took more than 10min to run... exiting.')
             return False
@@ -590,7 +590,7 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
-	    metgrid_sim = runwrf_finish_check('metgrid')
+            metgrid_sim = runwrf_finish_check('metgrid')
         else:
             print('TimeoutError in run_wps: Ungrib and Metgrid took more than 10min to run... exiting.')
             return False
@@ -620,7 +620,7 @@ def run_real(paramstr, forecast_start, bc_data, template_dir):
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
-	    real_sim = runwrf_finish_check('real')
+            real_sim = runwrf_finish_check('real')
         else:
             print('TimeoutError in run_real: Real took more than 10min to run... exiting.')
             return False
@@ -649,9 +649,9 @@ def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
             return False
         elif (int(time.time()) - startTimeInt) < 7200:
             time.sleep(10)
-	    wrf_sim = runwrf_finish_check('wrf')
+            wrf_sim = runwrf_finish_check('wrf')
         else:
-	    print('TimeoutError in run_wrf at {}: WRF took more than 2hrs to run... exiting.'.format(datetime.datetime.now()))
+            print('TimeoutError in run_wrf at {}: WRF took more than 2hrs to run... exiting.'.format(datetime.datetime.now()))
             return False
     print('WRF finished running at: ' + str(datetime.datetime.now()))
     elapsed = datetime.datetime.now() - startTime

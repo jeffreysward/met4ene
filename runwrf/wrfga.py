@@ -1,5 +1,6 @@
 import random
 import time
+import statistics
 import wrfparams
 import sys
 import datetime
