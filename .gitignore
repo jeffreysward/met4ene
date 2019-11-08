@@ -40,3 +40,5 @@ optNYpvw*
 **/optNYpvw*
 .idea/workspace.xml
 **/.idea*
+**/__pycache__*
+*.pyc

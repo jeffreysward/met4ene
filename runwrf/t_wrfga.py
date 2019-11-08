@@ -7,6 +7,41 @@ import time
 import wrfga
 from wrfparams import ids2str, write_param_csv
 import runwrf as rw
+import sqlite3
+from wrfga import Chromosome
+
+
+def insert_sim(individual, conn, c):
+    print(individual.Genes)
+    with conn:
+        c.execute("""INSERT INTO simulations VALUES (
+                    :mp_physics, :ra_lw_physics, :ra_sw_physics, :sf_surface_physics, 
+                    :bl_pbl_physics, :cu_physics, :sf_sfclay_physics, :fitness)""",
+            {'mp_physics': individual.Genes[0], 'ra_lw_physics': individual.Genes[1],
+             'ra_sw_physics': individual.Genes[2], 'sf_surface_physics': individual.Genes[3],
+             'bl_pbl_physics': individual.Genes[4], 'cu_physics': individual.Genes[5],
+             'sf_sfclay_physics': individual.Genes[6], 'fitness': individual.Fitness})
+
+
+def get_individual_by_genes(geneset, c):
+    c.execute("""SELECT * FROM simulations 
+                WHERE mp_physics = :mp_physics
+                AND ra_lw_physics = :ra_lw_physics
+                AND ra_sw_physics = :ra_sw_physics
+                AND sf_surface_physics = :sf_surface_physics
+                AND bl_pbl_physics = :bl_pbl_physics
+                AND cu_physics = :cu_physics
+                AND sf_sfclay_physics = :sf_sfclay_physics""",
+              {'mp_physics': geneset[0], 'ra_lw_physics': geneset[1],
+               'ra_sw_physics': geneset[2], 'sf_surface_physics': geneset[3],
+               'bl_pbl_physics': geneset[4], 'cu_physics': geneset[5],
+               'sf_sfclay_physics': geneset[6]})
+    sim_data = c.fetchone()
+    if sim_data is not None:
+        past_sim = Chromosome(list(sim_data[0:-1]), sim_data[-1])
+    else:
+        return None
+    return past_sim
 
 
 # class Fitness:
@@ -75,6 +110,19 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
 
 class WRFGATests(unittest.TestCase):
     def test(self):
+        conn = sqlite3.connect(':memory:')
+        c = conn.cursor()
+        c.execute("""CREATE TABLE simulations (
+                    mp_physics INTEGER, 
+                    ra_lw_physics INTEGER,
+                    ra_sw_physics INTEGER,
+                    sf_surface_physics INTEGER,
+                    bl_pbl_physics INTEGER,
+                    cu_physics INTEGER,
+                    sf_sfclay_physics INTEGER,
+                    fitness FLOAT 
+                    )""")
+
         start_time = datetime.datetime.now()
         pop_size = 10
         n_elites = int(0.34*pop_size) if int(0.34*pop_size) > 0 else 1
@@ -97,10 +145,13 @@ class WRFGATests(unittest.TestCase):
                 fitness_threads = []
                 for individual in pop:
                     if individual.Fitness is None:
-                        # Check to see if this individual already exists in the simulation history
-                        simulation_history.get(individual.Genes)
-                        # If not, run execute a new thread
-                        fitness_threads.append(executor.submit(get_fitness, individual.Genes))
+                        # Check to see if this individual already exists in the simulation database
+                        past_individual = get_individual_by_genes(individual.Genes, c)
+                        # If not, execute a new thread to calculate the fitness
+                        if past_individual is None:
+                            fitness_threads.append(executor.submit(get_fitness, individual.Genes))
+                        else:
+                            individual.Fitness = past_individual.Fitness
                     else:
                         fitness_threads.append(None)
                 # Get the results from the thread pool executor
@@ -171,6 +222,8 @@ class WRFGATests(unittest.TestCase):
         WRFga_winner = wrfga.get_best(population)
         print(f'\nWRFga finished running in {datetime.datetime.now() - start_time}')
         print(f'{WRFga_winner.Genes} is the best parameter combination')
+
+        conn.close()
 
         self.assertEqual(0, optimal_fitness)
 
