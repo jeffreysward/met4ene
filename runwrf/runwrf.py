@@ -92,13 +92,13 @@ def runwrf_finish_check(program):
     if program == 'geogrid':
         msg = read_2nd2_last_line('output.geogrid')
         complete = 'Successful completion of geogrid' in msg
-        # Not sure if this is actually the correct failure message
-        failed = '-------------------------------------------' in msg
+        # Not sure what the correct failure message should be
+        failed = False
     elif program == 'metgrid':
         msg = read_2nd2_last_line('output.metgrid')
         complete = 'Successful completion of metgrid' in msg
-        # Not sure if this is actually the correct failure message
-        failed = '-------------------------------------------' in msg
+        # Not sure what the correct failure message should be
+        failed = False
     elif program == 'real':
         msg = read_last_line('rsl.out.0000')
         complete = 'SUCCESS COMPLETE REAL' in msg
@@ -205,8 +205,9 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
         DIR_WPS = '/home/jas983/models/wrf/WPS/'
         DIR_WRF = '/home/jas983/models/wrf/WRF/'
         DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
-        DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(bc_data) + '/%s_' % \
-                   (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
+        DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(bc_data) + '/'
+	# DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(bc_data) + '/%s_' % \
+        #           (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
         DIR_LOCAL_TMP = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
                         (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
         DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
@@ -281,7 +282,7 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt):
     print('The corresponding Vtable is: {}\n'.format(vtable_sfx))
 
     # Make sure any existing data directory has been removed
-    lh.remove_dir(DIR_DATA)
+    # lh.remove_dir(DIR_DATA)
 
     # If no data directory exists, create one
     if not os.path.exists(DIR_DATA):
@@ -329,9 +330,10 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt):
         if data_exists.count(True) is len(file_check):
             print('Boundary condition data was previously downloaded from RDA.')
             return vtable_sfx
-
-        # Download the data from the RDA
-        rda_download(filelist, dspath)
+        else:
+            # Download the data from the RDA
+            rda_download(filelist, dspath)
+    os.chdir(DIR_RUNWRF)
     return vtable_sfx
 
 
@@ -598,7 +600,7 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
     print('Ungrib and Metgrid ran in: ' + str(elapsed))
 
     # Remove the data directory after WPS has run
-    lh.remove_dir(DIR_DATA)
+    # lh.remove_dir(DIR_DATA)
     return True
 
 

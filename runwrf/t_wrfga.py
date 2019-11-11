@@ -149,7 +149,7 @@ class WRFGATests(unittest.TestCase):
                         past_individual = get_individual_by_genes(individual.Genes, c)
                         # If not, execute a new thread to calculate the fitness
                         if past_individual is None:
-                            fitness_threads.append(executor.submit(get_fitness, individual.Genes))
+                            fitness_threads.append(executor.submit(get_wrf_fitness, individual.Genes))
                         else:
                             individual.Fitness = past_individual.Fitness
                             fitness_threads.append(None)
@@ -189,8 +189,8 @@ class WRFGATests(unittest.TestCase):
         gen = 1
         while gen <= n_generations:
             print('\n------ Starting generation {} ------'.format(gen))
-            # # Make sure you're in the runwrf dir
-	        # fn_chdir_runwrf()
+            # Make sure you're in the runwrf dir
+            fn_chdir_runwrf()
             # Select the mating population
             mating_pop = wrfga.selection(population, pop_size)
             print('The mating population is:')
