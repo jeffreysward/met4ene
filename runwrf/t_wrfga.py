@@ -83,29 +83,30 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
                          bc_data, template_dir, MAX_DOMAINS)
 
     # RUN WPS
-    success = rw.run_wps(paramstr, forecast_start, bc_data, template_dir)
-    print('WPS ran successfully? {}'.format(success))
+    #success = rw.run_wps(paramstr, forecast_start, bc_data, template_dir)
+    #print('WPS ran successfully? {}'.format(success))
 
     # RUN REAL
-    if success:
-        success = rw.run_real(paramstr, forecast_start, bc_data, template_dir)
-        print('Real ran successfully? {}'.format(success))
+    #if success:
+    #    success = rw.run_real(paramstr, forecast_start, bc_data, template_dir)
+    #    print('Real ran successfully? {}'.format(success))
 
     # RUN WRF
-    if success:
-        success = rw.run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS)
-        print('WRF ran successfully? {}'.format(success))
+    #if success:
+    #    success = rw.run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS)
+    #    print('WRF ran successfully? {}'.format(success))
 
     # Compute the error between WRF run and ERA5 dataset and return fitness
-    if success:
-        fitness = rw.wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir)
-    else:
-        fitness = 10**10
+    #if success:
+    #    fitness = rw.wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir)
+    #else:
+    #    fitness = 10**10
 
     # Write parameter combinations to CSV
     # (if you would like to restart this, you must manually delete this CSV)
-    write_param_csv(param_ids, fitness)
-    return fitness
+    #write_param_csv(param_ids, fitness)
+    #return fitness
+    return 0
 
 
 class WRFGATests(unittest.TestCase):

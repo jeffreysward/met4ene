@@ -93,23 +93,23 @@ def print_last_3lines(file_name):
         return
 
 
-def runwrf_finish_check(program):
+def runwrf_finish_check(program, DIR_LOCAL_TMP):
     if program == 'geogrid':
-        msg = read_2nd2_last_line('output.geogrid')
-        complete = 'Successful completion of geogrid' in msg
+        msg = read_last_line(DIR_LOCAL_TMP + 'geogrid.log')
+        complete = 'Successful completion of program geogrid' in msg
         # Not sure what the correct failure message should be
         failed = False
     elif program == 'metgrid':
-        msg = read_2nd2_last_line('output.metgrid')
-        complete = 'Successful completion of metgrid' in msg
+        msg = read_last_line(DIR_LOCAL_TMP + 'metgrid.log')
+        complete = 'Successful completion of program metgrid' in msg
         # Not sure what the correct failure message should be
         failed = False
     elif program == 'real':
-        msg = read_last_line('rsl.out.0000')
+        msg = read_last_line(DIR_LOCAL_TMP + 'rsl.out.0000')
         complete = 'SUCCESS COMPLETE REAL' in msg
         failed = '-------------------------------------------' in msg
     elif program == 'wrf':
-        msg = read_last_line('rsl.out.0000')
+        msg = read_last_line(DIR_LOCAL_TMP + 'rsl.out.0000')
         complete = 'SUCCESS COMPLETE WRF' in msg
         failed = '-------------------------------------------' in msg
     else:
@@ -138,6 +138,7 @@ def rda_download(filelist, dspath):
         return
 
     # Download files from RDA server
+    print('Downloading data from RDA...')
     for datafile in filelist:
         filename = dspath + datafile
         file_base = os.path.basename(datafile)
@@ -163,7 +164,7 @@ def check_file_status(filepath, filesize):
     sys.stdout.flush()
     size = int(os.stat(filepath).st_size)
     percent_complete = (size / filesize) * 100
-    sys.stdout.write('%.3f %s' % (percent_complete, '% Completed'))
+    sys.stdout.write('%.3f %s\n' % (percent_complete, '% Completed'))
     sys.stdout.flush()
 
 
@@ -235,22 +236,22 @@ def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
     CMD_CP = 'cp %s %s'
     CMD_MV = 'mv %s %s'
     CMD_CHMOD = 'chmod -R %s %s'
-    CMD_LINK_GRIB = DIR_WPS + 'link_grib.csh ' + DIR_DATA + '*'
+    CMD_LINK_GRIB = './link_grib.csh ' + DIR_DATA + '* ' + DIR_LOCAL_TMP 
     if on_cheyenne:
-        CMD_GEOGRID = 'qsub' + DIR_LOCAL_TMP + 'template_rungeogrid.csh'
-        CMD_UNGMETG = 'qsub' + DIR_LOCAL_TMP + 'template_runungmetg.csh'
-        CMD_REAL = 'qsub' + DIR_LOCAL_TMP + 'template_runreal.csh'
-        CMD_WRF = 'qsub' + DIR_LOCAL_TMP + 'template_runwrf.csh'
+        CMD_GEOGRID = 'qsub ' + DIR_LOCAL_TMP + 'template_rungeogrid.csh'
+        CMD_UNGMETG = 'qsub ' + DIR_LOCAL_TMP + 'template_runungmetg.csh'
+        CMD_REAL = 'qsub ' + DIR_LOCAL_TMP + 'template_runreal.csh'
+        CMD_WRF = 'qsub ' + DIR_LOCAL_TMP + 'template_runwrf.csh'
     elif on_aws:
         CMD_GEOGRID = './template_rungeogrid.csh'
         CMD_UNGMETG = './template_runungmetg.csh'
         CMD_REAL = './template_runreal.csh'
         CMD_WRF = './template_runwrf.csh'
     else:
-        CMD_GEOGRID = 'sbatch' + DIR_LOCAL_TMP + 'template_rungeogrid.csh'
-        CMD_UNGMETG = 'sbatch' + DIR_LOCAL_TMP + 'template_runungmetg.csh'
-        CMD_REAL = 'sbatch' + DIR_LOCAL_TMP + 'template_runreal.csh'
-        CMD_WRF = 'sbatch' + DIR_LOCAL_TMP + 'template_runwrf.csh'
+        CMD_GEOGRID = 'sbatch ' + DIR_LOCAL_TMP + 'template_rungeogrid.csh ' + DIR_LOCAL_TMP
+        CMD_UNGMETG = 'sbatch ' + DIR_LOCAL_TMP + 'template_runungmetg.csh ' + DIR_LOCAL_TMP
+        CMD_REAL = 'sbatch ' + DIR_LOCAL_TMP + 'template_runreal.csh ' + DIR_LOCAL_TMP
+        CMD_WRF = 'sbatch ' + DIR_LOCAL_TMP + 'template_runwrf.csh ' + DIR_LOCAL_TMP
     return DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
            CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
            CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF
@@ -367,19 +368,19 @@ def wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx):
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/co2*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/coeff*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/constants*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/create*', DIR_LOCAL_TMP)
+    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/create*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/ETAMPNEW*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/GENPARM*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/grib2map*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/gribmap*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/HLC*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/ishmael*', DIR_LOCAL_TMP)
+    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/HLC*', DIR_LOCAL_TMP)
+    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/ishmael*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/kernels*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/LANDUSE*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/masses*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/MPTABLE*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/ozone*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' +  CMD_LN % (DIR_WRF + 'run/p3_lookup*', DIR_LOCAL_TMP)
+    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/p3_lookup*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/RRTM*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/SOILPARM*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/termvels*', DIR_LOCAL_TMP)
@@ -388,7 +389,7 @@ def wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx):
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/VEGPARM*', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/*exe', DIR_LOCAL_TMP)
     os.system(cmd)
-    print('Your wrfout directory is:\n{}'.format(os.getcwd()))
+    print(f'Your WRFOUT directory is:\n{DIR_LOCAL_TMP}')
 
     # Copy over namelists and submission scripts
     if on_cheyenne:
@@ -454,7 +455,7 @@ def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
 
     # Write the number of domains to the WPS Namelist
     NAMELIST_WPS = read_namelist('namelist.wps')
-    wps_domains = 'max_dom                             = ' + str(MAX_DOMAINS) + ','
+    wps_domains = ' max_dom                             = ' + str(MAX_DOMAINS) + ','
     with open(DIR_LOCAL_TMP + 'namelist.wps', 'w') as namelist:
         namelist.write(NAMELIST_WPS.replace('%DOMAIN%', wps_domains))
     print('Done writing WPS namelist')
@@ -549,7 +550,7 @@ def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
 
     # Write the number of domains to the namelist
     NAMELIST_WRF = read_namelist('namelist.input')
-    wrf_domains = 'max_dom                             = ' + str(MAX_DOMAINS) + ','
+    wrf_domains = ' max_dom                             = ' + str(MAX_DOMAINS) + ','
     with open(DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
         namelist.write(NAMELIST_WRF.replace('%DOMAIN%', wrf_domains))
     print('Done writing WRF namelist\n')
@@ -563,21 +564,23 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
         dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
 
     # Link the grib files
+    sys.stdout.flush()
     os.system(CMD_LINK_GRIB)
 
     # Run geogrid if it has not already been run
     startTime = datetime.datetime.now()
     startTimeInt = int(time.time())
     print('Starting Geogrid at: ' + str(startTime))
+    sys.stdout.flush()
     os.system(CMD_GEOGRID)
-    geogrid_sim = runwrf_finish_check('geogrid')
+    geogrid_sim = runwrf_finish_check('geogrid', DIR_LOCAL_TMP)
     while geogrid_sim is not 'complete':
         if geogrid_sim is 'failed':
-            print_last_3lines('output.geogrid')
+            print_last_3lines(DIR_LOCAL_TMP + 'geogrid.log')
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
-            geogrid_sim = runwrf_finish_check('geogrid')
+            geogrid_sim = runwrf_finish_check('geogrid', DIR_LOCAL_TMP)
         else:
             print('TimeoutError in run_wps: Geogrid took more than 10min to run... exiting.')
             return False
@@ -588,15 +591,16 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
     startTime = datetime.datetime.now()
     startTimeInt = int(time.time())
     print('Starting Ungrib and Metgrid at: ' + str(startTime))
+    sys.stdout.flush()
     os.system(CMD_UNGMETG)
-    metgrid_sim = runwrf_finish_check('metgrid')
+    metgrid_sim = runwrf_finish_check('metgrid', DIR_LOCAL_TMP)
     while metgrid_sim is not 'complete':
         if metgrid_sim is 'failed':
-            print_last_3lines('output.metgrid')
+            print_last_3lines(DIR_LOCAL_TMP + 'metgrid.log')
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
-            metgrid_sim = runwrf_finish_check('metgrid')
+            metgrid_sim = runwrf_finish_check('metgrid', DIR_LOCAL_TMP)
         else:
             print('TimeoutError in run_wps: Ungrib and Metgrid took more than 10min to run... exiting.')
             return False
@@ -618,15 +622,16 @@ def run_real(paramstr, forecast_start, bc_data, template_dir):
     startTime = datetime.datetime.now()
     startTimeInt = int(time.time())
     print('Starting Real at: ' + str(startTime))
+    sys.stdout.flush()
     os.system(CMD_REAL)
-    real_sim = runwrf_finish_check('real')
+    real_sim = runwrf_finish_check('real', DIR_LOCAL_TMP)
     while real_sim is not 'complete':
         if real_sim is 'failed':
-            print_last_3lines('rsl.out.0000')
+            print_last_3lines(DIR_LOCAL_TMP + 'rsl.out.0000')
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
-            real_sim = runwrf_finish_check('real')
+            real_sim = runwrf_finish_check('real', DIR_LOCAL_TMP)
         else:
             print('TimeoutError in run_real: Real took more than 10min to run... exiting.')
             return False
@@ -645,17 +650,18 @@ def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
     startTime = datetime.datetime.now()
     startTimeInt = int(time.time())
     print('Starting WRF at: ' + str(startTime))
+    sys.stdout.flush()
     os.system(CMD_WRF)
     # Make the script sleep for 5 minutes to allow for the rsl.out.0000 file to reset.
     time.sleep(300)
-    wrf_sim = runwrf_finish_check('wrf')
+    wrf_sim = runwrf_finish_check('wrf', DIR_LOCAL_TMP)
     while wrf_sim is not 'complete':
         if wrf_sim is 'failed':
-            print_last_3lines('rsl.out.0000')
+            print_last_3lines(DIR_LOCAL_TMP + 'rsl.out.0000')
             return False
         elif (int(time.time()) - startTimeInt) < 7200:
             time.sleep(10)
-            wrf_sim = runwrf_finish_check('wrf')
+            wrf_sim = runwrf_finish_check('wrf', DIR_LOCAL_TMP)
         else:
             print('TimeoutError in run_wrf at {}: WRF took more than 2hrs to run... exiting.'.format(datetime.datetime.now()))
             return False

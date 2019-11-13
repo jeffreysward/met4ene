@@ -7,8 +7,8 @@ from t_wrfga import get_wrf_fitness
 class WRFFitnessTests(unittest.TestCase):
     def get_wrf_fitness_test(self):
         start_time = datetime.datetime.now()
-        param_ids = [0, 3, 7, 7, 5, 2, 1]
+        param_ids = [10, 1, 1, 2, 2, 3, 2]
         individual = wrfga.Chromosome(param_ids)
-        fitness = get_wrf_fitness(individual.Genes)
+        individual.Fitness = get_wrf_fitness(individual.Genes)
         wrfga.display(individual, start_time)
-        self.assertGreaterEqual(0, fitness)
+        self.assertLessEqual(0, individual.Fitness)

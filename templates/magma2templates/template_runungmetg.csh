@@ -1,8 +1,8 @@
 #!/bin/csh
 
 #SBATCH -J ung_metg		# Job name
-#SBATCH -o output.metgrid	# Name of stdout output file(%j expands to jobId)
-#SBATCH -e errors.metgrid	# Name of stderr output file(%j expands to jobId)
+#SBATCH -o /share/mzhang/jas983/wrf_data/met4ene/wrfout/logs/output.metgrid.%j	# Name of stdout output file(%j expands to jobId)
+#SBATCH -e /share/mzhang/jas983/wrf_data/met4ene/wrfout/logs/errors.metgrid.%j	# Name of stderr output file(%j expands to jobId)
 #SBATCH --nodes=1		# Total number of nodes requested 
 #SBATCH --ntasks=1		# Total number of tasks to be configured for. 
 #SBATCH --tasks-per-node=1	# sets number of tasks to run on each node. 
@@ -11,6 +11,12 @@
 #SBATCH -t 00:30:00		# Run time (hh:mm:ss) 
 #SBATCH --mem=1000M		# memory required per node
 #SBATCH --partition=default_cpu	# Which queue it should run on.
+
+if ( $#argv == 1 ) then
+    cd $argv
+else
+    echo " runungmetg.csh takes at most one input. "
+endif
 
 limit stacksize unlimited
 
