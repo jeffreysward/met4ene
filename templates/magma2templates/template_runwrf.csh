@@ -14,14 +14,16 @@
 
 if ( $#argv == 1 ) then
     cd $argv
+    set runwrfdir = $argv
 else
     echo " rungwrf.csh takes at most one input. "
+    set runwrfdir = "./"
 endif
 
 limit stacksize unlimited
 
 ### -----------  run wrf ---------------------------
-mpirun $argv/wrf.exe
+mpirun -np 8 ${argv}wrf.exe
 
 ###rm -f met_em*
 

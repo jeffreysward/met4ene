@@ -328,7 +328,7 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt):
         # Check to see if all these files already exist in the data directory
         data_exists = []
         for data_file in file_check:
-            data_exists.append(os.path.exists(data_file))
+            data_exists.append(os.path.exists(DIR_DATA + data_file))
         if data_exists.count(True) is len(file_check):
             print('Boundary condition data was previously downloaded from RDA.')
             return vtable_sfx
@@ -461,7 +461,7 @@ def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
     print('Done writing WPS namelist')
 
     # Write the runtime info and start dates and times to the WRF Namelist
-    wrf_runtime = ' run_days                            = ' + str(delt.days - 1) + ',\n'
+    wrf_runtime = ' run_days                            = ' + str(delt.days) + ',\n'
     wrf_runtime = wrf_runtime + ' run_hours                           = ' + '0' + ',\n'
     wrf_runtime = wrf_runtime + ' run_minutes                         = ' + '0' + ',\n'
     wrf_runtime = wrf_runtime + ' run_seconds                         = ' + '0' + ','

@@ -14,15 +14,17 @@
 
 if ( $#argv == 1 ) then
     cd $argv
+    set wrfoutdir = $argv
 else
     echo " runungmetg.csh takes at most one input. "
+    set wrfoutdir = "./"
 endif
 
 limit stacksize unlimited
 
 ### ---------------  run ungrib  -------------------------
 
-./ungrib.exe
+${wrfoutdir}ungrib.exe
 
 ### ---------------  get rid of links to raw grib file----
 
@@ -30,7 +32,7 @@ rm -f GRIBFILE.*
 
 ### ---------------  run metgrid  ------------------------
 
-./metgrid.exe
+${wrfoutdir}metgrid.exe
 
 ### ---------------  get rid of ungrib intermediate files-
 

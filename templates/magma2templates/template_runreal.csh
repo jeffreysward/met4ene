@@ -14,13 +14,15 @@
 
 if ( $#argv == 1 ) then
     cd $argv
+    set wrfoutdir = $argv
 else
     echo " runreal.csh takes at most one input. "
+    set wrfoutdir = "./"
 endif
 
 limit stacksize unlimited
 
 ### -----------  run real ---------------------------
-mpirun $argv/real.exe
+mpirun -np 8 ${argv}real.exe
 
 exit

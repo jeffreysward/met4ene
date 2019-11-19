@@ -14,10 +14,14 @@
 
 if ( $#argv == 1 ) then
     cd $argv
+    set wrfoutdir = $argv
 else
     echo " rungeogrid.csh takes at most one input. "
+    set wrfoutdir = "./"
 endif
 
 limit stacksize unlimited
-./geogrid.exe
+
+${wrfoutdir}geogrid.exe
+
 exit

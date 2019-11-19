@@ -90,13 +90,13 @@ def print_last_3lines(file_name):
 
 def runwrf_finish_check(program):
     if program == 'geogrid':
-        msg = read_2nd2_last_line('output.geogrid')
-        complete = 'Successful completion of geogrid' in msg
+        msg = read_last_line('geogrid.log')
+        complete = 'Successful completion of program geogrid' in msg
         # Not sure what the correct failure message should be
         failed = False
     elif program == 'metgrid':
-        msg = read_2nd2_last_line('output.metgrid')
-        complete = 'Successful completion of metgrid' in msg
+        msg = read_last_line('metgrid.log')
+        complete = 'Successful completion of program metgrid' in msg
         # Not sure what the correct failure message should be
         failed = False
     elif program == 'real':
@@ -455,8 +455,9 @@ def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
         namelist.write(NAMELIST_WPS.replace('%DOMAIN%', wps_domains))
     print('Done writing WPS namelist')
 
+
     # Write the runtime info and start dates and times to the WRF Namelist
-    wrf_runtime = ' run_days                            = ' + str(delt.days - 1) + ',\n'
+    wrf_runtime = ' run_days                            = ' + str(delt.days) + ',\n'
     wrf_runtime = wrf_runtime + ' run_hours                           = ' + '0' + ',\n'
     wrf_runtime = wrf_runtime + ' run_minutes                         = ' + '0' + ',\n'
     wrf_runtime = wrf_runtime + ' run_seconds                         = ' + '0' + ','
@@ -559,17 +560,19 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
         dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
 
     # Link the grib files
+    sys.stdout.flush()
     os.system(CMD_LINK_GRIB)
 
     # Run geogrid if it has not already been run
     startTime = datetime.datetime.now()
     startTimeInt = int(time.time())
     print('Starting Geogrid at: ' + str(startTime))
+    sys.stdout.flush()
     os.system(CMD_GEOGRID)
     geogrid_sim = runwrf_finish_check('geogrid')
     while geogrid_sim is not 'complete':
         if geogrid_sim is 'failed':
-            print_last_3lines('output.geogrid')
+            print_last_3lines('geogrid.log')
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
@@ -584,11 +587,12 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
     startTime = datetime.datetime.now()
     startTimeInt = int(time.time())
     print('Starting Ungrib and Metgrid at: ' + str(startTime))
+    sys.stdout.flush()
     os.system(CMD_UNGMETG)
     metgrid_sim = runwrf_finish_check('metgrid')
     while metgrid_sim is not 'complete':
         if metgrid_sim is 'failed':
-            print_last_3lines('output.metgrid')
+            print_last_3lines('metgrid.log')
             return False
         elif (int(time.time()) - startTimeInt) < 600:
             time.sleep(2)
@@ -614,6 +618,7 @@ def run_real(paramstr, forecast_start, bc_data, template_dir):
     startTime = datetime.datetime.now()
     startTimeInt = int(time.time())
     print('Starting Real at: ' + str(startTime))
+    sys.stdout.flush()
     os.system(CMD_REAL)
     real_sim = runwrf_finish_check('real')
     while real_sim is not 'complete':
@@ -641,6 +646,7 @@ def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
     startTime = datetime.datetime.now()
     startTimeInt = int(time.time())
     print('Starting WRF at: ' + str(startTime))
+    sys.stdout.flush()
     os.system(CMD_WRF)
     # Make the script sleep for 5 minutes to allow for the rsl.out.0000 file to reset.
     time.sleep(300)
