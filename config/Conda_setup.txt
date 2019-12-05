@@ -1,0 +1,4 @@
+# Setup instuctions for wrfplot2 conda environment 
+conda install -c conda-forge xarray cartopy wrf-python pynio pseudonetcdf
+conda install -c conda-forge jupyterlab
+pip install siphon
