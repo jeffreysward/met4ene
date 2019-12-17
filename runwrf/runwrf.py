@@ -47,9 +47,665 @@ import requests
 import time
 import datetime
 import linuxhelper as lh
+from wrfparams import ids2str
+
+
+class WRFModel(object):
+    """
+    This class provides a framework for running the WRF model
+    """
+
+    def __init__(self, param_ids, start_date, end_date, bc_data='ERA', n_domains=1, template_dir=None):
+        self.param_ids = param_ids
+        self.start_date = start_date
+        self.end_date = end_date
+        self.bc_data = bc_data
+        self.n_domains = n_domains
+        self.template_dir = template_dir
+
+        # Format the forecast start/end and determine the total time.
+        self.forecast_start = datetime.datetime.strptime(self.start_date, '%b %d %Y')
+        self.forecast_end = datetime.datetime.strptime(self.end_date, '%b %d %Y')
+        self.delt = self.forecast_end - self.forecast_start
+        print('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -')
+        print('\nCalculating fitness for: {}'.format(self.param_ids))
+        print('Forecast starting on: {}'.format(self.forecast_start))
+        print('Forecast ending on: {}'.format(self.forecast_end))
+        self.paramstr = ids2str(self.param_ids)
+
+        # Determine which computer you are running on
+        # to set directories and command aliai
+        on_aws, on_cheyenne = determine_computer()
+        self.on_aws = on_aws
+        self.on_cheyenne = on_cheyenne
+
+        # Set working and WRF model directory names
+        if self.on_cheyenne:
+            self.DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
+            self.DIR_WPS = self.DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
+            self.DIR_WRF = self.DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
+            self.DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
+            self.DIR_DATA = '/glade/scratch/sward/data/' + str(self.bc_data) + '/%s_' % \
+                            (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+            self.DIR_LOCAL_TMP = '/glade/scratch/sward/met4ene/wrfout/%s_' + self.paramstr % \
+                                 (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+            self.DIR_RUNWRF = '/glade/scratch/sward/met4ene/runwrf/'
+        elif self.on_aws:
+            self.DIR_WPS = '/home/ec2-user/environment/Build_WRF/WPS/'
+            self.DIR_WRF = '/home/ec2-user/environment/Build_WRF/WRF/'
+            self.DIR_WPS_GEOG = '/home/ec2-user/environment/data/WPS_GEOG'
+            self.DIR_DATA = '/home/ec2-user/environment/data/' + str(self.bc_data) + '/%s_' % \
+                            (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+            self.DIR_LOCAL_TMP = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_' % \
+                                 (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+            self.DIR_RUNWRF = '/home/ec2-user/environment/met4ene/runwrf/'
+        else:
+            self.DIR_WPS = '/home/jas983/models/wrf/WPS/'
+            self.DIR_WRF = '/home/jas983/models/wrf/WRF/'
+            self.DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
+            self.DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(self.bc_data) + '/'
+            # self.DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(self.bc_data) + '/%s_' % \
+            #           (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+            self.DIR_LOCAL_TMP = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
+                                 (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+            self.DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
+
+        # Define a directory containing:
+        # a) namelist.wps and namelist.input templates
+        # b) batch submission template csh scripts for running geogrid, ungrib & metgrid, and real & wrf.
+        if self.template_dir is not None:
+            self.DIR_TEMPLATES = self.template_dir + '/'
+        else:
+            if self.on_cheyenne:
+                self.DIR_TEMPLATES = '/glade/scratch/sward/met4ene/templates/ncartemplates/'
+            elif self.on_aws:
+                self.DIR_TEMPLATES = '/home/ec2-user/environment/met4ene/templates/awstemplates/'
+            else:
+                self.DIR_TEMPLATES = '/share/mzhang/jas983/wrf_data/met4ene/templates/magma2templates/'
+
+        # Define linux command aliai
+        self.CMD_LN = 'ln -sf %s %s'
+        self.CMD_CP = 'cp %s %s'
+        self.CMD_MV = 'mv %s %s'
+        self.CMD_CHMOD = 'chmod -R %s %s'
+        self.CMD_LINK_GRIB = './link_grib.csh ' + self.DIR_DATA + '* ' + self.DIR_LOCAL_TMP
+        if self.on_cheyenne:
+            self.CMD_GEOGRID = 'qsub ' + self.DIR_LOCAL_TMP + 'template_rungeogrid.csh'
+            self.CMD_UNGMETG = 'qsub ' + self.DIR_LOCAL_TMP + 'template_runungmetg.csh'
+            self.CMD_REAL = 'qsub ' + self.DIR_LOCAL_TMP + 'template_runreal.csh'
+            self.CMD_WRF = 'qsub ' + self.DIR_LOCAL_TMP + 'template_runwrf.csh'
+        elif self.on_aws:
+            self.CMD_GEOGRID = './template_rungeogrid.csh'
+            self.CMD_UNGMETG = './template_runungmetg.csh'
+            self.CMD_REAL = './template_runreal.csh'
+            self.CMD_WRF = './template_runwrf.csh'
+        else:
+            self.CMD_GEOGRID = 'sbatch ' + self.DIR_LOCAL_TMP + 'template_rungeogrid.csh ' + self.DIR_LOCAL_TMP
+            self.CMD_UNGMETG = 'sbatch ' + self.DIR_LOCAL_TMP + 'template_runungmetg.csh ' + self.DIR_LOCAL_TMP
+            self.CMD_REAL = 'sbatch ' + self.DIR_LOCAL_TMP + 'template_runreal.csh ' + self.DIR_LOCAL_TMP
+            self.CMD_WRF = 'sbatch ' + self.DIR_LOCAL_TMP + 'template_runwrf.csh ' + self.DIR_LOCAL_TMP
+
+    def runwrf_finish_check(self, program):
+        """
+        Check if a specified WRF subprogram has finished running.
+
+        :param program:
+        :return:
+        """
+        if program == 'geogrid':
+            msg = read_last_line(self.DIR_LOCAL_TMP + 'geogrid.log')
+            complete = 'Successful completion of program geogrid' in msg
+            # Not sure what the correct failure message should be!
+            failed = False
+        elif program == 'metgrid':
+            msg = read_last_line(self.DIR_LOCAL_TMP + 'metgrid.log')
+            complete = 'Successful completion of program metgrid' in msg
+            # Not sure what the correct failure message should be!
+            failed = False
+        elif program == 'real':
+            msg = read_last_line(self.DIR_LOCAL_TMP + 'rsl.out.0000')
+            complete = 'SUCCESS COMPLETE REAL' in msg
+            failed = '-------------------------------------------' in msg
+        elif program == 'wrf':
+            msg = read_last_line(self.DIR_LOCAL_TMP + 'rsl.out.0000')
+            complete = 'SUCCESS COMPLETE WRF' in msg
+            failed = '-------------------------------------------' in msg
+        else:
+            complete = False
+            failed = False
+        if failed:
+            print(f'ERROR: {program} has failed. Last message was:\n{msg}')
+            return 'failed'
+        elif complete:
+            return 'complete'
+        else:
+            return 'running'
+
+    def get_bc_data(self):
+        """
+        Download boundry condition data from the RDA
+        if it does not already exist in the expected data directory.
+
+        :return:
+        """
+        if self.bc_data == 'ERA':
+            if self.on_cheyenne:
+                DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.pl/'
+                DATA_ROOT1 = DATA_ROOT1 + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '/'
+                DATA_ROOT2 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.sfc/'
+                DATA_ROOT2 = DATA_ROOT2 + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '/'
+            else:
+                # The following define paths to the required data on the RDA site
+                dspath = 'http://rda.ucar.edu/data/ds627.0/'
+                DATA_ROOT1 = 'ei.oper.an.pl/' + self.forecast_start.strftime('%Y') \
+                             + self.forecast_start.strftime('%m') + '/'
+                DATA_ROOT2 = 'ei.oper.an.sfc/' + self.forecast_start.strftime('%Y') \
+                             + self.forecast_start.strftime('%m') + '/'
+            datpfx1 = 'ei.oper.an.pl.regn128sc.'
+            datpfx2 = 'ei.oper.an.pl.regn128uv.'
+            datpfx3 = 'ei.oper.an.sfc.regn128sc.'
+            vtable_sfx = 'ERA-interim.pl'
+        else:
+            vtable_sfx = self.bc_data
+        print('Using {} data for boundary condidions'.format(self.bc_data))
+        print('The corresponding Vtable is: {}\n'.format(vtable_sfx))
+
+        # If no data directory exists, create one
+        if not os.path.exists(self.DIR_DATA):
+            os.makedirs(self.DIR_DATA, 0o755)
+        i = int(self.forecast_start.day)
+        n = int(self.forecast_start.day) + int(self.delt.days)
+        if self.on_cheyenne:
+            # Copy desired data files from RDA
+            # THIS ONLY WORKS IF YOU WANT TO RUN WITHIN A SINGLE MONTH!
+            while i <= n:
+                cmd = self.CMD_CP % (DATA_ROOT1 + datpfx1 + self.forecast_start.strftime('%Y')
+                                + self.forecast_start.strftime('%m') + str(i) + '*', self.DIR_DATA)
+                cmd = cmd + '; ' + self.CMD_CP % (DATA_ROOT1 + datpfx2 + self.forecast_start.strftime('%Y')
+                                             + self.forecast_start.strftime('%m') + str(i) + '*', self.DIR_DATA)
+                cmd = cmd + '; ' + self.CMD_CP % (DATA_ROOT2 + datpfx3 + self.forecast_start.strftime('%Y')
+                                             + self.forecast_start.strftime('%m') + str(i) + '*', self.DIR_DATA)
+                os.system(cmd)
+                i += 1
+        else:
+            # Build the file list required for the WRF run.
+            hrs = ['00', '06', '12', '18']
+            filelist = []
+            file_check = []
+            while i <= n:
+                for hr in hrs:
+                    filelist.append(DATA_ROOT1 + datpfx1 + self.forecast_start.strftime('%Y')
+                                    + self.forecast_start.strftime('%m') + str(i) + hr)
+                    filelist.append(DATA_ROOT1 + datpfx2 + self.forecast_start.strftime('%Y')
+                                    + self.forecast_start.strftime('%m') + str(i) + hr)
+                    filelist.append(DATA_ROOT2 + datpfx3 + self.forecast_start.strftime('%Y')
+                                    + self.forecast_start.strftime('%m') + str(i) + hr)
+                    file_check.append(datpfx1 + self.forecast_start.strftime('%Y')
+                                      + self.forecast_start.strftime('%m') + str(i) + hr)
+                    file_check.append(datpfx2 + self.forecast_start.strftime('%Y')
+                                      + self.forecast_start.strftime('%m') + str(i) + hr)
+                    file_check.append(datpfx3 + self.forecast_start.strftime('%Y')
+                                      + self.forecast_start.strftime('%m') + str(i) + hr)
+                i += 1
+
+            # Check to see if all these files already exist in the data directory
+            data_exists = []
+            for data_file in file_check:
+                data_exists.append(os.path.exists(self.DIR_DATA + data_file))
+            if data_exists.count(True) is len(file_check):
+                print('Boundary condition data was previously downloaded from RDA.')
+                return vtable_sfx
+            else:
+                # Download the data from the RDA
+                rda_download(filelist, dspath)
+                # Move the data files to the data directory
+                cmd = self.CMD_MV % (datpfx1 + '*', self.DIR_DATA)
+                cmd = cmd + '; ' + self.CMD_MV % (datpfx2 + '*', self.DIR_DATA)
+                cmd = cmd + '; ' + self.CMD_MV % (datpfx3 + '*', self.DIR_DATA)
+                os.system(cmd)
+        return vtable_sfx
+
+    def wrfdir_setup(self, vtable_sfx):
+        """
+        Sets up the WRF run directory by copying scripts, data files, and executables.
+
+        :param vtable_sfx:
+        :return:
+        """
+
+        # Clean potential old simulation dir, remake the dir, and enter it.
+        lh.remove_dir(self.DIR_LOCAL_TMP)
+        os.makedirs(self.DIR_LOCAL_TMP, 0o755)
+
+        # Link WRF tables, data, and executables.
+        cmd = self.CMD_LN % (self.DIR_WRF + 'run/aerosol*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/BROADBAND*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/bulk*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/CAM*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/capacity*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/CCN*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/CLM*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/co2*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/coeff*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/constants*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/create*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/ETAMPNEW*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/GENPARM*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/grib2map*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/gribmap*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/HLC*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/ishmael*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/kernels*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/LANDUSE*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/masses*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/MPTABLE*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/ozone*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/p3_lookup*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/RRTM*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/SOILPARM*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/termvels*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/tr*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/URBPARM*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/VEGPARM*', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/*exe', self.DIR_LOCAL_TMP)
+        os.system(cmd)
+        print(f'Your WRFOUT directory is:\n{self.DIR_LOCAL_TMP}')
+
+        # Copy over namelists and submission scripts
+        if self.on_cheyenne:
+            cmd = self.CMD_CP % (self.DIR_TEMPLATES + 'template_rungeogrid.csh', self.DIR_LOCAL_TMP)
+            cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runungmetg.csh', self.DIR_LOCAL_TMP)
+            cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runreal.csh', self.DIR_LOCAL_TMP)
+            cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runwrf.csh', self.DIR_LOCAL_TMP)
+        else:
+            cmd = self.CMD_CP % (self.DIR_TEMPLATES + '*', self.DIR_LOCAL_TMP)
+        os.system(cmd)
+
+        # Link the metgrid and geogrid dirs and executables as well as the correct variable table for the BC/IC data.
+        cmd = self.CMD_LN % (self.DIR_WPS + 'geogrid', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WPS + 'geogrid.exe', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WPS + 'ungrib.exe', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WPS + 'metgrid', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WPS + 'metgrid.exe', self.DIR_LOCAL_TMP)
+        cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WPS + 'ungrib/Variable_Tables/Vtable.'
+                                          + vtable_sfx, self.DIR_LOCAL_TMP + 'Vtable')
+        os.system(cmd)
+
+        # Link the regridding script
+        cmd = self.CMD_LN % (self.DIR_RUNWRF + 'wrf2era_error.ncl', self.DIR_LOCAL_TMP)
+        os.system(cmd)
+
+    def prepare_namelists(self):
+        """
+        Writes WPS and WRF namelist files.
+
+        :return:
+        """
+
+        def read_namelist(namelist_file):
+            with open(self.DIR_LOCAL_TMP + namelist_file, 'r') as namelist:
+                NAMELIST = namelist.read()
+            return NAMELIST
+
+        # Try to open WPS and WRF namelists as readonly,
+        # and print an error & exit if you cannot.
+        try:
+            NAMELIST_WPS = read_namelist('namelist.wps')
+            NAMELIST_WRF = read_namelist('namelist.input')
+        except IOError as e:
+            print(e.errno)
+            print(e)
+            exit()
+
+        # Write the start and end dates to the WPS Namelist
+        wps_dates = ' start_date                     = '
+        for i in range(0, self.n_domains):
+            wps_dates = wps_dates + self.forecast_start.strftime("'%Y-%m-%d_%H:%M:%S', ")
+        wps_dates = wps_dates + '\n end_date                     = '
+        for i in range(0, self.n_domains):
+            wps_dates = wps_dates + self.forecast_end.strftime("'%Y-%m-%d_%H:%M:%S', ")
+        with open(self.DIR_LOCAL_TMP + 'namelist.wps', 'w') as namelist:
+            namelist.write(NAMELIST_WPS.replace('%DATES%', wps_dates))
+
+        # Write the GEOG data path to the WPS Namelist
+        NAMELIST_WPS = read_namelist('namelist.wps')
+        geog_data = " geog_data_path = '" + self.DIR_WPS_GEOG + "'"
+        with open(self.DIR_LOCAL_TMP + 'namelist.wps', 'w') as namelist:
+            namelist.write(NAMELIST_WPS.replace('%GEOG%', geog_data))
+
+        # Write the number of domains to the WPS Namelist
+        NAMELIST_WPS = read_namelist('namelist.wps')
+        wps_domains = ' max_dom                             = ' + str(self.n_domains) + ','
+        with open(self.DIR_LOCAL_TMP + 'namelist.wps', 'w') as namelist:
+            namelist.write(NAMELIST_WPS.replace('%DOMAIN%', wps_domains))
+        print('Done writing WPS namelist')
+
+        # Write the runtime info and start dates and times to the WRF Namelist
+        wrf_runtime = ' run_days                            = ' + str(self.delt.days) + ',\n'
+        wrf_runtime = wrf_runtime + ' run_hours                           = ' + '0' + ',\n'
+        wrf_runtime = wrf_runtime + ' run_minutes                         = ' + '0' + ',\n'
+        wrf_runtime = wrf_runtime + ' run_seconds                         = ' + '0' + ','
+        with open(self.DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
+            namelist.write(NAMELIST_WRF.replace('%RUNTIME%', wrf_runtime))
+
+        NAMELIST_WRF = read_namelist('namelist.input')
+        wrf_dates = ' start_year                          = '
+        for i in range(0, self.n_domains):
+            wrf_dates = wrf_dates + self.forecast_start.strftime('%Y, ')
+        wrf_dates = wrf_dates + '\n start_month                         = '
+        for i in range(0, self.n_domains):
+            wrf_dates = wrf_dates + self.forecast_start.strftime('%m, ')
+        wrf_dates = wrf_dates + '\n start_day                           = '
+        for i in range(0, self.n_domains):
+            wrf_dates = wrf_dates + self.forecast_start.strftime('%d, ')
+        wrf_dates = wrf_dates + '\n start_hour                          = '
+        for i in range(0, self.n_domains):
+            wrf_dates = wrf_dates + self.forecast_start.strftime('%H, ')
+        wrf_dates = wrf_dates + '\n start_minute                        = '
+        for i in range(0, self.n_domains):
+            wrf_dates = wrf_dates + '00, '
+        wrf_dates = wrf_dates + '\n start_second                        = '
+        for i in range(0, self.n_domains):
+            wrf_dates = wrf_dates + '00, '
+        wrf_dates = wrf_dates + '\n end_year                            = '
+        for i in range(0, self.n_domains):
+            wrf_dates = wrf_dates + self.forecast_end.strftime('%Y, ')
+        wrf_dates = wrf_dates + '\n end_month                           = '
+        for i in range(0, self.n_domains):
+            wrf_dates = wrf_dates + self.forecast_end.strftime('%m, ')
+        wrf_dates = wrf_dates + '\n end_day                             = '
+        for i in range(0, self.n_domains):
+            wrf_dates = wrf_dates + self.forecast_end.strftime('%d, ')
+        wrf_dates = wrf_dates + '\n end_hour                            = '
+        for i in range(0, self.n_domains):
+            wrf_dates = wrf_dates + self.forecast_end.strftime('%H, ')
+        wrf_dates = wrf_dates + '\n end_minute                          = '
+        for i in range(0, self.n_domains):
+            wrf_dates = wrf_dates + '00, '
+        wrf_dates = wrf_dates + '\n end_second                          = '
+        for i in range(0, self.n_domains):
+            wrf_dates = wrf_dates + '00, '
+        with open(self.DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
+            namelist.write(NAMELIST_WRF.replace('%DATES%', wrf_dates))
+
+        # Write the physics parametrization scheme info to the WRF Namelist
+        NAMELIST_WRF = read_namelist('namelist.input')
+        wrf_physics = ' mp_physics                          = '
+        for i in range(0, self.n_domains):
+            wrf_physics = wrf_physics + str(self.param_ids[0]) + ', '
+        wrf_physics = wrf_physics + '\n ra_lw_physics                       = '
+        for i in range(0, self.n_domains):
+            wrf_physics = wrf_physics + str(self.param_ids[1]) + ', '
+        wrf_physics = wrf_physics + '\n ra_sw_physics                       = '
+        for i in range(0, self.n_domains):
+            wrf_physics = wrf_physics + str(self.param_ids[2]) + ', '
+        wrf_physics = wrf_physics + '\n sf_surface_physics                  = '
+        for i in range(0, self.n_domains):
+            wrf_physics = wrf_physics + str(self.param_ids[3]) + ', '
+        wrf_physics = wrf_physics + '\n bl_pbl_physics                      = '
+        for i in range(0, self.n_domains):
+            wrf_physics = wrf_physics + str(self.param_ids[4]) + ', '
+        wrf_physics = wrf_physics + '\n cu_physics                          = '
+        wrf_physics = wrf_physics + str(self.param_ids[5]) + ', 0, 0,'
+        wrf_physics = wrf_physics + '\n sf_sfclay_physics                   = '
+        for i in range(0, self.n_domains):
+            wrf_physics = wrf_physics + str(self.param_ids[6]) + ', '
+
+        # The following namelist options are only set if certain parameter choices are selected
+        if self.param_ids[6] in [1, 5, 7, 11]:
+            wrf_physics = wrf_physics + '\n isfflx                              = 1, '
+        if self.param_ids[6] in [1]:
+            wrf_physics = wrf_physics + '\n ifsnow                              = 1, '
+        if self.param_ids[1] in [1, 4] and self.param_ids[2] in [1, 4]:
+            wrf_physics = wrf_physics + '\n icloud                              = 1, '
+        if self.param_ids[5] in [5, 93]:
+            wrf_physics = wrf_physics + '\n maxiens                             = 1,'
+        if self.param_ids[5] in [93]:
+            wrf_physics = wrf_physics + '\n maxens                              = 3,'
+            wrf_physics = wrf_physics + '\n maxens2                             = 3,'
+            wrf_physics = wrf_physics + '\n maxens3                             = 16,'
+            wrf_physics = wrf_physics + '\n ensdim                              = 144,'
+        with open(self.DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
+            namelist.write(NAMELIST_WRF.replace('%PARAMS%', wrf_physics))
+
+        # Write the number of domains to the namelist
+        NAMELIST_WRF = read_namelist('namelist.input')
+        wrf_domains = ' max_dom                             = ' + str(self.n_domains) + ','
+        with open(self.DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
+            namelist.write(NAMELIST_WRF.replace('%DOMAIN%', wrf_domains))
+        print('Done writing WRF namelist\n')
+
+    def run_wps(self):
+        """
+        Runs the WRF preprocessing executables and confirms thier success.
+
+        :return:
+        """
+        # Link the grib files
+        sys.stdout.flush()
+        os.system(self.CMD_LINK_GRIB)
+
+        # Run geogrid if it has not already been run
+        startTime = datetime.datetime.now()
+        startTimeInt = int(time.time())
+        print('Starting Geogrid at: ' + str(startTime))
+        sys.stdout.flush()
+        os.system(self.CMD_GEOGRID)
+        geogrid_sim = self.runwrf_finish_check('geogrid')
+        while geogrid_sim is not 'complete':
+            if geogrid_sim is 'failed':
+                print_last_3lines(self.DIR_LOCAL_TMP + 'geogrid.log')
+                return False
+            elif (int(time.time()) - startTimeInt) < 600:
+                time.sleep(2)
+                geogrid_sim = self.runwrf_finish_check('geogrid')
+            else:
+                print('TimeoutError in run_wps: Geogrid took more than 10min to run... exiting.')
+                return False
+        elapsed = datetime.datetime.now() - startTime
+        print('Geogrid ran in: ' + str(elapsed))
+
+        # Run ungrib and metgrid
+        startTime = datetime.datetime.now()
+        startTimeInt = int(time.time())
+        print('Starting Ungrib and Metgrid at: ' + str(startTime))
+        sys.stdout.flush()
+        os.system(self.CMD_UNGMETG)
+        metgrid_sim = self.runwrf_finish_check('metgrid')
+        while metgrid_sim is not 'complete':
+            if metgrid_sim is 'failed':
+                print_last_3lines(self.DIR_LOCAL_TMP + 'metgrid.log')
+                return False
+            elif (int(time.time()) - startTimeInt) < 600:
+                time.sleep(2)
+                metgrid_sim = self.runwrf_finish_check('metgrid')
+            else:
+                print('TimeoutError in run_wps: Ungrib and Metgrid took more than 10min to run... exiting.')
+                return False
+        elapsed = datetime.datetime.now() - startTime
+        print('Ungrib and Metgrid ran in: ' + str(elapsed))
+
+        # Remove the data directory after WPS has run
+        # lh.remove_dir(DIR_DATA)
+        return True
+
+    def run_real(self):
+        """
+        Runs real.exe and checks to see that if it was successful.
+
+        :return:
+        """
+
+        startTime = datetime.datetime.now()
+        startTimeInt = int(time.time())
+        print('Starting Real at: ' + str(startTime))
+        sys.stdout.flush()
+        os.system(self.CMD_REAL)
+        real_sim = self.runwrf_finish_check('real')
+        while real_sim is not 'complete':
+            if real_sim is 'failed':
+                print_last_3lines(self.DIR_LOCAL_TMP + 'rsl.out.0000')
+                return False
+            elif (int(time.time()) - startTimeInt) < 600:
+                time.sleep(2)
+                real_sim = self.runwrf_finish_check('real')
+            else:
+                print('TimeoutError in run_real: Real took more than 10min to run... exiting.')
+                return False
+        elapsed = datetime.datetime.now() - startTime
+        print('Real ran in: ' + str(elapsed) + ' seconds')
+        return True
+
+    def run_wrf(self):
+        """
+        Runs wrf.exe and checks to see if it was successful.
+
+        :return:
+        """
+
+        startTime = datetime.datetime.now()
+        startTimeInt = int(time.time())
+        print('Starting WRF at: ' + str(startTime))
+        sys.stdout.flush()
+        os.system(self.CMD_WRF)
+        # Make the script sleep for 5 minutes to allow for the rsl.out.0000 file to reset.
+        time.sleep(300)
+        wrf_sim = self.runwrf_finish_check('wrf')
+        while wrf_sim is not 'complete':
+            if wrf_sim is 'failed':
+                print_last_3lines(self.DIR_LOCAL_TMP + 'rsl.out.0000')
+                return False
+            elif (int(time.time()) - startTimeInt) < 7200:
+                time.sleep(10)
+                wrf_sim = self.runwrf_finish_check('wrf')
+            else:
+                print('TimeoutError in run_wrf at {}: WRF took more than 2hrs to run... exiting.'.format(
+                    datetime.datetime.now()))
+                return False
+        print('WRF finished running at: ' + str(datetime.datetime.now()))
+        elapsed = datetime.datetime.now() - startTime
+        print('WRF ran in: ' + str(elapsed))
+
+        # Rename the wrfout files.
+        for n in range(1, self.n_domains + 1):
+            os.system(self.CMD_MV % (self.DIR_LOCAL_TMP + 'wrfout_d0' + str(n) + '_'
+                                     + self.forecast_start.strftime('%Y') + '-'
+                                     + self.forecast_start.strftime('%m') + '-'
+                                     + self.forecast_start.strftime('%d') + '_00:00:00',
+                                     self.DIR_LOCAL_TMP + 'wrfout_d0' + str(n) + '.nc'))
+        return True
+
+    def wrf_era5_diff(self):
+        """
+        Computes the difference between the wrf simulation and ERA5
+
+        NEEDS QUITE A BIT OF WORK!!!
+
+        :return:
+        """
+
+        # Download ERA5 data for benchmarking
+        if self.on_cheyenne:
+            ERA5_ROOT = '/gpfs/fs1/collections/rda/data/ds633.0/e5.oper.an.sfc/'
+            # DATA_ROOT1 = DATA_ROOT1 + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '/'
+        else:
+            ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
+            datpfx1 = 'EastUS_e5.oper.an.sfc.128_165_10u.ll025sc.'
+            datpfx2 = 'EastUS_e5.oper.an.sfc.128_166_10v.ll025sc.'
+            datpfx3 = 'EastUS_e5.oper.an.sfc.128_167_2t.ll025sc.'
+            datpfx4 = 'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.'
+            datpfx5 = 'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.'
+            if not os.path.exists(ERA5_ROOT + datpfx1 + self.forecast_start.strftime('%Y')
+                                  + self.forecast_start.strftime('%m') + '0100_'
+                                  + self.forecast_start.strftime('%Y')
+                                  + self.forecast_start.strftime('%m') + '3123.nc'):
+
+                # Change into the ERA5 data directory
+                if not os.path.exists(ERA5_ROOT):
+                    os.mkdir(ERA5_ROOT)
+                # The following define paths to the required data on the RDA site
+                dspath = 'http://rda.ucar.edu/data/ds633.0/'
+                DATA_ROOT1 = 'e5.oper.an.sfc/' + self.forecast_start.strftime('%Y') \
+                             + self.forecast_start.strftime('%m') + '/'
+
+                # Build the file list to be downloaded from the RDA
+                filelist = [DATA_ROOT1 + datpfx1 + self.forecast_start.strftime('%Y')
+                            + self.forecast_start.strftime('%m') + '0100_'
+                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc',
+                            DATA_ROOT1 + datpfx2 + self.forecast_start.strftime('%Y')
+                            + self.forecast_start.strftime('%m') + '0100_'
+                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc',
+                            DATA_ROOT1 + datpfx3 + self.forecast_start.strftime('%Y')
+                            + self.forecast_start.strftime('%m') + '0100_'
+                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc',
+                            DATA_ROOT1 + datpfx4 + self.forecast_start.strftime('%Y')
+                            + self.forecast_start.strftime('%m') + '0100_'
+                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc',
+                            DATA_ROOT1 + datpfx5 + self.forecast_start.strftime('%Y')
+                            + self.forecast_start.strftime('%m') + '0100_'
+                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc']
+                print(filelist)
+                # Download the data from the RDA
+                rda_download(filelist, dspath)
+                # Move the files into the ERA5 data directory
+                cmd = self.CMD_MV % (datpfx1 + '*', ERA5_ROOT)
+                cmd = cmd + '; ' + self.CMD_MV % (datpfx2 + '*', ERA5_ROOT)
+                cmd = cmd + '; ' + self.CMD_MV % (datpfx3 + '*', ERA5_ROOT)
+                cmd = cmd + '; ' + self.CMD_MV % (datpfx4 + '*', ERA5_ROOT)
+                cmd = cmd + '; ' + self.CMD_MV % (datpfx5 + '*', ERA5_ROOT)
+                os.system(cmd)
+        # Run ncks to reduce the size of the files
+        # Below is an example of what needs to be implemented:
+        # ncks -d longitude,265.,295. -d latitude,30.,50.
+        # e5.oper.an.sfc.128_165_10u.regn320sc.2011010100_2011013123.nc
+        # EastUS_e5.oper.an.sfc.128_165_10u.regn320sc.2011010100_2011013123.nc
+
+        # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
+        CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'paramstr="%s"\' %swrf2era_error.ncl' % \
+                     (self.forecast_start.strftime('%Y'), self.forecast_start.strftime('%m'),
+                      self.forecast_start.strftime('%d'), self.DIR_LOCAL_TMP, self.paramstr, self.DIR_LOCAL_TMP)
+        os.system(CMD_REGRID)
+
+        # Extract the total error after the script has run
+        error_file = self.DIR_LOCAL_TMP + 'mae_wrfyera_' + self.paramstr + '.csv'
+        while not os.path.exists(error_file):
+            time.sleep(1)
+        mae = read_last_line(error_file)
+        mae = mae.split(',')
+        mae[-1] = mae[-1].strip()
+        mae = [float(i) for i in mae]
+        total_error = sum(mae)
+        print(f'!!! Parameters {self.paramstr} have a total error {mae}')
+        return total_error
+
+
+def determine_computer():
+    """
+    Determine the computer.
+
+    :return:
+    """
+    # Determine if we are on Cheyenne
+    if os.environ['GROUP'] == 'ncar':
+        on_cheyenne = True
+        on_aws = False
+    # Determine if we are on AWS
+    elif os.environ['GROUP'] == 'ec2-user':
+        on_cheyenne = False
+        on_aws = True
+    else:
+        on_cheyenne = False
+        on_aws = False
+    return on_aws, on_cheyenne
 
 
 def read_last_line(file_name):
+    """
+    Reads the last line of a file.
+
+    :param file_name:
+    :return:
+    """
     try:
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
@@ -64,6 +720,12 @@ def read_last_line(file_name):
 
 
 def read_2nd2_last_line(file_name):
+    """
+    Reads the second to last line of a file.
+
+    :param file_name:
+    :return:
+    """
     try:
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
@@ -79,6 +741,12 @@ def read_2nd2_last_line(file_name):
 
 
 def print_last_3lines(file_name):
+    """
+    Prints the last three lines of a file.
+
+    :param file_name:
+    :return:
+    """
     try:
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
@@ -93,38 +761,14 @@ def print_last_3lines(file_name):
         return
 
 
-def runwrf_finish_check(program, DIR_LOCAL_TMP):
-    if program == 'geogrid':
-        msg = read_last_line(DIR_LOCAL_TMP + 'geogrid.log')
-        complete = 'Successful completion of program geogrid' in msg
-        # Not sure what the correct failure message should be
-        failed = False
-    elif program == 'metgrid':
-        msg = read_last_line(DIR_LOCAL_TMP + 'metgrid.log')
-        complete = 'Successful completion of program metgrid' in msg
-        # Not sure what the correct failure message should be
-        failed = False
-    elif program == 'real':
-        msg = read_last_line(DIR_LOCAL_TMP + 'rsl.out.0000')
-        complete = 'SUCCESS COMPLETE REAL' in msg
-        failed = '-------------------------------------------' in msg
-    elif program == 'wrf':
-        msg = read_last_line(DIR_LOCAL_TMP + 'rsl.out.0000')
-        complete = 'SUCCESS COMPLETE WRF' in msg
-        failed = '-------------------------------------------' in msg
-    else:
-        complete = False
-        failed = False
-    if failed:
-        print('ERROR: {} has failed. Last message was:\n{}'.format(program, msg))
-        return 'failed'
-    elif complete:
-        return 'complete'
-    else:
-        return 'running'
-
-
 def rda_download(filelist, dspath):
+    """
+    Logs into the RDA file and downloads specified files.
+
+    :param filelist:
+    :param dspath:
+    :return:
+    """
     # Specify login information and url for RDA
     pswd = 'mkjmJ17'
     url = 'https://rda.ucar.edu/cgi-bin/login'
@@ -160,601 +804,16 @@ def rda_download(filelist, dspath):
 
 
 def check_file_status(filepath, filesize):
+    """
+    Checks the file status during a download from the internet.
+    
+    :param filepath:
+    :param filesize:
+    :return:
+    """
     sys.stdout.write('\r')
     sys.stdout.flush()
     size = int(os.stat(filepath).st_size)
     percent_complete = (size / filesize) * 100
     sys.stdout.write('%.3f %s\n' % (percent_complete, '% Completed'))
     sys.stdout.flush()
-
-
-def determine_computer():
-    # Determine if we are on Cheyenne
-    if os.environ['GROUP'] == 'ncar':
-        on_cheyenne = True
-        on_aws = False
-    # Determine if we are on AWS
-    elif os.environ['GROUP'] == 'ec2-user':
-        on_cheyenne = False
-        on_aws = True
-    else:
-        on_cheyenne = False
-        on_aws = False
-    return on_aws, on_cheyenne
-
-
-def dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir):
-    # Determine which computing resource we are using
-    on_aws, on_cheyenne = determine_computer()
-
-    # Set working and WRF model directory names
-    if on_cheyenne:
-        DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
-        DIR_WPS = DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
-        DIR_WRF = DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
-        DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
-        DIR_DATA = '/glade/scratch/sward/data/' + str(bc_data) + '/%s_' % \
-                   (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
-        DIR_LOCAL_TMP = '/glade/scratch/sward/met4ene/wrfout/%s_' + paramstr % \
-                        (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
-        DIR_RUNWRF = '/glade/scratch/sward/met4ene/runwrf/'
-    elif on_aws:
-        DIR_WPS = '/home/ec2-user/environment/Build_WRF/WPS/'
-        DIR_WRF = '/home/ec2-user/environment/Build_WRF/WRF/'
-        DIR_WPS_GEOG = '/home/ec2-user/environment/data/WPS_GEOG'
-        DIR_DATA = '/home/ec2-user/environment/data/' + str(bc_data) + '/%s_' % \
-                   (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
-        DIR_LOCAL_TMP = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_' % \
-                        (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
-        DIR_RUNWRF = '/home/ec2-user/environment/met4ene/runwrf/'
-    else:
-        DIR_WPS = '/home/jas983/models/wrf/WPS/'
-        DIR_WRF = '/home/jas983/models/wrf/WRF/'
-        DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
-        DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(bc_data) + '/'
-        # DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(bc_data) + '/%s_' % \
-        #           (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
-        DIR_LOCAL_TMP = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
-                        (forecast_start.strftime('%Y-%m-%d')) + paramstr + '/'
-        DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
-
-    # Define a directory containing:
-    # a) namelist.wps and namelist.input templates
-    # b) batch submission template csh scripts for running geogrid, ungrib & metgrid, and real & wrf.
-    if template_dir is not None:
-        DIR_TEMPLATES = template_dir + '/'
-    else:
-        if on_cheyenne:
-            DIR_TEMPLATES = '/glade/scratch/sward/met4ene/templates/ncartemplates/'
-        elif on_aws:
-            DIR_TEMPLATES = '/home/ec2-user/environment/met4ene/templates/awstemplates/'
-        else:
-            DIR_TEMPLATES = '/share/mzhang/jas983/wrf_data/met4ene/templates/magma2templates/'
-
-    # Define linux command aliai
-    CMD_LN = 'ln -sf %s %s'
-    CMD_CP = 'cp %s %s'
-    CMD_MV = 'mv %s %s'
-    CMD_CHMOD = 'chmod -R %s %s'
-    CMD_LINK_GRIB = './link_grib.csh ' + DIR_DATA + '* ' + DIR_LOCAL_TMP 
-    if on_cheyenne:
-        CMD_GEOGRID = 'qsub ' + DIR_LOCAL_TMP + 'template_rungeogrid.csh'
-        CMD_UNGMETG = 'qsub ' + DIR_LOCAL_TMP + 'template_runungmetg.csh'
-        CMD_REAL = 'qsub ' + DIR_LOCAL_TMP + 'template_runreal.csh'
-        CMD_WRF = 'qsub ' + DIR_LOCAL_TMP + 'template_runwrf.csh'
-    elif on_aws:
-        CMD_GEOGRID = './template_rungeogrid.csh'
-        CMD_UNGMETG = './template_runungmetg.csh'
-        CMD_REAL = './template_runreal.csh'
-        CMD_WRF = './template_runwrf.csh'
-    else:
-        CMD_GEOGRID = 'sbatch ' + DIR_LOCAL_TMP + 'template_rungeogrid.csh ' + DIR_LOCAL_TMP
-        CMD_UNGMETG = 'sbatch ' + DIR_LOCAL_TMP + 'template_runungmetg.csh ' + DIR_LOCAL_TMP
-        CMD_REAL = 'sbatch ' + DIR_LOCAL_TMP + 'template_runreal.csh ' + DIR_LOCAL_TMP
-        CMD_WRF = 'sbatch ' + DIR_LOCAL_TMP + 'template_runwrf.csh ' + DIR_LOCAL_TMP
-    return DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
-           CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
-           CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF
-
-
-def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt):
-    # Determine which computing resource we are using
-    on_aws, on_cheyenne = determine_computer()
-
-    # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
-        CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
-        CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
-        dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
-
-    if bc_data == 'ERA':
-        if on_cheyenne:
-            DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.pl/'
-            DATA_ROOT1 = DATA_ROOT1 + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
-            DATA_ROOT2 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.sfc/'
-            DATA_ROOT2 = DATA_ROOT2 + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
-        else:
-            # The following define paths to the required data on the RDA site
-            dspath = 'http://rda.ucar.edu/data/ds627.0/'
-            DATA_ROOT1 = 'ei.oper.an.pl/' + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
-            DATA_ROOT2 = 'ei.oper.an.sfc/' + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
-        datpfx1 = 'ei.oper.an.pl.regn128sc.'
-        datpfx2 = 'ei.oper.an.pl.regn128uv.'
-        datpfx3 = 'ei.oper.an.sfc.regn128sc.'
-        vtable_sfx = 'ERA-interim.pl'
-    else:
-        vtable_sfx = bc_data
-    print('Using {} data for boundary condidions'.format(bc_data))
-    print('The corresponding Vtable is: {}\n'.format(vtable_sfx))
-
-    # If no data directory exists, create one
-    if not os.path.exists(DIR_DATA):
-        os.makedirs(DIR_DATA, 0o755)
-    i = int(forecast_start.day)
-    n = int(forecast_start.day) + int(delt.days)
-    if on_cheyenne:
-        # Copy desired data files from RDA
-        # THIS ONLY WORKS IF YOU WANT TO RUN WITHIN A SINGLE MONTH!
-        while i <= n:
-            cmd = CMD_CP % (DATA_ROOT1 + datpfx1 + forecast_start.strftime('%Y')
-                            + forecast_start.strftime('%m') + str(i) + '*', DIR_DATA)
-            cmd = cmd + '; ' + CMD_CP % (DATA_ROOT1 + datpfx2 + forecast_start.strftime('%Y')
-                                         + forecast_start.strftime('%m') + str(i) + '*', DIR_DATA)
-            cmd = cmd + '; ' + CMD_CP % (DATA_ROOT2 + datpfx3 + forecast_start.strftime('%Y')
-                                         + forecast_start.strftime('%m') + str(i) + '*', DIR_DATA)
-            os.system(cmd)
-            i += 1
-    else:
-        # Build the file list required for the WRF run.
-        hrs = ['00', '06', '12', '18']
-        filelist = []
-        file_check = []
-        while i <= n:
-            for hr in hrs:
-                filelist.append(DATA_ROOT1 + datpfx1 + forecast_start.strftime('%Y')
-                                + forecast_start.strftime('%m') + str(i) + hr)
-                filelist.append(DATA_ROOT1 + datpfx2 + forecast_start.strftime('%Y')
-                                + forecast_start.strftime('%m') + str(i) + hr)
-                filelist.append(DATA_ROOT2 + datpfx3 + forecast_start.strftime('%Y')
-                                + forecast_start.strftime('%m') + str(i) + hr)
-                file_check.append(datpfx1 + forecast_start.strftime('%Y')
-                                  + forecast_start.strftime('%m') + str(i) + hr)
-                file_check.append(datpfx2 + forecast_start.strftime('%Y')
-                                  + forecast_start.strftime('%m') + str(i) + hr)
-                file_check.append(datpfx3 + forecast_start.strftime('%Y')
-                                  + forecast_start.strftime('%m') + str(i) + hr)
-            i += 1
-
-        # Check to see if all these files already exist in the data directory
-        data_exists = []
-        for data_file in file_check:
-            data_exists.append(os.path.exists(DIR_DATA + data_file))
-        if data_exists.count(True) is len(file_check):
-            print('Boundary condition data was previously downloaded from RDA.')
-            return vtable_sfx
-        else:
-            # Download the data from the RDA
-            rda_download(filelist, dspath)
-            # Move the data files to the data directory
-            cmd = CMD_MV % (datpfx1 + '*', DIR_DATA)
-            cmd = cmd + '; ' + CMD_MV % (datpfx2 + '*', DIR_DATA)
-            cmd = cmd + '; ' + CMD_MV % (datpfx3 + '*', DIR_DATA)
-            os.system(cmd)
-    return vtable_sfx
-
-
-def wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx):
-    # Determine which computing resource we are using
-    on_aws, on_cheyenne = determine_computer()
-
-    # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
-        CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
-        CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
-        dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
-
-    # Clean potential old simulation dir, remake the dir, and enter it.
-    lh.remove_dir(DIR_LOCAL_TMP)
-    os.makedirs(DIR_LOCAL_TMP, 0o755)
-
-    # Link WRF tables, data, and executables.
-    cmd = CMD_LN % (DIR_WRF + 'run/aerosol*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/BROADBAND*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/bulk*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/CAM*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/capacity*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/CCN*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/CLM*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/co2*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/coeff*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/constants*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/create*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/ETAMPNEW*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/GENPARM*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/grib2map*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/gribmap*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/HLC*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/ishmael*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/kernels*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/LANDUSE*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/masses*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/MPTABLE*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/ozone*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/p3_lookup*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/RRTM*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/SOILPARM*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/termvels*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/tr*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/URBPARM*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/VEGPARM*', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WRF + 'run/*exe', DIR_LOCAL_TMP)
-    os.system(cmd)
-    print(f'Your WRFOUT directory is:\n{DIR_LOCAL_TMP}')
-
-    # Copy over namelists and submission scripts
-    if on_cheyenne:
-        cmd = CMD_CP % (DIR_TEMPLATES + 'template_rungeogrid.csh', DIR_LOCAL_TMP)
-        cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runungmetg.csh', DIR_LOCAL_TMP)
-        cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runreal.csh', DIR_LOCAL_TMP)
-        cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runwrf.csh', DIR_LOCAL_TMP)
-    else:
-        cmd = CMD_CP % (DIR_TEMPLATES + '*', DIR_LOCAL_TMP)
-    os.system(cmd)
-
-    # Link the metgrid and geogrid dirs and executables as well as the correct variable table for the BC/IC data.
-    cmd = CMD_LN % (DIR_WPS + 'geogrid', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'geogrid.exe', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'ungrib.exe', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'metgrid', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'metgrid.exe', DIR_LOCAL_TMP)
-    cmd = cmd + '; ' + CMD_LN % (DIR_WPS + 'ungrib/Variable_Tables/Vtable.' + vtable_sfx, DIR_LOCAL_TMP + 'Vtable')
-    os.system(cmd)
-
-    # Link the regridding script
-    cmd = CMD_LN % (DIR_RUNWRF + 'wrf2era_error.ncl', DIR_LOCAL_TMP)
-    os.system(cmd)
-
-
-def prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
-                      bc_data, template_dir, MAX_DOMAINS):
-    def read_namelist(namelist_file):
-        with open(DIR_LOCAL_TMP + namelist_file, 'r') as namelist:
-            NAMELIST = namelist.read()
-        return NAMELIST
-
-    # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
-        CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
-        CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
-        dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
-
-    # Try to open WPS and WRF namelists as readonly, and print an error if you cannot.
-    try:
-        NAMELIST_WPS = read_namelist('namelist.wps')
-        NAMELIST_WRF = read_namelist('namelist.input')
-    except IOError as e:
-        print(e.errno)
-        print(e)
-        exit()
-
-    # Write the start and end dates to the WPS Namelist
-    wps_dates = ' start_date                     = '
-    for i in range(0, MAX_DOMAINS):
-        wps_dates = wps_dates + forecast_start.strftime("'%Y-%m-%d_%H:%M:%S', ")
-    wps_dates = wps_dates + '\n end_date                     = '
-    for i in range(0, MAX_DOMAINS):
-        wps_dates = wps_dates + forecast_end.strftime("'%Y-%m-%d_%H:%M:%S', ")
-    with open(DIR_LOCAL_TMP + 'namelist.wps', 'w') as namelist:
-        namelist.write(NAMELIST_WPS.replace('%DATES%', wps_dates))
-
-    # Write the GEOG data path to the WPS Namelist
-    NAMELIST_WPS = read_namelist('namelist.wps')
-    geog_data = " geog_data_path = '" + DIR_WPS_GEOG + "'"
-    with open(DIR_LOCAL_TMP + 'namelist.wps', 'w') as namelist:
-        namelist.write(NAMELIST_WPS.replace('%GEOG%', geog_data))
-
-    # Write the number of domains to the WPS Namelist
-    NAMELIST_WPS = read_namelist('namelist.wps')
-    wps_domains = ' max_dom                             = ' + str(MAX_DOMAINS) + ','
-    with open(DIR_LOCAL_TMP + 'namelist.wps', 'w') as namelist:
-        namelist.write(NAMELIST_WPS.replace('%DOMAIN%', wps_domains))
-    print('Done writing WPS namelist')
-
-    # Write the runtime info and start dates and times to the WRF Namelist
-    wrf_runtime = ' run_days                            = ' + str(delt.days) + ',\n'
-    wrf_runtime = wrf_runtime + ' run_hours                           = ' + '0' + ',\n'
-    wrf_runtime = wrf_runtime + ' run_minutes                         = ' + '0' + ',\n'
-    wrf_runtime = wrf_runtime + ' run_seconds                         = ' + '0' + ','
-    with open(DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
-        namelist.write(NAMELIST_WRF.replace('%RUNTIME%', wrf_runtime))
-
-    NAMELIST_WRF = read_namelist('namelist.input')
-    wrf_dates = ' start_year                          = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_dates = wrf_dates + forecast_start.strftime('%Y, ')
-    wrf_dates = wrf_dates + '\n start_month                         = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_dates = wrf_dates + forecast_start.strftime('%m, ')
-    wrf_dates = wrf_dates + '\n start_day                           = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_dates = wrf_dates + forecast_start.strftime('%d, ')
-    wrf_dates = wrf_dates + '\n start_hour                          = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_dates = wrf_dates + forecast_start.strftime('%H, ')
-    wrf_dates = wrf_dates + '\n start_minute                        = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_dates = wrf_dates + '00, '
-    wrf_dates = wrf_dates + '\n start_second                        = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_dates = wrf_dates + '00, '
-    wrf_dates = wrf_dates + '\n end_year                            = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_dates = wrf_dates + forecast_end.strftime('%Y, ')
-    wrf_dates = wrf_dates + '\n end_month                           = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_dates = wrf_dates + forecast_end.strftime('%m, ')
-    wrf_dates = wrf_dates + '\n end_day                             = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_dates = wrf_dates + forecast_end.strftime('%d, ')
-    wrf_dates = wrf_dates + '\n end_hour                            = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_dates = wrf_dates + forecast_end.strftime('%H, ')
-    wrf_dates = wrf_dates + '\n end_minute                          = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_dates = wrf_dates + '00, '
-    wrf_dates = wrf_dates + '\n end_second                          = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_dates = wrf_dates + '00, '
-    with open(DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
-        namelist.write(NAMELIST_WRF.replace('%DATES%', wrf_dates))
-
-    # Write the physics parametrization scheme info to the WRF Namelist
-    NAMELIST_WRF = read_namelist('namelist.input')
-    wrf_physics = ' mp_physics                          = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_physics = wrf_physics + str(param_ids[0]) + ', '
-    wrf_physics = wrf_physics + '\n ra_lw_physics                       = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_physics = wrf_physics + str(param_ids[1]) + ', '
-    wrf_physics = wrf_physics + '\n ra_sw_physics                       = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_physics = wrf_physics + str(param_ids[2]) + ', '
-    wrf_physics = wrf_physics + '\n sf_surface_physics                  = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_physics = wrf_physics + str(param_ids[3]) + ', '
-    wrf_physics = wrf_physics + '\n bl_pbl_physics                      = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_physics = wrf_physics + str(param_ids[4]) + ', '
-    wrf_physics = wrf_physics + '\n cu_physics                          = '
-    wrf_physics = wrf_physics + str(param_ids[5]) + ', 0, 0,'
-    wrf_physics = wrf_physics + '\n sf_sfclay_physics                   = '
-    for i in range(0, MAX_DOMAINS):
-        wrf_physics = wrf_physics + str(param_ids[6]) + ', '
-
-    # The following namelist options are only set if certain parameter choices are selected
-    if param_ids[6] in [1, 5, 7, 11]:
-        wrf_physics = wrf_physics + '\n isfflx                              = 1, '
-    if param_ids[6] in [1]:
-        wrf_physics = wrf_physics + '\n ifsnow                              = 1, '
-    if param_ids[1] in [1, 4] and param_ids[2] in [1, 4]:
-        wrf_physics = wrf_physics + '\n icloud                              = 1, '
-    if param_ids[5] in [5, 93]:
-        wrf_physics = wrf_physics + '\n maxiens                             = 1,'
-    if param_ids[5] in [93]:
-        wrf_physics = wrf_physics + '\n maxens                              = 3,'
-        wrf_physics = wrf_physics + '\n maxens2                             = 3,'
-        wrf_physics = wrf_physics + '\n maxens3                             = 16,'
-        wrf_physics = wrf_physics + '\n ensdim                              = 144,'
-    with open(DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
-        namelist.write(NAMELIST_WRF.replace('%PARAMS%', wrf_physics))
-
-    # Write the number of domains to the namelist
-    NAMELIST_WRF = read_namelist('namelist.input')
-    wrf_domains = ' max_dom                             = ' + str(MAX_DOMAINS) + ','
-    with open(DIR_LOCAL_TMP + 'namelist.input', 'w') as namelist:
-        namelist.write(NAMELIST_WRF.replace('%DOMAIN%', wrf_domains))
-    print('Done writing WRF namelist\n')
-
-
-def run_wps(paramstr, forecast_start, bc_data, template_dir):
-    # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
-        CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
-        CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
-        dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
-
-    # Link the grib files
-    sys.stdout.flush()
-    os.system(CMD_LINK_GRIB)
-
-    # Run geogrid if it has not already been run
-    startTime = datetime.datetime.now()
-    startTimeInt = int(time.time())
-    print('Starting Geogrid at: ' + str(startTime))
-    sys.stdout.flush()
-    os.system(CMD_GEOGRID)
-    geogrid_sim = runwrf_finish_check('geogrid', DIR_LOCAL_TMP)
-    while geogrid_sim is not 'complete':
-        if geogrid_sim is 'failed':
-            print_last_3lines(DIR_LOCAL_TMP + 'geogrid.log')
-            return False
-        elif (int(time.time()) - startTimeInt) < 600:
-            time.sleep(2)
-            geogrid_sim = runwrf_finish_check('geogrid', DIR_LOCAL_TMP)
-        else:
-            print('TimeoutError in run_wps: Geogrid took more than 10min to run... exiting.')
-            return False
-    elapsed = datetime.datetime.now() - startTime
-    print('Geogrid ran in: ' + str(elapsed))
-
-    # Run ungrib and metgrid
-    startTime = datetime.datetime.now()
-    startTimeInt = int(time.time())
-    print('Starting Ungrib and Metgrid at: ' + str(startTime))
-    sys.stdout.flush()
-    os.system(CMD_UNGMETG)
-    metgrid_sim = runwrf_finish_check('metgrid', DIR_LOCAL_TMP)
-    while metgrid_sim is not 'complete':
-        if metgrid_sim is 'failed':
-            print_last_3lines(DIR_LOCAL_TMP + 'metgrid.log')
-            return False
-        elif (int(time.time()) - startTimeInt) < 600:
-            time.sleep(2)
-            metgrid_sim = runwrf_finish_check('metgrid', DIR_LOCAL_TMP)
-        else:
-            print('TimeoutError in run_wps: Ungrib and Metgrid took more than 10min to run... exiting.')
-            return False
-    elapsed = datetime.datetime.now() - startTime
-    print('Ungrib and Metgrid ran in: ' + str(elapsed))
-
-    # Remove the data directory after WPS has run
-    # lh.remove_dir(DIR_DATA)
-    return True
-
-
-def run_real(paramstr, forecast_start, bc_data, template_dir):
-    # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
-    CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
-    CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
-        dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
-
-    startTime = datetime.datetime.now()
-    startTimeInt = int(time.time())
-    print('Starting Real at: ' + str(startTime))
-    sys.stdout.flush()
-    os.system(CMD_REAL)
-    real_sim = runwrf_finish_check('real', DIR_LOCAL_TMP)
-    while real_sim is not 'complete':
-        if real_sim is 'failed':
-            print_last_3lines(DIR_LOCAL_TMP + 'rsl.out.0000')
-            return False
-        elif (int(time.time()) - startTimeInt) < 600:
-            time.sleep(2)
-            real_sim = runwrf_finish_check('real', DIR_LOCAL_TMP)
-        else:
-            print('TimeoutError in run_real: Real took more than 10min to run... exiting.')
-            return False
-    elapsed = datetime.datetime.now() - startTime
-    print('Real ran in: ' + str(elapsed) + ' seconds')
-    return True
-
-
-def run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS):
-    # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
-        CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
-        CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
-        dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
-
-    startTime = datetime.datetime.now()
-    startTimeInt = int(time.time())
-    print('Starting WRF at: ' + str(startTime))
-    sys.stdout.flush()
-    os.system(CMD_WRF)
-    # Make the script sleep for 5 minutes to allow for the rsl.out.0000 file to reset.
-    time.sleep(300)
-    wrf_sim = runwrf_finish_check('wrf', DIR_LOCAL_TMP)
-    while wrf_sim is not 'complete':
-        if wrf_sim is 'failed':
-            print_last_3lines(DIR_LOCAL_TMP + 'rsl.out.0000')
-            return False
-        elif (int(time.time()) - startTimeInt) < 7200:
-            time.sleep(10)
-            wrf_sim = runwrf_finish_check('wrf', DIR_LOCAL_TMP)
-        else:
-            print('TimeoutError in run_wrf at {}: WRF took more than 2hrs to run... exiting.'.format(datetime.datetime.now()))
-            return False
-    print('WRF finished running at: ' + str(datetime.datetime.now()))
-    elapsed = datetime.datetime.now() - startTime
-    print('WRF ran in: ' + str(elapsed))
-
-    # Rename the wrfout files.
-    for n in range(1, MAX_DOMAINS + 1):
-        os.system(CMD_MV % (DIR_LOCAL_TMP + 'wrfout_d0' + str(n) + '_' + forecast_start.strftime('%Y')
-                         + '-' + forecast_start.strftime('%m') + '-' + forecast_start.strftime('%d')
-                         + '_00:00:00', DIR_LOCAL_TMP + 'wrfout_d0' + str(n) + '.nc'))
-    return True
-
-
-def wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir):
-    # Determine which computing resource we are using
-    on_aws, on_cheyenne = determine_computer()
-
-    # Get the directory and command aliai
-    DIR_WPS, DIR_WRF, DIR_WPS_GEOG, DIR_DATA, DIR_TEMPLATES, DIR_LOCAL_TMP, DIR_RUNWRF, \
-    CMD_LN, CMD_CP, CMD_MV, CMD_CHMOD, CMD_LINK_GRIB, \
-    CMD_GEOGRID, CMD_UNGMETG, CMD_REAL, CMD_WRF = \
-        dirsandcommand_aliai(paramstr, forecast_start, bc_data, template_dir)
-
-    # Download ERA5 data for benchmarking
-    if on_cheyenne:
-        DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds633.0/e5.oper.an.sfc/'
-        DATA_ROOT1 = DATA_ROOT1 + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
-    else:
-        ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
-        datpfx1 = 'EastUS_e5.oper.an.sfc.128_165_10u.ll025sc.'
-        datpfx2 = 'EastUS_e5.oper.an.sfc.128_166_10v.ll025sc.'
-        datpfx3 = 'EastUS_e5.oper.an.sfc.128_167_2t.ll025sc.'
-        datpfx4 = 'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.'
-        datpfx5 = 'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.'
-        if not os.path.exists(ERA5_ROOT + datpfx1 + forecast_start.strftime('%Y')
-                              + forecast_start.strftime('%m') + '0100_'
-                              + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc'):
-
-            # Change into the ERA5 data directory
-            if not os.path.exists(ERA5_ROOT):
-                os.mkdir(ERA5_ROOT)
-            # The following define paths to the required data on the RDA site
-            dspath = 'http://rda.ucar.edu/data/ds633.0/'
-            DATA_ROOT1 = 'e5.oper.an.sfc/' + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '/'
-
-            # Build the file list to be downloaded from the RDA
-            filelist = [DATA_ROOT1 + datpfx1 + forecast_start.strftime('%Y')
-                        + forecast_start.strftime('%m') + '0100_'
-                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc',
-                        DATA_ROOT1 + datpfx2 + forecast_start.strftime('%Y')
-                        + forecast_start.strftime('%m') + '0100_'
-                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc',
-                        DATA_ROOT1 + datpfx3 + forecast_start.strftime('%Y')
-                        + forecast_start.strftime('%m') + '0100_'
-                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc',
-                        DATA_ROOT1 + datpfx4 + forecast_start.strftime('%Y')
-                        + forecast_start.strftime('%m') + '0100_'
-                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc',
-                        DATA_ROOT1 + datpfx5 + forecast_start.strftime('%Y')
-                        + forecast_start.strftime('%m') + '0100_'
-                        + forecast_start.strftime('%Y') + forecast_start.strftime('%m') + '3123.nc']
-            print(filelist)
-            # Download the data from the RDA
-            rda_download(filelist, dspath)
-            # Move the files into the ERA5 data directory
-            cmd = CMD_MV % (datpfx1 + '*', ERA5_ROOT)
-            cmd = cmd + '; ' + CMD_MV % (datpfx2 + '*', ERA5_ROOT)
-            cmd = cmd + '; ' + CMD_MV % (datpfx3 + '*', ERA5_ROOT)
-            cmd = cmd + '; ' + CMD_MV % (datpfx4 + '*', ERA5_ROOT)
-            cmd = cmd + '; ' + CMD_MV % (datpfx5 + '*', ERA5_ROOT)
-            os.system(cmd)
-            # Run ncks to reduce the size of the files
-            # Below is an example of what needs to be implemented:
-            # ncks -d longitude,265.,295. -d latitude,30.,50.
-            # e5.oper.an.sfc.128_165_10u.regn320sc.2011010100_2011013123.nc
-            # EastUS_e5.oper.an.sfc.128_165_10u.regn320sc.2011010100_2011013123.nc
-
-    # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
-    CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'paramstr="%s"\' %swrf2era_error.ncl' % \
-                 (forecast_start.strftime('%Y'), forecast_start.strftime('%m'),
-                  forecast_start.strftime('%d'), DIR_LOCAL_TMP, paramstr, DIR_LOCAL_TMP)
-    os.system(CMD_REGRID)
-
-    # Extract the total error after the script has run
-    error_file = DIR_LOCAL_TMP + 'mae_wrfyera_' + paramstr + '.csv'
-    while not os.path.exists(error_file):
-        time.sleep(1)
-    mae = read_last_line(error_file)
-    mae = mae.split(',')
-    mae[-1] = mae[-1].strip()
-    mae = [float(i) for i in mae]
-    total_error = sum(mae)
-    print('!!! Parameters {} have a total error {}'.format(paramstr, mae))
-    return total_error
