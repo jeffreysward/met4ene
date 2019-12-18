@@ -13,4 +13,7 @@ def test_WRFModel():
     start_date = 'Jan 15 2011'
     end_date = 'Jan 16 2011'
     wrf_sim = WRFModel(param_ids, start_date, end_date)
-    assert wrf_sim.end_date == end_date
+    assert wrf_sim.DIR_WRF == '/home/jas983/models/wrf/WRF/'
+    assert wrf_sim.DIR_WPS_GEOG == '/share/mzhang/jas983/wrf_data/WPS_GEOG/'
+    assert wrf_sim.DIR_RUNWRF == '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
+    assert wrf_sim.start_date == start_date

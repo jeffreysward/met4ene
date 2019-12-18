@@ -1,0 +1,5 @@
+# List your directory paths in this file; the others will be dependent on these.
+directory_paths:
+  DIR_WRF_ROOT: '/home/jas983/models/wrf/'
+  DIR_DATA_ROOT: '/share/mzhang/jas983/wrf_data/'
+  DIR_MET4ENE: '/share/mzhang/jas983/wrf_data/met4ene/'

@@ -45,6 +45,7 @@ import os
 import requests
 import time
 import datetime
+import yaml
 import linuxhelper as lh
 from wrfparams import ids2str
 
@@ -54,7 +55,8 @@ class WRFModel:
     This class provides a framework for running the WRF model
     """
 
-    def __init__(self, param_ids, start_date, end_date, bc_data='ERA', n_domains=1, template_dir=None):
+    def __init__(self, param_ids, start_date, end_date, bc_data='ERA',
+                 n_domains=1, template_dir=None, setup_yaml='dirpath.yml'):
         self.param_ids = param_ids
         self.start_date = start_date
         self.end_date = end_date
@@ -78,41 +80,61 @@ class WRFModel:
         self.on_magma = on_magma
 
         # Set working and WRF model directory names
-        if self.on_cheyenne:
-            self.DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
-            self.DIR_WPS = self.DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
-            self.DIR_WRF = self.DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
-            self.DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
-            self.DIR_DATA = '/glade/scratch/sward/data/' + str(self.bc_data) + '/%s_' % \
-                            (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
-            self.DIR_WRFOUT = '/glade/scratch/sward/met4ene/wrfout/%s_' + self.paramstr % \
-                              (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
-            self.DIR_RUNWRF = '/glade/scratch/sward/met4ene/runwrf/'
-        elif self.on_aws:
-            self.DIR_WPS = '/home/ec2-user/environment/Build_WRF/WPS/'
-            self.DIR_WRF = '/home/ec2-user/environment/Build_WRF/WRF/'
-            self.DIR_WPS_GEOG = '/home/ec2-user/environment/data/WPS_GEOG'
-            self.DIR_DATA = '/home/ec2-user/environment/data/' + str(self.bc_data) + '/%s_' % \
-                            (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
-            self.DIR_WRFOUT = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_' % \
-                              (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
-            self.DIR_RUNWRF = '/home/ec2-user/environment/met4ene/runwrf/'
-        elif self.on_magma:
-            self.DIR_WPS = '/home/jas983/models/wrf/WPS/'
-            self.DIR_WRF = '/home/jas983/models/wrf/WRF/'
-            self.DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
-            self.DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(self.bc_data) + '/'
-            self.DIR_WRFOUT = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
-                              (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
-            self.DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
-        else:
-            self.DIR_WPS = '/home/jas983/models/wrf/WPS/'
-            self.DIR_WRF = '/home/jas983/models/wrf/WRF/'
-            self.DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
-            self.DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(self.bc_data) + '/'
-            self.DIR_WRFOUT = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
-                              (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
-            self.DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
+        with open(setup_yaml, 'r') as dirpath_file:
+            try:
+                dirs = yaml.safe_load(dirpath_file)
+            except yaml.YAMLError as exc:
+                print(exc)
+        dirpaths = dirs.get('directory_paths')
+        self.DIR_WRF_ROOT = dirpaths.get('DIR_WRF_ROOT')
+        self.DIR_WPS = self.DIR_WRF_ROOT + 'WPS/'
+        self.DIR_WRF = self.DIR_WRF_ROOT + 'WRF/'
+        self.DIR_DATA_ROOT = dirpaths.get('DIR_DATA_ROOT')
+        self.DIR_WPS_GEOG = self.DIR_DATA_ROOT + 'WPS_GEOG/'
+        self.DIR_DATA = self.DIR_DATA_ROOT + 'data/' + str(self.bc_data) + '/'
+        self.DIR_MET4ENE = dirpaths.get('DIR_MET4ENE')
+        self.DIR_WRFOUT = self.DIR_MET4ENE + 'wrfout/ARW/%s_' % \
+                          (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+        self.DIR_RUNWRF = self.DIR_MET4ENE + 'runwrf/'
+
+        # if self.on_cheyenne:
+        #     self.DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
+        #     self.DIR_WPS = self.DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
+        #     self.DIR_WRF = self.DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
+        #     self.DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
+        #     self.DIR_DATA = '/glade/scratch/sward/data/' + str(self.bc_data) + '/%s_' % \
+        #                     (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+        #     self.DIR_WRFOUT = '/glade/scratch/sward/met4ene/wrfout/%s_' + self.paramstr % \
+        #                       (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+        #     self.DIR_RUNWRF = '/glade/scratch/sward/met4ene/runwrf/'
+        # elif self.on_aws:
+        #     self.DIR_WRF_ROOT = '/home/ec2-user/environment/Build_WRF/'
+        #     self.DIR_WPS = '/home/ec2-user/environment/Build_WRF/WPS/'
+        #     self.DIR_WRF = '/home/ec2-user/environment/Build_WRF/WRF/'
+        #     self.DIR_WPS_GEOG = '/home/ec2-user/environment/data/WPS_GEOG'
+        #     self.DIR_DATA = '/home/ec2-user/environment/data/' + str(self.bc_data) + '/%s_' % \
+        #                     (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+        #     self.DIR_WRFOUT = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_' % \
+        #                       (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+        #     self.DIR_RUNWRF = '/home/ec2-user/environment/met4ene/runwrf/'
+        # elif self.on_magma:
+        #     self.DIR_WRF_ROOT = '/home/jas983/models/wrf/'
+        #     self.DIR_WPS = '/home/jas983/models/wrf/WPS/'
+        #     self.DIR_WRF = '/home/jas983/models/wrf/WRF/'
+        #     self.DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
+        #     self.DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(self.bc_data) + '/'
+        #     self.DIR_WRFOUT = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
+        #                       (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+        #     self.DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
+        # else:
+        #     self.DIR_WRF_ROOT = '/home/jas983/models/wrf/'
+        #     self.DIR_WPS = '/home/jas983/models/wrf/WPS/'
+        #     self.DIR_WRF = '/home/jas983/models/wrf/WRF/'
+        #     self.DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
+        #     self.DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(self.bc_data) + '/'
+        #     self.DIR_WRFOUT = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
+        #                       (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+        #     self.DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
 
         # Define a directory containing:
         # a) namelist.wps and namelist.input templates
@@ -148,6 +170,16 @@ class WRFModel:
             self.CMD_UNGMETG = 'sbatch ' + self.DIR_WRFOUT + 'template_runungmetg.csh ' + self.DIR_WRFOUT
             self.CMD_REAL = 'sbatch ' + self.DIR_WRFOUT + 'template_runreal.csh ' + self.DIR_WRFOUT
             self.CMD_WRF = 'sbatch ' + self.DIR_WRFOUT + 'template_runwrf.csh ' + self.DIR_WRFOUT
+
+    def set_directory_paths(self, in_yaml='dirpath.yml'):
+        """
+        Called within the __init__ method to set the directory paths
+        based upon the input yaml file.
+
+        :param in_yaml:
+        :return:
+        """
+
 
     def runwrf_finish_check(self, program):
         """
