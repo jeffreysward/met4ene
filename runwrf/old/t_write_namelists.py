@@ -144,7 +144,7 @@ if args.d is not None and args.d > 0:
 else:
     MAX_DOMAINS = 3
 
-# Try to remove the local tmp directory, and print 'DIR_LOCAL_TMP not deleted' if you cannot.
+# Try to remove the local tmp directory, and print 'DIR_WRFOUT not deleted' if you cannot.
 # Then remake the dir, and enter it.
 try: rmtree(DIR_LOCAL_TMP)
 except: print(DIR_LOCAL_TMP + ' not deleted')

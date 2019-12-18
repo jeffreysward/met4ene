@@ -7,6 +7,7 @@ import time
 import wrfga
 from wrfparams import write_param_csv
 import runwrf_fromthisdir as rw
+from runwrf import WRFModel
 import sqlite3
 from wrfga import Chromosome
 
@@ -61,43 +62,47 @@ def get_fitness(param_ids):
 
 def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
                     bc_data='ERA', MAX_DOMAINS=1, template_dir=None):
+    print('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -')
+    print('\nCalculating fitness for: {}'.format(param_ids))
+
+    # Create a WRFModel instance
+    wrf_sim = WRFModel(param_ids, start_date, end_date)
 
     # Next, get boundary condition data for the simulation
     # ERA is the only supported data type right now.
-    vtable_sfx = rw.get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt)
+    vtable_sfx = wrf_sim.get_bc_data()
 
     # Setup the working directory to run the simulation
-    rw.wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx)
+    wrf_sim.wrfdir_setup(vtable_sfx)
 
-    # Prepare the namelist
-    rw.prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
-                         bc_data, template_dir, MAX_DOMAINS)
+    # Prepare the namelists
+    wrf_sim.prepare_namelists()
 
-    # RUN WPS
-    success = rw.run_wps(paramstr, forecast_start, bc_data, template_dir)
-    print('WPS ran successfully? {}'.format(success))
+    # Run WPS
+    success = wrf_sim.run_wps()
+    print(f'WPS ran successfully? {success}')
 
-    # RUN REAL
+    # Run REAL
     if success:
-        success = rw.run_real(paramstr, forecast_start, bc_data, template_dir)
-        print('Real ran successfully? {}'.format(success))
+        success = wrf_sim.run_real()
+        print(f'Real ran successfully? {success}')
 
     # RUN WRF
     if success:
-        success = rw.run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS)
-        print('WRF ran successfully? {}'.format(success))
+        success = wrf_sim.run_wrf()
+        print(f'WRF ran successfully? {success}')
 
     # Compute the error between WRF run and ERA5 dataset and return fitness
     if success:
-        fitness = rw.wrf_era5_diff(paramstr, forecast_start, bc_data, template_dir)
+        fitness = wrf_sim.wrf_era5_diff()
     else:
         fitness = 10**10
 
     # Write parameter combinations to CSV
     # (if you would like to restart this, you must manually delete this CSV)
-    write_param_csv(param_ids, fitness)
+    write_param_csv(wrf_sim.param_ids, fitness)
     return fitness
-    #return 0
+    # return 0
 
 
 class WRFGATests(unittest.TestCase):

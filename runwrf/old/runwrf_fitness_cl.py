@@ -350,7 +350,7 @@ else:
         print()
 chdir(DIR_OUT)
 
-# Try to remove the local tmp directory, and print 'DIR_LOCAL_TMP not deleted' if you cannot.
+# Try to remove the local tmp directory, and print 'DIR_WRFOUT not deleted' if you cannot.
 # Then remake the dir, and enter it.
 try:
     rmtree(DIR_LOCAL_TMP)
@@ -399,16 +399,16 @@ if on_cheyenne:
     cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runreal.csh', DIR_LOCAL_TMP)
     cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'template_runwrf.csh', DIR_LOCAL_TMP)
 # else:
-#    cmd = CMD_CP % (DIR_TEMPLATES + 'geogrid.csh', DIR_LOCAL_TMP)
-#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'geogrid.sub', DIR_LOCAL_TMP)
-#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'metgrid.csh', DIR_LOCAL_TMP)
-#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'metgrid.sub', DIR_LOCAL_TMP)
-#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'real.csh', DIR_LOCAL_TMP)
-#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'real.sub', DIR_LOCAL_TMP)
-#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'wrf.csh', DIR_LOCAL_TMP)
-#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'wrf.sub', DIR_LOCAL_TMP)
-# cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.wps', DIR_LOCAL_TMP)
-# cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.input', DIR_LOCAL_TMP)
+#    cmd = CMD_CP % (DIR_TEMPLATES + 'geogrid.csh', DIR_WRFOUT)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'geogrid.sub', DIR_WRFOUT)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'metgrid.csh', DIR_WRFOUT)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'metgrid.sub', DIR_WRFOUT)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'real.csh', DIR_WRFOUT)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'real.sub', DIR_WRFOUT)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'wrf.csh', DIR_WRFOUT)
+#    cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'wrf.sub', DIR_WRFOUT)
+# cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.wps', DIR_WRFOUT)
+# cmd = cmd + '; ' + CMD_CP % (DIR_TEMPLATES + 'namelist.input', DIR_WRFOUT)
 else:
     cmd = CMD_CP % (DIR_TEMPLATES + '*', DIR_LOCAL_TMP)
 system(cmd)
