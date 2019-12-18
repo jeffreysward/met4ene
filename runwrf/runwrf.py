@@ -72,9 +72,10 @@ class WRFModel:
 
         # Determine which computer you are running on
         # to set directories and command aliai
-        on_aws, on_cheyenne = determine_computer()
+        on_aws, on_cheyenne, on_magma = determine_computer()
         self.on_aws = on_aws
         self.on_cheyenne = on_cheyenne
+        self.on_magma = on_magma
 
         # Set working and WRF model directory names
         if self.on_cheyenne:
@@ -96,6 +97,14 @@ class WRFModel:
             self.DIR_WRFOUT = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_' % \
                               (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
             self.DIR_RUNWRF = '/home/ec2-user/environment/met4ene/runwrf/'
+        elif self.on_magma:
+            self.DIR_WPS = '/home/jas983/models/wrf/WPS/'
+            self.DIR_WRF = '/home/jas983/models/wrf/WRF/'
+            self.DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
+            self.DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(self.bc_data) + '/'
+            self.DIR_WRFOUT = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
+                              (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+            self.DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
         else:
             self.DIR_WPS = '/home/jas983/models/wrf/WPS/'
             self.DIR_WRF = '/home/jas983/models/wrf/WRF/'
@@ -685,17 +694,25 @@ def determine_computer():
         if os.environ['GROUP'] == 'ncar':
             on_cheyenne = True
             on_aws = False
+            on_magma = False
         # Determine if we are on AWS
         elif os.environ['GROUP'] == 'ec2-user':
             on_cheyenne = False
             on_aws = True
+            on_magma = False
+        elif os.environ['GROUP'] == 'mzhang':
+            on_cheyenne = False
+            on_aws = False
+            on_magma = True
         else:
             on_cheyenne = False
             on_aws = False
+            on_magma = False
     else:
         on_cheyenne = False
         on_aws = False
-    return on_aws, on_cheyenne
+        on_magma = False
+    return on_aws, on_cheyenne, on_magma
 
 
 def read_last_line(file_name):

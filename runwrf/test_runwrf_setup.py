@@ -4,8 +4,8 @@ from runwrf import determine_computer
 
 
 def test_determine_computer():
-    on_aws, on_cheyenne = determine_computer()
-    print(f'On AWS? {on_aws}. On Cheyenne? {on_cheyenne}.')
+    on_aws, on_cheyenne, on_magma = determine_computer()
+    print(f'On AWS???: {on_aws}\nOn Cheyenne???: {on_cheyenne}\nOn Magma???: {on_magma}')
 
 
 def test_WRFModel():
