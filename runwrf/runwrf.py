@@ -33,10 +33,9 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 Known Issues/Wishlist:
 - The section of code that downloads ERA5 data is WRONG! It does not yet carry out
 the ncks step; I did it manually previously and haven't added it into this module yet.
-- There should be a better way (e.g., make a Class) to set the directories and command
-aliai than to have the same function called in every other function.
 - I'm unhappy with the output to screen from rda_download(). Perhaps edit that and
 check_file_status() as well.
+- I want to figure out a better way to set the command aliai.
 
 """
 
@@ -56,13 +55,12 @@ class WRFModel:
     """
 
     def __init__(self, param_ids, start_date, end_date, bc_data='ERA',
-                 n_domains=1, template_dir=None, setup_yaml='dirpath.yml'):
+                 n_domains=1, setup_yaml='dirpath.yml'):
         self.param_ids = param_ids
         self.start_date = start_date
         self.end_date = end_date
         self.bc_data = bc_data
         self.n_domains = n_domains
-        self.template_dir = template_dir
 
         # Format the forecast start/end and determine the total time.
         self.forecast_start = datetime.datetime.strptime(self.start_date, '%b %d %Y')
@@ -96,6 +94,7 @@ class WRFModel:
         self.DIR_WRFOUT = self.DIR_MET4ENE + 'wrfout/ARW/%s_' % \
                           (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
         self.DIR_RUNWRF = self.DIR_MET4ENE + 'runwrf/'
+        self.DIR_TEMPLATES = dirpaths.get('DIR_TEMPLATES')
 
         # if self.on_cheyenne:
         #     self.DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
@@ -139,15 +138,15 @@ class WRFModel:
         # Define a directory containing:
         # a) namelist.wps and namelist.input templates
         # b) batch submission template csh scripts for running geogrid, ungrib & metgrid, and real & wrf.
-        if self.template_dir is not None:
-            self.DIR_TEMPLATES = self.template_dir + '/'
-        else:
-            if self.on_cheyenne:
-                self.DIR_TEMPLATES = '/glade/scratch/sward/met4ene/templates/ncartemplates/'
-            elif self.on_aws:
-                self.DIR_TEMPLATES = '/home/ec2-user/environment/met4ene/templates/awstemplates/'
-            else:
-                self.DIR_TEMPLATES = '/share/mzhang/jas983/wrf_data/met4ene/templates/magma2templates/'
+        # if self.template_dir is not None:
+        #     self.DIR_TEMPLATES = self.template_dir + '/'
+        # else:
+        #     if self.on_cheyenne:
+        #         self.DIR_TEMPLATES = '/glade/scratch/sward/met4ene/templates/ncartemplates/'
+        #     elif self.on_aws:
+        #         self.DIR_TEMPLATES = '/home/ec2-user/environment/met4ene/templates/awstemplates/'
+        #     else:
+        #         self.DIR_TEMPLATES = '/share/mzhang/jas983/wrf_data/met4ene/templates/magma2templates/'
 
         # Define linux command aliai
         self.CMD_LN = 'ln -sf %s %s'
@@ -171,16 +170,6 @@ class WRFModel:
             self.CMD_REAL = 'sbatch ' + self.DIR_WRFOUT + 'template_runreal.csh ' + self.DIR_WRFOUT
             self.CMD_WRF = 'sbatch ' + self.DIR_WRFOUT + 'template_runwrf.csh ' + self.DIR_WRFOUT
 
-    def set_directory_paths(self, in_yaml='dirpath.yml'):
-        """
-        Called within the __init__ method to set the directory paths
-        based upon the input yaml file.
-
-        :param in_yaml:
-        :return:
-        """
-
-
     def runwrf_finish_check(self, program):
         """
         Check if a specified WRF subprogram has finished running.
@@ -188,6 +177,7 @@ class WRFModel:
         :param program:
         :return:
         """
+
         if program == 'geogrid':
             msg = read_last_line(self.DIR_WRFOUT + 'geogrid.log')
             complete = 'Successful completion of program geogrid' in msg
@@ -224,6 +214,7 @@ class WRFModel:
 
         :return:
         """
+
         if self.bc_data == 'ERA':
             if self.on_cheyenne:
                 DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.pl/'
@@ -298,6 +289,7 @@ class WRFModel:
                 cmd = self.CMD_MV % (datpfx1 + '*', self.DIR_DATA)
                 cmd = cmd + '; ' + self.CMD_MV % (datpfx2 + '*', self.DIR_DATA)
                 cmd = cmd + '; ' + self.CMD_MV % (datpfx3 + '*', self.DIR_DATA)
+                print(f'The copy command is {cmd}.')
                 os.system(cmd)
         return vtable_sfx
 

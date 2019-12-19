@@ -3,3 +3,4 @@ directory_paths:
   DIR_WRF_ROOT: '/home/jas983/models/wrf/'
   DIR_DATA_ROOT: '/share/mzhang/jas983/wrf_data/'
   DIR_MET4ENE: '/share/mzhang/jas983/wrf_data/met4ene/'
+  DIR_TEMPLATES: '/share/mzhang/jas983/wrf_data/met4ene/templates/magma2templates/'
