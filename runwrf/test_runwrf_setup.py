@@ -23,5 +23,19 @@ def test_WRFModel():
 
 def test_get_bc_data():
     wrf_sim = WRFModel(param_ids, start_date, end_date, setup_yaml='mac_dirpath.yml')
+    # wrf_sim = WRFModel(param_ids, start_date, end_date)
     vtable_sfx = wrf_sim.get_bc_data()
     assert vtable_sfx == 'ERA-interim.pl'
+
+# def test_wrfdir_setup():
+#     wrf_sim = WRFModel(param_ids, start_date, end_date)
+#     vtable_sfx = wrf_sim.get_bc_data()
+#     wrf_sim.wrfdir_setup(vtable_sfx)
+#     assert 0 == 0
+#
+# def test_prepare_namelists():
+#     wrf_sim = WRFModel(param_ids, start_date, end_date)
+#     vtable_sfx = wrf_sim.get_bc_data()
+#     wrf_sim.wrfdir_setup(vtable_sfx)
+#     wrf_sim.prepare_namelists()
+#     assert 0 == 0
