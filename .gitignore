@@ -38,7 +38,10 @@ NYpvow*
 optNYpvw*
 **/NYpvow*
 **/optNYpvw*
-.idea/workspace.xml
+*.idea/workspace.xml
+*.idea/met4ene.iml
+*.idea/misc.xml
+*.idea/vcs.xml
 **/.idea*
 **/__pycache__*
 *.pyc
