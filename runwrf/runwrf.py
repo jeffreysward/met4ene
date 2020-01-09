@@ -724,7 +724,7 @@ def determine_computer():
             on_cheyenne = False
             on_aws = True
             on_magma = False
-        elif os.environ['GROUP'] == 'mzhang':
+        elif os.environ['GROUP'] == 'pug-jas983':
             on_cheyenne = False
             on_aws = False
             on_magma = True
