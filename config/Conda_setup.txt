@@ -4,6 +4,7 @@ conda install -c conda-forge jupyterlab
 pip install siphon
 
 # Setup instructions for runwrf conda environment
+conda create --name runwrf python=3.7
 pip install -U pytest
 pip install PyYAML
 pip install requests
