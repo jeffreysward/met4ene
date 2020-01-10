@@ -1,23 +1,11 @@
 """
-Overview:
+Generates sets of WRF physics parameters, finds corresponding numeric identifies,
+and writes the numeric paramter options to a CSV.
 
-- This module deals with wrf's input parameters.
-
-- wrfparams.generate() can be used to generate a random set of parameters
-
-- wrfparams.name2num() is used to map the name of the parameterization,
-which is defined generally by the name of the individual or
-institution that designed the scheme, to the namelist.input value.
-The default value of these parameterization schemes is set by those that
-were originally used by ICF in the study over NYC.
-
-- wrfparams.pbl2sfclay() is used to assign the surface layer scheme based on the
-specified or randomly selected PBL scheme. If multiple surface layer
-schemes are available, one may be selected at random by setting rnd = True.
-Otherwise, sf_sfclay defaults to option 1 (the revised MM5 scheme).
+- wrfparams.pbl2sfclay() is used to
 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-Known Issues:
+Known Issues/Wishlist:
 
 - It would be better if I could read in the parameters from the in_yaml
 file only once, but I'm not sure how variables across different
@@ -32,6 +20,11 @@ import csv
 
 
 def generate(in_yaml='params.yml'):
+    """
+    Generates a random set of parameters.
+
+
+    """
     with open(in_yaml, 'r') as params_file:
         try:
             params = yaml.safe_load(params_file)
@@ -58,6 +51,15 @@ def generate(in_yaml='params.yml'):
 
 def name2num(in_yaml='params.yml', use_defaults=True, mp_in="morrison2mom", lw_in="rrtm", sw_in="dudia",
              lsm_in="noah", pbl_in="myj", clo_in="grell-freitas"):
+    """
+    Maps the name of the parameterization,
+    which is defined generally by the name of the individual or
+    institution that designed the scheme, to the namelist.input value.
+    The default value of these parameterization schemes is set by those that
+    were originally used by ICF in the study over NYC.
+
+    """
+
     with open(in_yaml, 'r') as params_file:
         try:
             params = yaml.safe_load(params_file)
@@ -104,6 +106,18 @@ def name2num(in_yaml='params.yml', use_defaults=True, mp_in="morrison2mom", lw_i
 
 
 def combine(lst1, lst2):
+    """
+
+
+    Parameters
+    ----------
+
+
+    Returns:
+    ----------
+
+    """
+
     out_list = []
     for i in range(0, len(lst1)):
         if lst1[i] is None and lst2[i] is None:
@@ -116,6 +130,18 @@ def combine(lst1, lst2):
 
 
 def filldefault(in_yaml, in_param_ids):
+    """
+
+
+    Parameters
+    ----------
+
+
+    Returns:
+    ----------
+
+    """
+
     default_params = name2num(in_yaml)
     param_ids = []
     for i in range(0, len(in_param_ids)):
@@ -127,6 +153,14 @@ def filldefault(in_yaml, in_param_ids):
 
 
 def pbl2sfclay(id_pbl, rnd=False):
+    """
+    Assigns the surface layer scheme based on the
+    specified or randomly selected PBL scheme. If multiple surface layer
+    schemes are available, one may be selected at random by setting rnd = True.
+    Otherwise, sf_sfclay defaults to option 1 (the revised MM5 scheme).
+
+    """
+
     if id_pbl == 0:
         id_sfclay = 0
     elif id_pbl == 1:
@@ -175,8 +209,19 @@ def pbl2sfclay(id_pbl, rnd=False):
 
 def flexible_generate(generate_params=True, mp=None, lw=None, sw=None,
                       lsm=None, pbl=None, cu=None, in_yaml='params.yml'):
-    # Generate a parameter combination of the 6 core parameters if the user has specified this option.
-    # Otherwise, use specified input parameters and use defaults for the remaining paramters.
+    """
+    Generate a parameter combination of the 6 core parameters if the user has specified this option.
+    Otherwise, use specified input parameters and use defaults for the remaining paramters.
+
+    Parameters
+    ----------
+
+
+    Returns:
+    ----------
+
+    """
+
     if generate_params:
         rand_params = generate(in_yaml)
         param_ids = name2num(in_yaml, mp_in=rand_params[0], lw_in=rand_params[1],
@@ -218,6 +263,18 @@ def flexible_generate(generate_params=True, mp=None, lw=None, sw=None,
 
 
 def ids2str(param_ids):
+    """
+
+
+    Parameters
+    ----------
+
+
+    Returns:
+    ----------
+
+    """
+
     paramstr = '%dmp%dlw%dsw%dlsm%dpbl%dcu' % \
                (param_ids[0], param_ids[1], param_ids[2],
                 param_ids[3], param_ids[4], param_ids[5])
@@ -225,6 +282,18 @@ def ids2str(param_ids):
 
 
 def write_param_csv(param_ids, fitness):
+    """
+
+
+    Parameters
+    ----------
+
+
+    Returns:
+    ----------
+
+    """
+
     runwrfcsv = 'paramfeed_runwrf.csv'
     if not os.path.exists(runwrfcsv):
         csvData = [['ra_lw_physics', 'ra_sw_physics', 'sf_surface_physics',

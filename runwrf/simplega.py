@@ -1,3 +1,10 @@
+"""
+A simple genetic algorithm for optimizing the WRF model physics.
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Known Issues/Wishlist:
+
+"""
+
 import random
 import time
 import statistics
@@ -109,19 +116,19 @@ def find_elites(population, n_elites, fn_display_pop):
     return elites
 
 
-class Benchmark:
-    @staticmethod
-    def run(function):
-        timings = []
-        stdout = sys.stdout
-        for i in range(100):
-            sys.stdout = None
-            startTime = time.time()
-            function()
-            seconds = time.time() - startTime
-            sys.stdout = stdout
-            timings.append(seconds)
-            mean = statistics.mean(timings)
-            if i < 10 or i % 10 == 9:
-                print("{} {:3.2f} {:3.2f}".format(1 + i, mean, statistics.stdev(timings, mean) if i > 1 else 0))
+# class Benchmark:
+#     @staticmethod
+#     def run(function):
+#         timings = []
+#         stdout = sys.stdout
+#         for i in range(100):
+#             sys.stdout = None
+#             startTime = time.time()
+#             function()
+#             seconds = time.time() - startTime
+#             sys.stdout = stdout
+#             timings.append(seconds)
+#             mean = statistics.mean(timings)
+#             if i < 10 or i % 10 == 9:
+#                 print("{} {:3.2f} {:3.2f}".format(1 + i, mean, statistics.stdev(timings, mean) if i > 1 else 0))
 

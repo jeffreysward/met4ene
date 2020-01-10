@@ -1,34 +1,5 @@
 """
-Overview: This module provides methods which support running WRF withing other scripts.
-The following functions are available.
-
-- read_last_line()
-
-- read_2nd2_last_line()
-
-- runwrf_finish_check()
-
-- rda_download()
-
-- check_file_status()
-
-- determine_computer()
-
-- dirsandcommand_aliai()
-
-- get_bc_data()
-
-- wrfdir_setup()
-
-- prepare_namelists()
-
-- run_wps()
-
-- run_real()
-
-- run_wrf()
-
-- wrf_era5_diff()
+Class and supporting functions to run WRF within other scripts.
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 Known Issues/Wishlist:
 - The section of code that downloads ERA5 data is WRONG! It does not yet carry out
@@ -52,6 +23,10 @@ from wrfparams import ids2str
 class WRFModel:
     """
     This class provides a framework for running the WRF model
+
+    Parameters
+    ----------
+
     """
 
     def __init__(self, param_ids, start_date, end_date, bc_data='ERA',
@@ -96,58 +71,6 @@ class WRFModel:
         self.DIR_RUNWRF = self.DIR_MET4ENE + 'runwrf/'
         self.DIR_TEMPLATES = dirpaths.get('DIR_TEMPLATES')
 
-        # if self.on_cheyenne:
-        #     self.DIR_WRF_ROOT = '/glade/u/home/wrfhelp/PRE_COMPILED_CODE/%s/'
-        #     self.DIR_WPS = self.DIR_WRF_ROOT % 'WPSV4.1_intel_serial_large-file'
-        #     self.DIR_WRF = self.DIR_WRF_ROOT % 'WRFV4.1_intel_dmpar'
-        #     self.DIR_WPS_GEOG = '/glade/u/home/wrfhelp/WPS_GEOG/'
-        #     self.DIR_DATA = '/glade/scratch/sward/data/' + str(self.bc_data) + '/%s_' % \
-        #                     (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
-        #     self.DIR_WRFOUT = '/glade/scratch/sward/met4ene/wrfout/%s_' + self.paramstr % \
-        #                       (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
-        #     self.DIR_RUNWRF = '/glade/scratch/sward/met4ene/runwrf/'
-        # elif self.on_aws:
-        #     self.DIR_WRF_ROOT = '/home/ec2-user/environment/Build_WRF/'
-        #     self.DIR_WPS = '/home/ec2-user/environment/Build_WRF/WPS/'
-        #     self.DIR_WRF = '/home/ec2-user/environment/Build_WRF/WRF/'
-        #     self.DIR_WPS_GEOG = '/home/ec2-user/environment/data/WPS_GEOG'
-        #     self.DIR_DATA = '/home/ec2-user/environment/data/' + str(self.bc_data) + '/%s_' % \
-        #                     (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
-        #     self.DIR_WRFOUT = '/home/ec2-user/environment/met4ene/wrfout/ARW/%s_' % \
-        #                       (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
-        #     self.DIR_RUNWRF = '/home/ec2-user/environment/met4ene/runwrf/'
-        # elif self.on_magma:
-        #     self.DIR_WRF_ROOT = '/home/jas983/models/wrf/'
-        #     self.DIR_WPS = '/home/jas983/models/wrf/WPS/'
-        #     self.DIR_WRF = '/home/jas983/models/wrf/WRF/'
-        #     self.DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
-        #     self.DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(self.bc_data) + '/'
-        #     self.DIR_WRFOUT = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
-        #                       (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
-        #     self.DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
-        # else:
-        #     self.DIR_WRF_ROOT = '/home/jas983/models/wrf/'
-        #     self.DIR_WPS = '/home/jas983/models/wrf/WPS/'
-        #     self.DIR_WRF = '/home/jas983/models/wrf/WRF/'
-        #     self.DIR_WPS_GEOG = '/share/mzhang/jas983/wrf_data/WPS_GEOG'
-        #     self.DIR_DATA = '/share/mzhang/jas983/wrf_data/data/' + str(self.bc_data) + '/'
-        #     self.DIR_WRFOUT = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/%s_' % \
-        #                       (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
-        #     self.DIR_RUNWRF = '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
-
-        # Define a directory containing:
-        # a) namelist.wps and namelist.input templates
-        # b) batch submission template csh scripts for running geogrid, ungrib & metgrid, and real & wrf.
-        # if self.template_dir is not None:
-        #     self.DIR_TEMPLATES = self.template_dir + '/'
-        # else:
-        #     if self.on_cheyenne:
-        #         self.DIR_TEMPLATES = '/glade/scratch/sward/met4ene/templates/ncartemplates/'
-        #     elif self.on_aws:
-        #         self.DIR_TEMPLATES = '/home/ec2-user/environment/met4ene/templates/awstemplates/'
-        #     else:
-        #         self.DIR_TEMPLATES = '/share/mzhang/jas983/wrf_data/met4ene/templates/magma2templates/'
-
         # Define linux command aliai
         self.CMD_LN = 'ln -sf %s %s'
         self.CMD_CP = 'cp %s %s'
@@ -174,8 +97,15 @@ class WRFModel:
         """
         Check if a specified WRF subprogram has finished running.
 
-        :param program:
-        :return:
+        Parameters
+        ----------
+        program :
+
+        Returns:
+        ----------
+        'running' or 'complete' or 'failed' : string
+            Run status of the program parameter
+
         """
 
         if program == 'geogrid':
@@ -209,10 +139,15 @@ class WRFModel:
 
     def get_bc_data(self):
         """
-        Download boundry condition data from the RDA
+        Downloads boundry condition data from the RDA
         if it does not already exist in the expected data directory.
 
-        :return:
+        Returns:
+        ----------
+        vtable_sfx : string
+            WPS variable table suffix -- tells subsequent methods which boundary condidtion data is being used
+            so that ungrib can successfully unpack data.
+
         """
 
         if self.bc_data == 'ERA':
@@ -297,8 +232,10 @@ class WRFModel:
         """
         Sets up the WRF run directory by copying scripts, data files, and executables.
 
-        :param vtable_sfx:
-        :return:
+        Parameters
+        ----------
+        vtable_sfx : string
+
         """
 
         # Clean potential old simulation dir, remake the dir, and enter it.
@@ -365,12 +302,25 @@ class WRFModel:
 
     def prepare_namelists(self):
         """
-        Writes WPS and WRF namelist files.
+        Writes dates, the geographical data path, number of domains, runtime duration,
+        and physics options to the WPS and/or WRF namelist files.
 
-        :return:
         """
 
         def read_namelist(namelist_file):
+            """
+            Opens a namelist file within a context manager.
+
+            Parameters:
+            ----------
+            namelist_file : string
+                Path to the namelist file you wish to open.
+
+            Returns:
+            ----------
+            NAMELIST : file object
+
+            """
             with open(self.DIR_WRFOUT + namelist_file, 'r') as namelist:
                 NAMELIST = namelist.read()
             return NAMELIST
@@ -507,7 +457,12 @@ class WRFModel:
         """
         Runs the WRF preprocessing executables and confirms thier success.
 
-        :return:
+        Returns:
+        ----------
+        True/False : boolean
+            If runwrf_finish_check for geogrid and metgrid
+            returns 'complete' ('failed'), this function returns True (False).
+
         """
         # Link the grib files
         sys.stdout.flush()
@@ -561,7 +516,12 @@ class WRFModel:
         """
         Runs real.exe and checks to see that if it was successful.
 
-        :return:
+        Returns:
+        ----------
+        True/False : boolean
+            If runwrf_finish_check for real returns 'complete' ('failed'),
+            this function returns True (False).
+
         """
 
         startTime = datetime.datetime.now()
@@ -588,7 +548,12 @@ class WRFModel:
         """
         Runs wrf.exe and checks to see if it was successful.
 
-        :return:
+        Returns:
+        ----------
+        True/False : boolean
+            If runwrf_finish_check for wrf returns 'complete' ('failed'),
+            this function returns True (False).
+
         """
 
         startTime = datetime.datetime.now()
@@ -626,10 +591,16 @@ class WRFModel:
     def wrf_era5_diff(self):
         """
         Computes the difference between the wrf simulation and ERA5
+        by calling the wrf2era_error.ncl script from the command line.
 
         NEEDS QUITE A BIT OF WORK!!!
 
-        :return:
+        Returns:
+        ----------
+        total_error : float
+            Sum of the mean absolute error accumulated for each grid cell
+            during each time period in the WRF simulation.
+
         """
 
         # Download ERA5 data for benchmarking
@@ -709,10 +680,19 @@ class WRFModel:
 
 def determine_computer():
     """
-    Determine the computer.
+    Determines which computer you are currently working on.
 
-    :return:
+    Returns:
+    ----------
+    on_aws : boolean
+        True if working on the mzhang AWS account where the group name is 'ec2-user'
+    on_cheyenne : boolean
+        True if working on the NCAR Cheyenne super computer where the group name is 'ncar'
+    on_magma : boolean
+        True if working on Jeff Sward's account on the Cornell Magma cluster where the group name is 'pug-jas983'
+
     """
+
     if 'GROUP' in os.environ:
         # Determine if we are on Cheyenne
         if os.environ['GROUP'] == 'ncar':
@@ -743,9 +723,18 @@ def read_last_line(file_name):
     """
     Reads the last line of a file.
 
-    :param file_name:
-    :return:
+    Parameters:
+    ----------
+    file_name : string
+        Complete path of the file that you would like read.
+
+    Returns:
+    ----------
+    last_line : string
+        Last line of the input file.
+
     """
+
     try:
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
@@ -763,9 +752,18 @@ def read_2nd2_last_line(file_name):
     """
     Reads the second to last line of a file.
 
-    :param file_name:
-    :return:
+    Parameters:
+    ----------
+    file_name : string
+        Complete path of the file that you would like read.
+
+    Returns:
+    ----------
+    second2_last_line : string
+        Second to last line of the input file.
+
     """
+
     try:
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
@@ -784,9 +782,13 @@ def print_last_3lines(file_name):
     """
     Prints the last three lines of a file.
 
-    :param file_name:
-    :return:
+    Parameters:
+    ----------
+    file_name : string
+        Complete path of the file that you would like print.
+
     """
+
     try:
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
@@ -803,12 +805,20 @@ def print_last_3lines(file_name):
 
 def rda_download(filelist, dspath):
     """
-    Logs into the RDA file and downloads specified files.
+    Logs into the NCAR research data archive (RDA)
+    and downloads specified files.
 
-    :param filelist:
-    :param dspath:
-    :return:
+    My username/password are currently hard-coded into this function.
+
+    Parameters:
+    ----------
+    filelist : list of strings
+        List of all the files that you would like downloaded from the RDA.
+    dspath : string
+        Full path to file on the RDA. You can obtain this from
+
     """
+
     # Specify login information and url for RDA
     pswd = 'mkjmJ17'
     url = 'https://rda.ucar.edu/cgi-bin/login'
@@ -847,9 +857,16 @@ def check_file_status(filepath, filesize):
     """
     Checks the file status during a download from the internet.
 
-    :param filepath:
-    :param filesize:
-    :return:
+    This is currently not implemented because I don't
+    like the way it prints information to the command line.
+
+    Parameters:
+    ----------
+    filepath : string
+        Path to remote data file
+    filesize : int
+        Size of the file as found by req.headers['Content-length']
+
     """
     sys.stdout.write('\r')
     sys.stdout.flush()

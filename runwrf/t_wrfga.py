@@ -1,18 +1,42 @@
+"""
+A framework to run the simple genetic algorithm for optimizing the WRF model physics.
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Known Issues/Wishlist:
+- This whole things needs to change...
+    - I don't want to use unittest
+    - I want the thread pool executor to operate within a Class or a function.
+    - It would be cool if PyCharm recognized the SQL syntax.
+    - I need to get rid of runwrf_fromthisdir
+
+"""
+
 import unittest
 import datetime
 import random
 import os
 import concurrent.futures
 import time
-import wrfga
+import simplega
 from wrfparams import write_param_csv
 import runwrf_fromthisdir as rw
 from runwrf import WRFModel
 import sqlite3
-from wrfga import Chromosome
+from simplega import Chromosome
 
 
 def insert_sim(individual, conn, c):
+    """
+
+
+    Parameters
+    ----------
+
+
+    Returns:
+    ----------
+
+    """
+
     print(f'...Adding {individual.Genes} to the simulation database...')
     with conn:
         c.execute("""INSERT INTO simulations VALUES (
@@ -25,6 +49,18 @@ def insert_sim(individual, conn, c):
 
 
 def get_individual_by_genes(geneset, c):
+    """
+
+
+    Parameters
+    ----------
+
+
+    Returns:
+    ----------
+
+    """
+
     c.execute("""SELECT * FROM simulations 
                 WHERE mp_physics = :mp_physics
                 AND ra_lw_physics = :ra_lw_physics
@@ -55,6 +91,18 @@ def get_individual_by_genes(geneset, c):
 
 # Define a function that produces a random fitness value between 0 - 100
 def get_fitness(param_ids):
+    """
+
+
+    Parameters
+    ----------
+
+
+    Returns:
+    ----------
+
+    """
+
     print('Calculating fitness for: {}'.format(param_ids))
     time.sleep(2)
     return random.randrange(0, 100)
@@ -62,6 +110,18 @@ def get_fitness(param_ids):
 
 def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
                     bc_data='ERA', MAX_DOMAINS=1, template_dir=None):
+    """
+
+
+    Parameters
+    ----------
+
+
+    Returns:
+    ----------
+
+    """
+
     print('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -')
     print('\nCalculating fitness for: {}'.format(param_ids))
 
@@ -128,12 +188,23 @@ class WRFGATests(unittest.TestCase):
         optimal_fitness = 0
 
         def fn_display(individual):
-            wrfga.display(individual, start_time)
+            simplega.display(individual, start_time)
 
         def fn_display_pop(pop):
-            wrfga.display_pop(pop, fn_display)
+            simplega.display_pop(pop, fn_display)
 
         def fn_get_pop_fitness(pop):
+            """
+
+
+            Parameters
+            ----------
+
+
+            Returns:
+            ----------
+
+            """
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 # Start running all the fitness functions that need to be calculated
                 fitness_threads = []
@@ -173,7 +244,7 @@ class WRFGATests(unittest.TestCase):
             # fn_display_pop(pop)
 
         # Create an initial population
-        population = wrfga.generate_population(pop_size)
+        population = simplega.generate_population(pop_size)
 
         # Calculate the fitness of the initial population
         print('--> Calculating the fitness of the initial population...')
@@ -184,23 +255,23 @@ class WRFGATests(unittest.TestCase):
         while gen <= n_generations:
             print('\n------ Starting generation {} ------'.format(gen))
             # Select the mating population
-            mating_pop = wrfga.selection(population, pop_size)
+            mating_pop = simplega.selection(population, pop_size)
             print('The mating population is:')
             fn_display_pop(mating_pop)
             # Carry out crossover
             offspring_pop = []
             while len(offspring_pop) < pop_size - n_elites:
-                offspring = wrfga.crossover(mating_pop)
+                offspring = simplega.crossover(mating_pop)
                 if offspring is not None:
                     offspring_pop.extend(offspring)
             print('The offspring population is:')
             fn_display_pop(offspring_pop)
             # Give a chance for mutation on each member of the offspring population
-            offspring_pop = wrfga.mutate(offspring_pop)
+            offspring_pop = simplega.mutate(offspring_pop)
             print('The offspring population after mutation is:')
             fn_display_pop(offspring_pop)
             # Copy the elites into the offspring population
-            elites = wrfga.find_elites(population, n_elites, fn_display_pop)
+            elites = simplega.find_elites(population, n_elites, fn_display_pop)
             if elites is not None:
                 offspring_pop.extend(elites)
                 print('The offspring population after adding the elites is:')
@@ -212,7 +283,7 @@ class WRFGATests(unittest.TestCase):
             population = offspring_pop
             gen += 1
 
-        WRFga_winner = wrfga.get_best(population)
+        WRFga_winner = simplega.get_best(population)
         print(f'\nWRFga finished running in {datetime.datetime.now() - start_time}')
         print(f'{WRFga_winner.Genes} is the best parameter combination')
 
