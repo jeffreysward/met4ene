@@ -10,28 +10,30 @@ Known Issues/Wishlist:
 
 """
 
+import concurrent.futures
 import datetime
 import random
-import os
-import concurrent.futures
-import time
-import runwrf.simplega
-from wrfparams import write_param_csv
-import runwrf as rw
-from runwrf import WRFModel
 import sqlite3
-from simplega import Chromosome
+import time
+
+from optwrf.runwrf import WRFModel
+import optwrf.simplega as simplega
+from optwrf.simplega import Chromosome
+from optwrf.wrfparams import write_param_csv
 
 
 def insert_sim(individual, conn, c):
     """
     Inserts a simulation into the SQL database held in memory or written to a file.
 
-    Parameters
+    Parameters:
     ----------
     individual : simplega.Chromosome instance
         The simulation that you would like to add to the simulation database.
     conn :
+        lorem ipsum
+    c :
+        lorem ipsum
 
     """
 
@@ -48,16 +50,19 @@ def insert_sim(individual, conn, c):
 
 def get_individual_by_genes(geneset, c):
     """
+    Looks for an indivual set of genes in an SQLite database.
 
-
-    Parameters
+    Parameters:
     ----------
     geneset :
+        lorem ipsum
+    c :
+        lorem ipsum
 
     Returns:
     ----------
     past_sim : simplega.Chromosome
-
+        Simulation that was run previously and stored in the SQLite database.
 
     """
 
@@ -94,31 +99,49 @@ def get_fitness(param_ids):
     """
 
 
-    Parameters
+    Parameters:
     ----------
-
+    param_ids : list of integers
+        Numeric values corresponding to each WRF physics parameterization.
 
     Returns:
     ----------
+    fitness : integer
+        A randomly generated integer between 1 and 100.
 
     """
 
     print('Calculating fitness for: {}'.format(param_ids))
     time.sleep(2)
-    return random.randrange(0, 100)
+    fitness = random.randrange(0, 100)
+    return fitness
 
 
 def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
-                    bc_data='ERA', MAX_DOMAINS=1, template_dir=None):
+                    bc_data='ERA', n_domains=1, setup_yaml='data/dirpath.yml'):
     """
+    Using the input physics parameters, date, boundary condition, and domain data,
+    this function runs the WRF model and computes the error between WRF and ERA5.
 
-
-    Parameters
+    Parameters:
     ----------
-
+    param_ids : list of integers
+        Numeric values corresponding to each WRF physics parameterization.
+    start_date : string
+        lorem ipsum
+    end_date : string
+        lorem ipsum
+    bc_data : string
+        lorem ipsum
+    n_domains : integer
+        lorem ipsum
+    setup_yaml : string
+        lorem ipsum
 
     Returns:
     ----------
+    fitness : float
+        Fitness value denoting how well the WRF model run performed.
 
     """
 
@@ -126,7 +149,8 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     print('\nCalculating fitness for: {}'.format(param_ids))
 
     # Create a WRFModel instance
-    wrf_sim = WRFModel(param_ids, start_date, end_date)
+    wrf_sim = WRFModel(param_ids, start_date, end_date,
+                       bc_data=bc_data, n_domains=n_domains, setup_yaml=setup_yaml)
 
     # Next, get boundary condition data for the simulation
     # ERA is the only supported data type right now.
@@ -158,11 +182,11 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     else:
         fitness = 10**10
 
+    # The following comment is deprecated code ... I now use an SQLite database to hold simulaiton information.
     # Write parameter combinations to CSV
     # (if you would like to restart this, you must manually delete this CSV)
-    write_param_csv(wrf_sim.param_ids, fitness)
+    # write_param_csv(wrf_sim.param_ids, fitness)
     return fitness
-    # return 0
 
 
 def run_simplega(pop_size, n_generations, testing=False):
@@ -173,12 +197,14 @@ def run_simplega(pop_size, n_generations, testing=False):
 
     I'm not sure if it would be better to make this a Class...
 
-    Parameters
+    Parameters:
     ----------
     pop_size : int
         Desired population size for the genetic algorithm
     n_generations : int
         Total number of generations after which the genetic algorithm will time out.
+    testing : boolean
+        Flag that uses a random number generator as the fitness function when True.
 
     Returns:
     ----------

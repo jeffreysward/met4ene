@@ -16,21 +16,19 @@ import requests
 import time
 import datetime
 import yaml
-import linuxhelper as lh
-from wrfparams import ids2str
+
+import optwrf.linuxhelper as lh
+from optwrf.wrfparams import ids2str
 
 
 class WRFModel:
     """
     This class provides a framework for running the WRF model
 
-    Parameters
-    ----------
-
     """
 
     def __init__(self, param_ids, start_date, end_date, bc_data='ERA',
-                 n_domains=1, setup_yaml='dirpath.yml'):
+                 n_domains=1, setup_yaml='data/dirpath.yml'):
         self.param_ids = param_ids
         self.start_date = start_date
         self.end_date = end_date
@@ -97,9 +95,10 @@ class WRFModel:
         """
         Check if a specified WRF subprogram has finished running.
 
-        Parameters
+        Parameters:
         ----------
-        program :
+        program : string
+            WRF or WPS subprogram name whose status is to be checked.
 
         Returns:
         ----------
@@ -182,11 +181,11 @@ class WRFModel:
             # THIS ONLY WORKS IF YOU WANT TO RUN WITHIN A SINGLE MONTH!
             while i <= n:
                 cmd = self.CMD_CP % (DATA_ROOT1 + datpfx1 + self.forecast_start.strftime('%Y')
-                                + self.forecast_start.strftime('%m') + str(i) + '*', self.DIR_DATA)
+                                     + self.forecast_start.strftime('%m') + str(i) + '*', self.DIR_DATA)
                 cmd = cmd + '; ' + self.CMD_CP % (DATA_ROOT1 + datpfx2 + self.forecast_start.strftime('%Y')
-                                             + self.forecast_start.strftime('%m') + str(i) + '*', self.DIR_DATA)
+                                                  + self.forecast_start.strftime('%m') + str(i) + '*', self.DIR_DATA)
                 cmd = cmd + '; ' + self.CMD_CP % (DATA_ROOT2 + datpfx3 + self.forecast_start.strftime('%Y')
-                                             + self.forecast_start.strftime('%m') + str(i) + '*', self.DIR_DATA)
+                                                  + self.forecast_start.strftime('%m') + str(i) + '*', self.DIR_DATA)
                 os.system(cmd)
                 i += 1
         else:

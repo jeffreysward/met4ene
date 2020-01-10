@@ -5,12 +5,10 @@ Known Issues/Wishlist:
 
 """
 
-import random
-import time
-import statistics
-import wrfparams
-import sys
 import datetime
+import random
+
+import optwrf.wrfparams as wrfparams
 
 
 # Define a Chromosome class the provides information about each unique individual

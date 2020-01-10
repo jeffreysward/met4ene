@@ -1,30 +1,35 @@
 """
 Generates sets of WRF physics parameters, finds corresponding numeric identifies,
 and writes the numeric paramter options to a CSV.
-
-- wrfparams.pbl2sfclay() is used to
-
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 Known Issues/Wishlist:
-
 - It would be better if I could read in the parameters from the in_yaml
 file only once, but I'm not sure how variables across different
 functions in the same module work.
 
 """
 
-import yaml
-import random
+import csv
 import os
-import csv 
+import random
+import yaml
+
+import sys
 
 
 def generate(in_yaml='params.yml'):
     """
     Generates a random set of parameters.
 
+    Parameters:
+    ----------
+
+
+    Returns:
+    ----------
 
     """
+    print(sys.path)
     with open(in_yaml, 'r') as params_file:
         try:
             params = yaml.safe_load(params_file)
@@ -57,6 +62,13 @@ def name2num(in_yaml='params.yml', use_defaults=True, mp_in="morrison2mom", lw_i
     institution that designed the scheme, to the namelist.input value.
     The default value of these parameterization schemes is set by those that
     were originally used by ICF in the study over NYC.
+
+    Parameters:
+    ----------
+
+
+    Returns:
+    ----------
 
     """
 
@@ -109,7 +121,7 @@ def combine(lst1, lst2):
     """
 
 
-    Parameters
+    Parameters:
     ----------
 
 
@@ -133,7 +145,7 @@ def filldefault(in_yaml, in_param_ids):
     """
 
 
-    Parameters
+    Parameters:
     ----------
 
 
@@ -158,6 +170,13 @@ def pbl2sfclay(id_pbl, rnd=False):
     specified or randomly selected PBL scheme. If multiple surface layer
     schemes are available, one may be selected at random by setting rnd = True.
     Otherwise, sf_sfclay defaults to option 1 (the revised MM5 scheme).
+
+    Parameters:
+    ----------
+
+
+    Returns:
+    ----------
 
     """
 
@@ -213,7 +232,7 @@ def flexible_generate(generate_params=True, mp=None, lw=None, sw=None,
     Generate a parameter combination of the 6 core parameters if the user has specified this option.
     Otherwise, use specified input parameters and use defaults for the remaining paramters.
 
-    Parameters
+    Parameters:
     ----------
 
 
@@ -266,7 +285,7 @@ def ids2str(param_ids):
     """
 
 
-    Parameters
+    Parameters:
     ----------
 
 
@@ -285,7 +304,9 @@ def write_param_csv(param_ids, fitness):
     """
 
 
-    Parameters
+    This function is deprecated.
+
+    Parameters:
     ----------
 
 

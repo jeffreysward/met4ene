@@ -16,7 +16,9 @@ def remove_dir(directory):
     ----------
     directory : string
         complete path to the directory to be removed.
+
     """
+
     try:
         rmtree(directory)
     except OSError as e:
