@@ -26,9 +26,9 @@ def test_WRFModel():
 
 def test_get_bc_data():
     # I use this first one when testing on my local machines.
-    # wrf_sim = WRFModel(param_ids, start_date, end_date, setup_yaml='linux_dirpath.yml')
+    wrf_sim = WRFModel(param_ids, start_date, end_date, setup_yaml='linux_dirpath.yml')
     # I use this second one when testing on Magma.
-    wrf_sim = WRFModel(param_ids, start_date, end_date)
+    # wrf_sim = WRFModel(param_ids, start_date, end_date)
     vtable_sfx = wrf_sim.get_bc_data()
     assert vtable_sfx == 'ERA-interim.pl'
 
@@ -36,7 +36,7 @@ def test_get_bc_data():
 # The next set of tests will only be useful if you're on a machine with the WRF source code downloaded (i.e., Magma,
 # Cheyenne, or AWS). Otherwise, the test will automatically pass. 
 def test_wrfdir_setup():
-    if not [on_aws, on_cheyenne, on_magma]:
+    if [on_aws, on_cheyenne, on_magma].count(True) is 0:
         print('\n!!!Not running test_wrfdir_setup -- switch to Magma, Cheyenne, or AWS.')
         return
     wrf_sim = WRFModel(param_ids, start_date, end_date)
@@ -46,7 +46,7 @@ def test_wrfdir_setup():
 
 
 def test_prepare_namelists():
-    if not [on_aws, on_cheyenne, on_magma]:
+    if [on_aws, on_cheyenne, on_magma].count(True) is 0:
         print('\n!!!Not running test_prepare_namelists -- switch to Magma, Cheyenne, or AWS.')
         return
     wrf_sim = WRFModel(param_ids, start_date, end_date)

@@ -17,10 +17,10 @@ import yaml
 import sys
 
 # Add the data directory to the python path
-yaml_file = os.path.join(os.path.dirname(__file__), '/data/params.yml')
+# yaml_file = os.path.join(os.path.dirname(__file__), '/data/params.yml')
+# print(yaml_file)
 
-
-def generate(in_yaml=yaml_file):
+def generate(in_yaml='params.yml'):
     """
     Generates a random set of parameters.
 
