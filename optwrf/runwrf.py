@@ -28,7 +28,7 @@ class WRFModel:
     """
 
     def __init__(self, param_ids, start_date, end_date, bc_data='ERA',
-                 n_domains=1, setup_yaml='data/dirpath.yml'):
+                 n_domains=1, setup_yaml='dirpath.yml'):
         self.param_ids = param_ids
         self.start_date = start_date
         self.end_date = end_date

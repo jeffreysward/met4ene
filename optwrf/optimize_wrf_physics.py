@@ -118,7 +118,7 @@ def get_fitness(param_ids):
 
 
 def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
-                    bc_data='ERA', n_domains=1, setup_yaml='data/dirpath.yml'):
+                    bc_data='ERA', n_domains=1, setup_yaml='dirpath.yml'):
     """
     Using the input physics parameters, date, boundary condition, and domain data,
     this function runs the WRF model and computes the error between WRF and ERA5.

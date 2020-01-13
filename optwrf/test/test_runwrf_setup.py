@@ -1,7 +1,7 @@
 import pytest
 import os
-from runwrf import WRFModel
-from runwrf import determine_computer
+from optwrf.runwrf import WRFModel
+from optwrf.runwrf import determine_computer
 
 
 param_ids = [10, 1, 1, 2, 2, 3, 2]
