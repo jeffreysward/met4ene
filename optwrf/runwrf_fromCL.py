@@ -1,17 +1,54 @@
-#!/usr/bin/python
+"""
+Run WRF using command line arguments
+====================================
+
+This example provides the method for using the optwrf.runwrf module
+to run the WRF model for a either a random or specified set of parameters.
+Use this command for randomly generating a set of parameters:
+
+python runwrf_fromCL.py -s 'Jan 16 2011' -e 'Jan 17 2011' -b 'ERA' -d 2 -p True
+
+Use this command to use parameter defaults (see broader documentation):
+
+python runwrf_fromCL.py -s 'Jan 16 2011' -e 'Jan 17 2011' -b 'ERA' -d 2
+
+There are numerous other arguments that you can inclue to control how WRF runs:
+-s : string specifying the start date of the simulation.
+-e : string specifying the end date of the simulaiton.
+-par : path to a yaml file containing WRF
+       physics parameterization options.
+-p : specify True or False for random physics parameter generation.
+-su : path to a yaml file containing your directory setup info.
+-b : string specifying your boundary condition data source
+     (only 'ERA' is supportted currently).
+-d : integer specifying the number of domains you want to run [1, 2, 3].
+-t : path to your namelist template directory.
+-mp : string identifying a microphysics parametization scheme in your
+      parameterization yaml file.
+-lw : string identifying a longwave radiation parameterization scheme in
+      your paramterization yaml file.
+-sw : string identifying a shortwave radiation parameterization scheme in
+      your paramterization yaml file.
+-lsm : string identifying a land surface model parameterization scheme in
+      your paramterization yaml file.
+-pbl : string identifying a planetary boundary layer parameterization scheme in
+      your paramterization yaml file.
+-cu : string identifying a cumulus parameterization scheme in
+      your paramterization yaml file.
+"""
 
 from argparse import ArgumentParser
-from datetime import datetime
-from wrfparams import flexible_generate, write_param_csv
-import runwrf as rw
+from optwrf.wrfparams import flexible_generate
+from optwrf.runwrf import WRFModel
 
 
 # Define command line input options
 arg = ArgumentParser()
 arg.add_argument('-s', help="Start Date", type=str)
 arg.add_argument('-e', help="End Date", type=str)
-arg.add_argument('-y', help="Parameterizations Yaml File", type=str)
+arg.add_argument('-par', help="Parameterizations Yaml File", type=str)
 arg.add_argument('-p', help="Generate Params?", type=bool)
+arg.add_argument('-su', help="Setup Yaml File", type=str)
 arg.add_argument('-b', help="Boundary Conditon Data Source", type=str)
 arg.add_argument('-d', help="Max Domains", type=int)
 arg.add_argument('-t', help="Namelist Template Directory", type=str)
@@ -25,9 +62,10 @@ args = arg.parse_args()
 bc_data = args.b
 generate_params = args.p
 template_dir = args.t
-# Set the input yaml file to user specification, or default to params.yml.
-if args.y is not None:
-    in_yaml = args.y
+
+# Set the params yaml file to user specification, or default to params.yml.
+if args.par is not None:
+    in_yaml = args.par
 else:
     in_yaml = 'params.yml'
 if args.mp is not None: mp = args.mp
@@ -42,44 +80,50 @@ if args.pbl is not None: pbl = args.pbl
 else: pbl = None
 if args.cu is not None: cu = args.cu
 else: cu = None
+
+# Set the setup yaml file to user specification, or default to dirpath.yml.
+if args.su is not None:
+    setup_yaml = args.su
+else:
+    setup_yaml = 'dirpath.yml'
+
 # Set the number of domains to user specification, or default to a single domain.
 if args.d is not None and args.d > 0:
-    MAX_DOMAINS = int(args.d)
+    n_domains = int(args.d)
 else:
-    MAX_DOMAINS = 3
-
+    n_domains = 3
 
 # Format the forecast start/end and determine the total time.
-forecast_start = datetime.strptime(args.s, '%b %d %Y')
-forecast_end = datetime.strptime(args.e, '%b %d %Y')
-delt = forecast_end - forecast_start
-print('Forecast starting on: {}'.format(forecast_start))
-print('Forecast ending on: {}'.format(forecast_end))
+start_date = args.s
+end_date = args.e
 
 # Generate a parameter combination of the 6 core parameters if the user has specified this option.
 # Otherwise, use specified input parameters and use defaults for the remaining paramters.
-param_ids, paramstr = flexible_generate(generate_params, mp, lw, sw, lsm, pbl, cu, in_yaml='params.yml')
+param_ids, paramstr = flexible_generate(generate_params, mp, lw, sw, lsm, pbl, cu, in_yaml)
 
-# Write parameter combinations to CSV
-# (if you would like to restart this, you must manually delete this CSV)
-write_param_csv(param_ids)
+wrf_sim = WRFModel(param_ids, start_date, end_date,
+                   bc_data=bc_data, n_domains=n_domains, setup_yaml=setup_yaml)
 
 # Next, get boundary condition data for the simulation
 # ERA is the only supported data type right now.
-vtable_sfx = rw.get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt)
+vtable_sfx = wrf_sim.get_bc_data()
 
 # Setup the working directory to run the simulation
-rw.wrfdir_setup(paramstr, forecast_start, bc_data, template_dir, vtable_sfx)
+wrf_sim.wrfdir_setup(vtable_sfx)
 
 # Prepare the namelist
-rw.prepare_namelists(paramstr, param_ids, forecast_start, forecast_end, delt,
-                     bc_data, template_dir, MAX_DOMAINS)
+wrf_sim.prepare_namelists()
 
-# RUN WPS
-rw.run_wps(paramstr, forecast_start, bc_data, template_dir)
+# Run WPS
+success = wrf_sim.run_wps()
+print(f'WPS ran successfully? {success}')
 
 # RUN REAL
-rw.run_real(paramstr, forecast_start, bc_data, template_dir)
+if success:
+    success = wrf_sim.run_real()
+    print(f'Real ran successfully? {success}')
 
 # RUN WRF
-rw.run_wrf(paramstr, forecast_start, bc_data, template_dir, MAX_DOMAINS)
+if success:
+    success = wrf_sim.run_wrf()
+    print(f'WRF ran successfully? {success}')
