@@ -1,0 +1,6 @@
+# List your directory paths in this file; the others will be dependent on these.
+directory_paths:
+  DIR_WRF_ROOT: '/home/jsward/Documents/01_Research/01_Renewable_Analysis/WRF/'
+  DIR_DATA_ROOT: '/home/jsward/Documents/01_Research/01_Renewable_Analysis/WRF/wrf_data/'
+  DIR_MET4ENE: '/home/jsward/Documents/01_Research/01_Renewable_Analysis/WRF/met4ene/'
+  DIR_TEMPLATES: '/home/jsward/Documents/01_Research/01_Renewable_Analysis/WRF/met4ene/templates/magma2templates/'

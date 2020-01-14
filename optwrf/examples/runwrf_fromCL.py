@@ -99,7 +99,7 @@ end_date = args.e
 
 # Generate a parameter combination of the 6 core parameters if the user has specified this option.
 # Otherwise, use specified input parameters and use defaults for the remaining paramters.
-param_ids, paramstr = flexible_generate(generate_params, mp, lw, sw, lsm, pbl, cu, in_yaml)
+param_ids = flexible_generate(generate_params, mp, lw, sw, lsm, pbl, cu, in_yaml)
 
 wrf_sim = WRFModel(param_ids, start_date, end_date,
                    bc_data=bc_data, n_domains=n_domains, setup_yaml=setup_yaml)
