@@ -4,6 +4,9 @@ Run WRF using command line arguments
 
 This example provides the method for using the optwrf.runwrf module
 to run the WRF model for a either a random or specified set of parameters.
+It's a good idea to run this inside a tmux session. Otherwise, your terminal
+window will be tied up for quite some time.
+-------------------------------------------------------------------------------
 Use this command for randomly generating a set of parameters:
 
 python runwrf_fromCL.py -s 'Jan 16 2011' -e 'Jan 17 2011' -b 'ERA' -d 2 -p True

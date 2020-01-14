@@ -74,7 +74,7 @@ class WRFModel:
         self.CMD_CP = 'cp %s %s'
         self.CMD_MV = 'mv %s %s'
         self.CMD_CHMOD = 'chmod -R %s %s'
-        self.CMD_LINK_GRIB = './link_grib.csh ' + self.DIR_DATA + '* ' + self.DIR_WRFOUT
+        self.CMD_LINK_GRIB = self.DIR_MET4ENE + 'optwrf/optwrf/link_grib.csh ' + self.DIR_DATA + '* ' + self.DIR_WRFOUT
         if self.on_cheyenne:
             self.CMD_GEOGRID = 'qsub ' + self.DIR_WRFOUT + 'template_rungeogrid.csh'
             self.CMD_UNGMETG = 'qsub ' + self.DIR_WRFOUT + 'template_runungmetg.csh'
