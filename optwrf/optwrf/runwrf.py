@@ -587,16 +587,20 @@ class WRFModel:
                                      self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '.nc'))
         return True
 
-    def prep_wrfout_file(self):
+    def process_wrfout_data(self):
         """
-        C
+        Processes the wrfout file -- calculates GHI and wind power denity and writes these variables
+        back to the wrfout NetCDF data file to be used by the regridding script.
 
         NEEDS QUITE A BIT OF WORK!!!
 
         """
 
-    def Calculate_era5_files(self):
+    def process_era5_data(self):
         """
+        Downloads ERA5 data from the Research Data Archive if it doesn't already exist in ERA5_ROOT,
+        and processes the data -- calculates the wind power density at 100m and write this variable
+        back to the ERA5 NetCDF data file.
 
         NEEDS QUITE A BIT OF WORK!!!
 
@@ -666,7 +670,7 @@ class WRFModel:
         Computes the difference between the wrf simulation and ERA5
         by calling the wrf2era_error.ncl script from the command line.
 
-        NEEDS QUITE A BIT OF WORK!!!
+        wrf2era_error.ncl NEEDS QUITE A BIT OF WORK!!!
 
         Returns:
         ----------
