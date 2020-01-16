@@ -587,6 +587,80 @@ class WRFModel:
                                      self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '.nc'))
         return True
 
+    def prep_wrfout_file(self):
+        """
+        C
+
+        NEEDS QUITE A BIT OF WORK!!!
+
+        """
+
+    def Calculate_era5_files(self):
+        """
+
+        NEEDS QUITE A BIT OF WORK!!!
+
+        """
+
+        # Download ERA5 data for benchmarking
+        if self.on_cheyenne:
+            ERA5_ROOT = '/gpfs/fs1/collections/rda/data/ds633.0/e5.oper.an.sfc/'
+            # DATA_ROOT1 = DATA_ROOT1 + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '/'
+        else:
+            ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
+            datpfxs = ['EastUS_e5.oper.an.sfc.128_165_10u.ll025sc.',
+                       'EastUS_e5.oper.an.sfc.128_166_10v.ll025sc.',
+                       'EastUS_e5.oper.an.sfc.128_167_2t.ll025sc.',
+                       'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.',
+                       'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.']
+            if not os.path.exists(ERA5_ROOT + datpfxs[0] + self.forecast_start.strftime('%Y')
+                                  + self.forecast_start.strftime('%m') + '0100_'
+                                  + self.forecast_start.strftime('%Y')
+                                  + self.forecast_start.strftime('%m') + '3123.nc'):
+
+                rda_datpfxs = ['e5.oper.an.sfc.128_165_10u.ll025sc.',
+                               'e5.oper.an.sfc.128_166_10v.ll025sc.',
+                               'e5.oper.an.sfc.128_167_2t.ll025sc.',
+                               'e5.oper.an.sfc.228_246_100u.ll025sc.',
+                               'e5.oper.an.sfc.228_247_100v.ll025sc.']
+
+                # Change into the ERA5 data directory
+                if not os.path.exists(ERA5_ROOT):
+                    os.mkdir(ERA5_ROOT)
+                # The following define paths to the required data on the RDA site
+                dspath = 'http://rda.ucar.edu/data/ds633.0/'
+                DATA_ROOT1 = 'e5.oper.an.sfc/' + self.forecast_start.strftime('%Y') \
+                             + self.forecast_start.strftime('%m') + '/'
+
+                # Build the file list to be downloaded from the RDA
+                filelist = []
+                for rda_datpfx in rda_datpfxs:
+                    filelist.append(DATA_ROOT1 + rda_datpfx + self.forecast_start.strftime('%Y')
+                                    + self.forecast_start.strftime('%m') + '0100_'
+                                    + self.forecast_start.strftime('%Y')
+                                    + self.forecast_start.strftime('%m') + '3123.nc')
+
+                print(filelist)
+                # Download the data from the RDA
+                rda_download(filelist, dspath)
+                # Run ncks to reduce the size of the files
+                # Below is an example of what needs to be implemented:
+                # ncks -d longitude,265.,295. -d latitude,30.,50.
+                # e5.oper.an.sfc.128_165_10u.regn320sc.2011010100_2011013123.nc
+                # EastUS_e5.oper.an.sfc.128_165_10u.regn320sc.2011010100_2011013123.nc
+                for rda_datpfx, datpfx in rda_datpfxs, datpfxs:
+                    CMD_REDUCE = 'ncks -d longitude,265.,295. -d latitude,30.,50. %s %s' % \
+                                 (rda_datpfx + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') +
+                                  '0100_' + self.forecast_start.strftime('%Y') + self.forecast_start.strftime(
+                                     '%m') + '3123.nc',
+                                  datpfx + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') +
+                                  '0100_' + self.forecast_start.strftime('%Y') + self.forecast_start.strftime(
+                                      '%m') + '3123.nc')
+                # Move the files into the ERA5 data directory
+                for datpfx in datpfxs:
+                    cmd = self.CMD_MV % (datpfx + '*', ERA5_ROOT)
+                    os.system(cmd)
+
     def wrf_era5_diff(self):
         """
         Computes the difference between the wrf simulation and ERA5
@@ -601,62 +675,6 @@ class WRFModel:
             during each time period in the WRF simulation.
 
         """
-
-        # Download ERA5 data for benchmarking
-        if self.on_cheyenne:
-            ERA5_ROOT = '/gpfs/fs1/collections/rda/data/ds633.0/e5.oper.an.sfc/'
-            # DATA_ROOT1 = DATA_ROOT1 + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '/'
-        else:
-            ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
-            datpfx1 = 'EastUS_e5.oper.an.sfc.128_165_10u.ll025sc.'
-            datpfx2 = 'EastUS_e5.oper.an.sfc.128_166_10v.ll025sc.'
-            datpfx3 = 'EastUS_e5.oper.an.sfc.128_167_2t.ll025sc.'
-            datpfx4 = 'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.'
-            datpfx5 = 'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.'
-            if not os.path.exists(ERA5_ROOT + datpfx1 + self.forecast_start.strftime('%Y')
-                                  + self.forecast_start.strftime('%m') + '0100_'
-                                  + self.forecast_start.strftime('%Y')
-                                  + self.forecast_start.strftime('%m') + '3123.nc'):
-
-                # Change into the ERA5 data directory
-                if not os.path.exists(ERA5_ROOT):
-                    os.mkdir(ERA5_ROOT)
-                # The following define paths to the required data on the RDA site
-                dspath = 'http://rda.ucar.edu/data/ds633.0/'
-                DATA_ROOT1 = 'e5.oper.an.sfc/' + self.forecast_start.strftime('%Y') \
-                             + self.forecast_start.strftime('%m') + '/'
-
-                # Build the file list to be downloaded from the RDA
-                filelist = [DATA_ROOT1 + datpfx1 + self.forecast_start.strftime('%Y')
-                            + self.forecast_start.strftime('%m') + '0100_'
-                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc',
-                            DATA_ROOT1 + datpfx2 + self.forecast_start.strftime('%Y')
-                            + self.forecast_start.strftime('%m') + '0100_'
-                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc',
-                            DATA_ROOT1 + datpfx3 + self.forecast_start.strftime('%Y')
-                            + self.forecast_start.strftime('%m') + '0100_'
-                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc',
-                            DATA_ROOT1 + datpfx4 + self.forecast_start.strftime('%Y')
-                            + self.forecast_start.strftime('%m') + '0100_'
-                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc',
-                            DATA_ROOT1 + datpfx5 + self.forecast_start.strftime('%Y')
-                            + self.forecast_start.strftime('%m') + '0100_'
-                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc']
-                print(filelist)
-                # Download the data from the RDA
-                rda_download(filelist, dspath)
-                # Move the files into the ERA5 data directory
-                cmd = self.CMD_MV % (datpfx1 + '*', ERA5_ROOT)
-                cmd = cmd + '; ' + self.CMD_MV % (datpfx2 + '*', ERA5_ROOT)
-                cmd = cmd + '; ' + self.CMD_MV % (datpfx3 + '*', ERA5_ROOT)
-                cmd = cmd + '; ' + self.CMD_MV % (datpfx4 + '*', ERA5_ROOT)
-                cmd = cmd + '; ' + self.CMD_MV % (datpfx5 + '*', ERA5_ROOT)
-                os.system(cmd)
-        # Run ncks to reduce the size of the files
-        # Below is an example of what needs to be implemented:
-        # ncks -d longitude,265.,295. -d latitude,30.,50.
-        # e5.oper.an.sfc.128_165_10u.regn320sc.2011010100_2011013123.nc
-        # EastUS_e5.oper.an.sfc.128_165_10u.regn320sc.2011010100_2011013123.nc
 
         # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
         CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'paramstr="%s"\' %swrf2era_error.ncl' % \

@@ -8,3 +8,4 @@ conda create --name runwrf python=3.7
 pip install -U pytest
 pip install PyYAML
 pip install requests
+pip install jupyter
