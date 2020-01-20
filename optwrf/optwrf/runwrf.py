@@ -660,6 +660,7 @@ class WRFModel:
                                   datpfx + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') +
                                   '0100_' + self.forecast_start.strftime('%Y') + self.forecast_start.strftime(
                                       '%m') + '3123.nc')
+                    z
                 # Move the files into the ERA5 data directory
                 for datpfx in datpfxs:
                     cmd = self.CMD_MV % (datpfx + '*', ERA5_ROOT)
