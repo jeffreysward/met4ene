@@ -589,7 +589,7 @@ class WRFModel:
 
     def process_wrfout_data(self):
         """
-        Processes the wrfout file -- calculates GHI and wind power denity and writes these variables
+        Processes the wrfout file -- calculates GHI and wind power denity (WPD) and writes these variables
         back to the wrfout NetCDF data file to be used by the regridding script.
 
         NEEDS QUITE A BIT OF WORK!!!
@@ -606,7 +606,7 @@ class WRFModel:
 
         """
 
-        # Download ERA5 data for benchmarking
+        # Download ERA5 data from RDA
         if self.on_cheyenne:
             ERA5_ROOT = '/gpfs/fs1/collections/rda/data/ds633.0/e5.oper.an.sfc/'
             # DATA_ROOT1 = DATA_ROOT1 + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '/'
