@@ -69,7 +69,7 @@ def test_prepare_namelists():
 
 def test_process_wrfout_data():
     if [on_aws, on_cheyenne, on_magma].count(True) is 0:
-        print('\n!!!Not running test_prepare_namelists -- switch to Magma, Cheyenne, or AWS.')
+        print('\n!!!Not running test_process_wrfout_data -- switch to Magma, Cheyenne, or AWS.')
         return
     wrf_sim = WRFModel(param_ids, start_date, end_date)
     wrf_sim.process_wrfout_data()
@@ -79,7 +79,7 @@ def test_process_wrfout_data():
 
 def test_process_era5_data():
     if [on_aws, on_cheyenne, on_magma].count(True) is 0:
-        print('\n!!!Not running test_prepare_namelists -- switch to Magma, Cheyenne, or AWS.')
+        print('\n!!!Not running test_process_era5_data -- switch to Magma, Cheyenne, or AWS.')
         return
     wrf_sim = WRFModel(param_ids, start_date, end_date)
     wrf_sim.process_era5_data()
@@ -92,7 +92,7 @@ def test_process_era5_data():
 
 def test_wrf_era5_diff():
     if [on_aws, on_cheyenne, on_magma].count(True) is 0:
-        print('\n!!!Not running test_prepare_namelists -- switch to Magma, Cheyenne, or AWS.')
+        print('\n!!!Not running test_wrf_era5_diff -- switch to Magma, Cheyenne, or AWS.')
         return
     wrf_sim = WRFModel(param_ids, start_date, end_date)
     processed_wrfout_file = wrf_sim.DIR_WRFOUT + 'wrfout_processed_d01.nc'

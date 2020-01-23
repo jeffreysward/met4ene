@@ -1,5 +1,6 @@
 """
-Class and supporting functions to run WRF within other scripts.
+Class and supporting functions to run WRF within other scripts
+and process WRF output data.
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 Known Issues/Wishlist:
 - The section of code that downloads ERA5 data is WRONG! It does not yet carry out
@@ -25,7 +26,7 @@ import xarray as xr
 import netCDF4
 import wrf
 
-# from pvlib.wrfcast import WRF
+from pvlib.wrfcast import WRF
 import optwrf.linuxhelper as lh
 from optwrf.wrfparams import ids2str
 

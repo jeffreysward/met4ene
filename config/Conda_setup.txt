@@ -11,3 +11,5 @@ pip install requests
 pip install jupyter
 conda install -c conda-forge xarray cartopy wrf-python pynio pseudonetcdf
 pip install siphon
+# Install pvlib-python by cloning the repository and running (pip install -e .) in the directory with setup.py
+# Install optwrf by cloning the met4ene repository and running (pip install -e .) in the directory with setup.py
