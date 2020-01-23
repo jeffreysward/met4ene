@@ -12,11 +12,20 @@ check_file_status() as well.
 
 import sys
 import os
+
+import dateutil
 import requests
 import time
 import datetime
 import yaml
 
+import numpy as np
+import pandas as pd
+import xarray as xr
+import netCDF4
+import wrf
+
+# from pvlib.wrfcast import WRF
 import optwrf.linuxhelper as lh
 from optwrf.wrfparams import ids2str
 
@@ -592,9 +601,101 @@ class WRFModel:
         Processes the wrfout file -- calculates GHI and wind power denity (WPD) and writes these variables
         back to the wrfout NetCDF data file to be used by the regridding script.
 
-        NEEDS QUITE A BIT OF WORK!!!
+        NEEDS BETTER DOCUMENTATION!!!
+
+        NEEDS A TEST!!!
 
         """
+
+        # Absolute path to WRF data file
+        datapath = self.DIR_WRFOUT + 'wrfout_d01.nc'
+
+        # Read in the wrfout file using the netCDF4.Dataset method (I think you can also do this with an xarray method)
+        netcdf_data = netCDF4.Dataset(datapath)
+
+        # Create an xarray.Dataset from the wrf qurery_variables.
+        query_variables = [
+            'Times',
+            'T2',
+            'U10',
+            'V10',
+            'CLDFRA',
+            'COSZEN',
+            'SWDDNI',
+            'SWDDIF'
+        ]
+
+        first = True
+        for key in query_variables:
+            var = wrf.getvar(netcdf_data, key, timeidx=wrf.ALL_TIMES)
+            if first:
+                met_data = var
+                first = False
+            else:
+                met_data = xr.merge([met_data, var])
+
+        variables = {
+            'times': 'times',
+            'XLAT': 'lat',
+            'XLONG': 'lon',
+            'T2': 'temp_air',
+            'U10': 'wind_speed_u',
+            'V10': 'wind_speed_v',
+            'CLDFRA': 'cloud_fraction',
+            'COSZEN': 'cos_zenith',
+            'SWDDNI': 'dni',
+            'SWDDIF': 'dhi'
+        }
+
+        met_data = xr.Dataset.rename(met_data, variables)
+        met_data = xr.Dataset.reset_coords(met_data, ['XTIME'], drop=True)
+        times = met_data.times
+        met_data = xr.Dataset.set_coords(met_data, ['times'])
+        met_data = xr.Dataset.reset_coords(met_data, ['times'], drop=True)
+        ntimes = met_data.sizes['Time']
+        nlat = met_data.sizes['south_north']
+        nlon = met_data.sizes['west_east']
+
+        # Process the data using the WRF forecast model methods
+        fm = WRF()
+        # met_data = fm.process_data(met_data)
+        wind_speed10 = fm.uv_to_speed(met_data)
+        temp_air = fm.kelvin_to_celsius(met_data['temp_air'])
+        ghi = fm.dni_and_dhi_to_ghi(met_data['dni'], met_data['dhi'], met_data['cos_zenith'])
+
+        # Process the data using the wrf-python package
+        height = wrf.getvar(netcdf_data, "height_agl", wrf.ALL_TIMES, units='m')
+        wspd = wrf.getvar(netcdf_data, 'wspd_wdir', wrf.ALL_TIMES, units='m s-1')[0, :]
+
+        #  Interpolate wind speeds to 100m height
+        wind_speed100 = wrf.interplevel(wspd, height, 100)
+
+        # Calculate wind power per square meter
+        air_density = 1000
+        wpd = 0.5 * air_density * wind_speed100 ** 3
+
+        met_data['ghi'] = ghi
+        met_data['wind_speed10'] = wind_speed10
+        met_data['wind_speed100'] = wind_speed100
+        met_data['wpd'] = wpd
+
+        # Fix a bug in how wrfout data is read in -- attributes must be strings to be written to NetCDF
+        for var in met_data.data_vars:
+            try:
+                met_data[var].attrs['projection'] = str(met_data[var].attrs['projection'])
+            except KeyError:
+                pass
+
+        # Fix another bug that creates a conflict in the 'coordinates' attribute
+        for var in met_data.data_vars:
+            try:
+                del met_data[var].attrs['coordinates']
+            except KeyError:
+                pass
+
+        # Write the processed data back to a wrfout NetCDF file
+        new_filename = self.DIR_WRFOUT + 'wrfout_processed_d01.nc'
+        met_data.to_netcdf(path=new_filename)
 
     def process_era5_data(self):
         """
@@ -606,65 +707,142 @@ class WRFModel:
 
         """
 
-        # Download ERA5 data from RDA
+        # Download ERA5 data from RDA if it does not already exist in the expected place
+        next_month = self.forecast_start + dateutil.relativedelta.relativedelta(months=+1)
         if self.on_cheyenne:
-            ERA5_ROOT = '/gpfs/fs1/collections/rda/data/ds633.0/e5.oper.an.sfc/'
-            # DATA_ROOT1 = DATA_ROOT1 + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '/'
+            ERA5_ROOT = '/gpfs/fs1/collections/rda/data/ds633.0/'
+            DATA_ROOT1 = ERA5_ROOT + 'e5.oper.an.sfc/' + self.forecast_start.strftime('%Y') \
+                         + self.forecast_start.strftime('%m') + '/'
+            DATA_ROOT2 = ERA5_ROOT + 'e5.oper.fc.sfc.accumu/' + self.forecast_start.strftime('%Y') \
+                         + self.forecast_start.strftime('%m') + '/'
         else:
             ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
-            datpfxs = ['EastUS_e5.oper.an.sfc.128_165_10u.ll025sc.',
-                       'EastUS_e5.oper.an.sfc.128_166_10v.ll025sc.',
-                       'EastUS_e5.oper.an.sfc.128_167_2t.ll025sc.',
-                       'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.',
-                       'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.']
-            if not os.path.exists(ERA5_ROOT + datpfxs[0] + self.forecast_start.strftime('%Y')
+            local_datpfxs = ['EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.',
+                             'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.',
+                             'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.']
+            if not os.path.exists(ERA5_ROOT + local_datpfxs[0] + self.forecast_start.strftime('%Y')
                                   + self.forecast_start.strftime('%m') + '0100_'
                                   + self.forecast_start.strftime('%Y')
                                   + self.forecast_start.strftime('%m') + '3123.nc'):
 
-                rda_datpfxs = ['e5.oper.an.sfc.128_165_10u.ll025sc.',
-                               'e5.oper.an.sfc.128_166_10v.ll025sc.',
-                               'e5.oper.an.sfc.128_167_2t.ll025sc.',
-                               'e5.oper.an.sfc.228_246_100u.ll025sc.',
-                               'e5.oper.an.sfc.228_247_100v.ll025sc.']
+                rda_datpfxs_sfc = ['e5.oper.an.sfc.228_246_100u.ll025sc.',
+                                   'e5.oper.an.sfc.228_247_100v.ll025sc.']
 
-                # Change into the ERA5 data directory
+                rda_datpfxs_sfc_accumu = ['e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.']
+
+                # Change into the ERA5 data directory (THIS MAY NOT BE OKAY!!!)
                 if not os.path.exists(ERA5_ROOT):
                     os.mkdir(ERA5_ROOT)
+
                 # The following define paths to the required data on the RDA site
                 dspath = 'http://rda.ucar.edu/data/ds633.0/'
                 DATA_ROOT1 = 'e5.oper.an.sfc/' + self.forecast_start.strftime('%Y') \
                              + self.forecast_start.strftime('%m') + '/'
+                DATA_ROOT2 = 'e5.oper.fc.sfc.accumu/' + self.forecast_start.strftime('%Y') \
+                             + self.forecast_start.strftime('%m') + '/'
 
                 # Build the file list to be downloaded from the RDA
                 filelist = []
-                for rda_datpfx in rda_datpfxs:
+                for rda_datpfx in rda_datpfxs_sfc:
                     filelist.append(DATA_ROOT1 + rda_datpfx + self.forecast_start.strftime('%Y')
                                     + self.forecast_start.strftime('%m') + '0100_'
                                     + self.forecast_start.strftime('%Y')
                                     + self.forecast_start.strftime('%m') + '3123.nc')
 
+                for rda_datpfx in rda_datpfxs_sfc_accumu:
+                    filelist.append(DATA_ROOT2 + rda_datpfx + self.forecast_start.strftime('%Y')
+                                    + self.forecast_start.strftime('%m') + '0106_'
+                                    + self.forecast_start.strftime('%Y')
+                                    + self.forecast_start.strftime('%m') + '1606.nc')
+                    filelist.append(DATA_ROOT2 + rda_datpfx + self.forecast_start.strftime('%Y')
+                                    + self.forecast_start.strftime('%m') + '1606_'
+                                    + self.forecast_start.strftime('%Y')
+                                    + next_month.strftime('%m') + '0106.nc')
                 print(filelist)
+
                 # Download the data from the RDA
                 rda_download(filelist, dspath)
+
                 # Run ncks to reduce the size of the files
-                # Below is an example of what needs to be implemented:
-                # ncks -d longitude,265.,295. -d latitude,30.,50.
-                # e5.oper.an.sfc.128_165_10u.regn320sc.2011010100_2011013123.nc
-                # EastUS_e5.oper.an.sfc.128_165_10u.regn320sc.2011010100_2011013123.nc
-                for rda_datpfx, datpfx in rda_datpfxs, datpfxs:
+                for rda_datpfx, local_datpfx in filelist, local_datpfxs:
                     CMD_REDUCE = 'ncks -d longitude,265.,295. -d latitude,30.,50. %s %s' % \
                                  (rda_datpfx + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') +
                                   '0100_' + self.forecast_start.strftime('%Y') + self.forecast_start.strftime(
                                      '%m') + '3123.nc',
-                                  datpfx + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') +
+                                  local_datpfx + self.forecast_start.strftime('%Y') + self.forecast_start.strftime(
+                                      '%m') +
                                   '0100_' + self.forecast_start.strftime('%Y') + self.forecast_start.strftime(
                                       '%m') + '3123.nc')
-                    z
+                    os.system(CMD_REDUCE)
+
                 # Move the files into the ERA5 data directory
-                for datpfx in datpfxs:
+                for datpfx in local_datpfxs:
                     cmd = self.CMD_MV % (datpfx + '*', ERA5_ROOT)
                     os.system(cmd)
+
+        # Absolute path to ERA data files
+        erafile_100u = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.' \
+                       + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0100_' \
+                       + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc'
+        erafile_100v = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.' \
+                       + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0100_' \
+                       + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc'
+        erafile_ssrd1 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' \
+                       + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0106_' \
+                       + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '1606.nc'
+        erafile_ssrd2 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' \
+                        + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '1606_' \
+                        + self.forecast_start.strftime('%Y') + next_month.strftime('%m') + '0106.nc'
+
+        # Read in the ERA files using the xarray open_dataset method
+        era_100u = xr.open_dataset(erafile_100u)
+        era_100v = xr.open_dataset(erafile_100v)
+        era_100wind = xr.merge([era_100u, era_100v])
+
+        # Read in the ERA files using the xarray open_dataset method
+        era_ssrd1 = xr.open_dataset(erafile_ssrd1)
+        era_ssrd2 = xr.open_dataset(erafile_ssrd2)
+        era_ssrd_raw = xr.concat([era_ssrd1, era_ssrd2], 'forecast_initial_time')
+
+        # Calculate the 100m wind speed
+        wind_speed100 = np.sqrt(era_100wind['VAR_100U'] ** 2 + era_100wind['VAR_100V'] ** 2)
+
+        # Calculate wind power density (W * m -2)
+        air_density = 1000
+        wpd = 0.5 * air_density * wind_speed100 ** 3
+        era_100wind['WPD'] = wpd
+
+        era_100wind = era_100wind.drop_sel('utc_date')
+
+        # Format the era_ssrd_raw dataset
+        era_ssrd = era_ssrd_raw.drop_dims(['forecast_initial_time', 'forecast_hour'])
+
+        first = True
+        for timestr in era_ssrd_raw.forecast_initial_time:
+            ssrd_slice = era_ssrd_raw.sel(forecast_initial_time=timestr)
+            ssrd_slice = ssrd_slice.assign_coords(forecast_hour=pd.date_range(start=timestr.values, freq='H',
+                                                                              periods=(len(ssrd_slice.forecast_hour))))
+            ssrd_slice = ssrd_slice.rename({'forecast_hour': 'time'})
+            ssrd_slice = ssrd_slice.reset_coords('forecast_initial_time', drop=True)
+            if first is True:
+                era_ssrd['SSRD'] = ssrd_slice['SSRD']
+                first = False
+            else:
+                era_ssrd = xr.concat([era_ssrd, ssrd_slice], 'time')
+        era_ssrd = era_ssrd.drop('utc_date')
+
+        # Convert SSRD to GHI
+        ghi = era_ssrd.SSRD / 3600
+        era_ssrd['GHI'] = ghi
+
+        # Combine the wind power density and ghi datasets
+        era_out = xr.merge([era_100wind, era_ssrd])
+
+        # Write the processed data back to a NetCDF file
+        processed_era_file = ERA5_ROOT + 'ERA5_EastUS_WPD-GHI_' \
+                             + self.forecast_start.strftime('%Y') + '-' \
+                             + self.forecast_start.strftime('%m') + '.nc'
+        era_out.to_netcdf(path=processed_era_file)
 
     def wrf_era5_diff(self):
         """

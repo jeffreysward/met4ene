@@ -1,5 +1,6 @@
 import pytest
 import os
+import dateutil
 from optwrf.runwrf import WRFModel
 from optwrf.runwrf import determine_computer
 
@@ -8,6 +9,7 @@ param_ids = [10, 1, 1, 2, 2, 3, 2]
 start_date = 'Jan 15 2011'
 end_date = 'Jan 16 2011'
 on_aws, on_cheyenne, on_magma = determine_computer()
+
 
 # I can't really think of a good way to test determine_computer without having to call the function over and over again
 # in subsequesnt tests, so I'm just going to omit it for now.
@@ -18,9 +20,11 @@ def test_determine_computer():
 
 def test_WRFModel():
     wrf_sim = WRFModel(param_ids, start_date, end_date)
+    test_date = wrf_sim.forecast_start + dateutil.relativedelta.relativedelta(months=+1)
+    print(test_date.strftime("%m"))
     assert wrf_sim.DIR_WRF == '/home/jas983/models/wrf/WRF/'
     assert wrf_sim.DIR_WPS_GEOG == '/share/mzhang/jas983/wrf_data/WPS_GEOG/'
-    assert wrf_sim.DIR_RUNWRF == '/share/mzhang/jas983/wrf_data/met4ene/runwrf/'
+    assert wrf_sim.DIR_RUNWRF == '/share/mzhang/jas983/wrf_data/met4ene/optwrf/optwrf/'
     assert wrf_sim.start_date == start_date
 
 
