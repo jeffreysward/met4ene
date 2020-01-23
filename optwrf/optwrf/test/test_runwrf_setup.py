@@ -1,6 +1,15 @@
-import pytest
+"""
+Tests the runwrf functions
+
+There is no test for run_wps(), run_real(), or run_wrf() because these
+programs are all computationally expensive and I don't want them in this
+test suite. To test if WPS, REAL, and WRF are running correctly,
+I should probably make a separate test, but right now, I have been
+using runwrf_fromCL for this purpose.
+
+"""
+
 import os
-import dateutil
 from optwrf.runwrf import WRFModel
 from optwrf.runwrf import determine_computer
 
@@ -20,8 +29,6 @@ def test_determine_computer():
 
 def test_WRFModel():
     wrf_sim = WRFModel(param_ids, start_date, end_date)
-    test_date = wrf_sim.forecast_start + dateutil.relativedelta.relativedelta(months=+1)
-    print(test_date.strftime("%m"))
     assert wrf_sim.DIR_WRF == '/home/jas983/models/wrf/WRF/'
     assert wrf_sim.DIR_WPS_GEOG == '/share/mzhang/jas983/wrf_data/WPS_GEOG/'
     assert wrf_sim.DIR_RUNWRF == '/share/mzhang/jas983/wrf_data/met4ene/optwrf/optwrf/'
@@ -58,3 +65,47 @@ def test_prepare_namelists():
     wrf_sim.wrfdir_setup(vtable_sfx)
     wrf_sim.prepare_namelists()
     assert 0 == 0
+
+
+def test_process_wrfout_data():
+    if [on_aws, on_cheyenne, on_magma].count(True) is 0:
+        print('\n!!!Not running test_prepare_namelists -- switch to Magma, Cheyenne, or AWS.')
+        return
+    wrf_sim = WRFModel(param_ids, start_date, end_date)
+    wrf_sim.process_wrfout_data()
+    processed_wrfout_file = wrf_sim.DIR_WRFOUT + 'wrfout_processed_d01.nc'
+    assert os.path.exists(processed_wrfout_file) == 1
+
+
+def test_process_era5_data():
+    if [on_aws, on_cheyenne, on_magma].count(True) is 0:
+        print('\n!!!Not running test_prepare_namelists -- switch to Magma, Cheyenne, or AWS.')
+        return
+    wrf_sim = WRFModel(param_ids, start_date, end_date)
+    wrf_sim.process_era5_data()
+    ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
+    processed_era_file = ERA5_ROOT + 'ERA5_EastUS_WPD-GHI_' \
+                         + wrf_sim.forecast_start.strftime('%Y') + '-' \
+                         + wrf_sim.forecast_start.strftime('%m') + '.nc'
+    assert os.path.exists(processed_era_file) == 1
+
+
+def test_wrf_era5_diff():
+    if [on_aws, on_cheyenne, on_magma].count(True) is 0:
+        print('\n!!!Not running test_prepare_namelists -- switch to Magma, Cheyenne, or AWS.')
+        return
+    wrf_sim = WRFModel(param_ids, start_date, end_date)
+    processed_wrfout_file = wrf_sim.DIR_WRFOUT + 'wrfout_processed_d01.nc'
+    ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
+    processed_era_file = ERA5_ROOT + 'ERA5_EastUS_WPD-GHI_' \
+                         + wrf_sim.forecast_start.strftime('%Y') + '-' \
+                         + wrf_sim.forecast_start.strftime('%m') + '.nc'
+
+    if not os.path.exists(processed_wrfout_file):
+        wrf_sim.process_wrfout_data()
+    if not os.path.exists(processed_era_file):
+        wrf_sim.process_era5_data()
+    total_error = wrf_sim.wrf_era5_diff()
+    assert total_error >= 0
+
+

@@ -703,7 +703,9 @@ class WRFModel:
         and processes the data -- calculates the wind power density at 100m and write this variable
         back to the ERA5 NetCDF data file.
 
-        NEEDS QUITE A BIT OF WORK!!!
+        NEEDS BETTER DOCUMENTATION!!!
+
+        NEEDS A TEST!!!
 
         """
 
@@ -798,6 +800,7 @@ class WRFModel:
         era_100u = xr.open_dataset(erafile_100u)
         era_100v = xr.open_dataset(erafile_100v)
         era_100wind = xr.merge([era_100u, era_100v])
+        era_100wind = era_100wind.drop('utc_date')
 
         # Read in the ERA files using the xarray open_dataset method
         era_ssrd1 = xr.open_dataset(erafile_ssrd1)
@@ -811,8 +814,6 @@ class WRFModel:
         air_density = 1000
         wpd = 0.5 * air_density * wind_speed100 ** 3
         era_100wind['WPD'] = wpd
-
-        era_100wind = era_100wind.drop_sel('utc_date')
 
         # Format the era_ssrd_raw dataset
         era_ssrd = era_ssrd_raw.drop_dims(['forecast_initial_time', 'forecast_hour'])
@@ -848,8 +849,25 @@ class WRFModel:
         """
         Computes the difference between the wrf simulation and ERA5
         by calling the wrf2era_error.ncl script from the command line.
+        NCL (short for NCAR Command Language) will be deprecated at
+        some point in the future, and will be replaced by wrf-python,
+        but the regridding functionality has not been ported to this
+        package currently. Therefore, this function is a somewhat clumsy
+        workaround.
 
-        wrf2era_error.ncl NEEDS QUITE A BIT OF WORK!!!
+        wrf2era_error.ncl reads the previously-processed ERA and wrfout files,
+        regrids the wrfout global horizontal irradiance (GHI) and wind
+        power density (WPD) to match that of the ERA data, and then computes
+        the difference across the entire d01 WRF domain for every time period.
+
+        This method waits while the regridding and error calculation is being
+        completed by NCL, which can take some seconds to complete.
+
+        *I don't need to copy the wrf2era_error.ncl script into each WRFOUT
+        directory, but that's how I currently get the error file for each
+        simulation to be written into the correct dirctory.
+
+        NEEDS A TEST!!!
 
         Returns:
         ----------
