@@ -15,8 +15,8 @@ from optwrf.runwrf import determine_computer
 
 
 param_ids = [10, 1, 1, 2, 2, 3, 2]
-start_date = 'Jan 15 2011'
-end_date = 'Jan 16 2011'
+start_date = 'Jan 16 2011'
+end_date = 'Jan 17 2011'
 on_aws, on_cheyenne, on_magma = determine_computer()
 
 
@@ -68,10 +68,11 @@ def test_prepare_namelists():
 
 
 def test_process_wrfout_data():
-    if [on_aws, on_cheyenne, on_magma].count(True) is 0:
-        print('\n!!!Not running test_process_wrfout_data -- switch to Magma, Cheyenne, or AWS.')
-        return
     wrf_sim = WRFModel(param_ids, start_date, end_date)
+    wrfout_file = wrf_sim.DIR_WRFOUT + 'wrfout_d01.nc'
+    if not os.path.exists(wrfout_file):
+        print(f'\nYour have an incorrect wrfout file path:\n{wrfout_file}.')
+        raise FileNotFoundError
     wrf_sim.process_wrfout_data()
     processed_wrfout_file = wrf_sim.DIR_WRFOUT + 'wrfout_processed_d01.nc'
     assert os.path.exists(processed_wrfout_file) == 1
