@@ -9,11 +9,11 @@ window will be tied up for quite some time.
 -------------------------------------------------------------------------------
 Use this command for randomly generating a set of parameters:
 
-python runwrf_fromCL.py -s 'Jan 16 2011' -e 'Jan 17 2011' -b 'ERA' -d 2 -p True
+python runwrf_fromCL.py -s 'Jan 15 2011' -e 'Jan 16 2011' -b 'ERA' -d 1 -p True
 
 Use this command to use parameter defaults (see broader documentation):
 
-python runwrf_fromCL.py -s 'Jan 16 2011' -e 'Jan 17 2011' -b 'ERA' -d 2
+python runwrf_fromCL.py -s 'Jan 15 2011' -e 'Jan 16 2011' -b 'ERA' -d 1
 
 There are numerous other arguments that you can inclue to control how WRF runs:
 -s : string specifying the start date of the simulation.
