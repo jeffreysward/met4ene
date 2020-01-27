@@ -771,10 +771,10 @@ class WRFModel:
                 rda_download(filelist, dspath)
 
                 # Run ncks to reduce the size of the files
-                print(f'The following RDA files:\n{rda_filelist}\n will be reduced and renamed to:\n{local_filelist}')
-                for rda_file, local_file in rda_filelist, local_filenames:
+                for rda_file, local_file in zip(rda_filelist, local_filenames):
                     CMD_REDUCE = 'ncks -d longitude,265.,295. -d latitude,30.,50. %s %s' % \
                                  (rda_file, local_file)
+                    print(f'Running the followind from the CL:\n{CMD_REDUCE}')
                     os.system(CMD_REDUCE)
 
                 # Move the files into the ERA5 data directory
