@@ -753,28 +753,36 @@ class WRFModel:
 
                 # Build the file list to be downloaded from the RDA
                 filelist = []
+                rda_filelist = []
                 for rda_datpfx in rda_datpfxs_sfc:
-                    filelist.append(DATA_ROOT1 + rda_datpfx + self.forecast_start.strftime('%Y')
-                                    + self.forecast_start.strftime('%m') + '0100_'
-                                    + self.forecast_start.strftime('%Y')
-                                    + self.forecast_start.strftime('%m') + '3123.nc')
+                    date_suffix = self.forecast_start.strftime('%Y') \
+                                  + self.forecast_start.strftime('%m') \
+                                  + '0100_' + self.forecast_start.strftime('%Y') \
+                                  + self.forecast_start.strftime('%m') + '3123.nc'
+                    filelist.append(DATA_ROOT1 + rda_datpfx + date_suffix)
+                    rda_filelist.append(rda_datpfx + date_suffix)
 
                 for rda_datpfx in rda_datpfxs_sfc_accumu:
-                    filelist.append(DATA_ROOT2 + rda_datpfx + self.forecast_start.strftime('%Y')
-                                    + self.forecast_start.strftime('%m') + '0106_'
-                                    + self.forecast_start.strftime('%Y')
-                                    + self.forecast_start.strftime('%m') + '1606.nc')
-                    filelist.append(DATA_ROOT2 + rda_datpfx + self.forecast_start.strftime('%Y')
-                                    + self.forecast_start.strftime('%m') + '1606_'
-                                    + self.forecast_start.strftime('%Y')
-                                    + next_month.strftime('%m') + '0106.nc')
+                    date_suffix1 = self.forecast_start.strftime('%Y') \
+                                    + self.forecast_start.strftime('%m') + '0106_' \
+                                    + self.forecast_start.strftime('%Y') \
+                                    + self.forecast_start.strftime('%m') + '1606.nc'
+                    date_suffix2 = self.forecast_start.strftime('%Y') \
+                                    + self.forecast_start.strftime('%m') + '1606_' \
+                                    + self.forecast_start.strftime('%Y') \
+                                    + next_month.strftime('%m') + '0106.nc'
+                    filelist.append(DATA_ROOT2 + rda_datpfx + date_suffix1)
+                    filelist.append(DATA_ROOT2 + rda_datpfx + date_suffix2)
+                    rda_filelist.append(rda_datpfx + date_suffix1)
+                    rda_filelist.append(rda_datpfx + date_suffix2)
                 print(filelist)
 
                 # Download the data from the RDA
                 rda_download(filelist, dspath)
 
                 # Run ncks to reduce the size of the files
-                for rda_file, local_file in filelist, local_filelist:
+                print(f'The following RDA files:\n{rda_filelist}\n will be reduced and renamed to:\n{local_filelist}')
+                for rda_file, local_file in rda_filelist, local_filelist:
                     CMD_REDUCE = 'ncks -d longitude,265.,295. -d latitude,30.,50. %s %s' % \
                                  (rda_file, local_file)
                     os.system(CMD_REDUCE)
