@@ -774,11 +774,11 @@ class WRFModel:
                 for rda_file, local_file in zip(rda_filelist, local_filenames):
                     CMD_REDUCE = 'ncks -d longitude,265.,295. -d latitude,30.,50. %s %s' % \
                                  (rda_file, local_file)
-                    print(f'Running the followind from the CL:\n{CMD_REDUCE}')
+                    print(f'Running the followind from the command line:\n{CMD_REDUCE}')
                     os.system(CMD_REDUCE)
 
                 # Move the files into the ERA5 data directory
-                for file in local_filelist:
+                for file in local_filenames:
                     cmd = self.CMD_MV % (file, ERA5_ROOT)
                     os.system(cmd)
 
