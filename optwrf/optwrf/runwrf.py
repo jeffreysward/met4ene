@@ -83,6 +83,7 @@ class WRFModel:
         self.CMD_LN = 'ln -sf %s %s'
         self.CMD_CP = 'cp %s %s'
         self.CMD_MV = 'mv %s %s'
+        self.CMD_RM = 'rm %s'
         self.CMD_CHMOD = 'chmod -R %s %s'
         self.CMD_LINK_GRIB = self.DIR_RUNWRF + 'link_grib.csh ' + self.DIR_DATA + '* ' + self.DIR_WRFOUT
         if self.on_cheyenne:
@@ -704,8 +705,6 @@ class WRFModel:
 
         NEEDS BETTER DOCUMENTATION!!!
 
-        NEEDS A TEST!!!
-
         """
 
         # Download ERA5 data from RDA if it does not already exist in the expected place
@@ -742,7 +741,7 @@ class WRFModel:
 
                 rda_datpfxs_sfc_accumu = ['e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.']
 
-                # Change into the ERA5 data directory (THIS MAY NOT BE OKAY!!!)
+                # Make the ERA5 data directory if it does not exist
                 if not os.path.exists(ERA5_ROOT):
                     os.mkdir(ERA5_ROOT)
 
@@ -780,6 +779,11 @@ class WRFModel:
                 # Move the files into the ERA5 data directory
                 for file in local_filenames:
                     cmd = self.CMD_MV % (file, ERA5_ROOT)
+                    os.system(cmd)
+
+                # Remove the raw ERA5 files
+                for file in rda_filelist:
+                    cmd = self.CMD_RM % file
                     os.system(cmd)
 
         # Read in the ERA files using the xarray open_dataset method
