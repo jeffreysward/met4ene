@@ -604,8 +604,6 @@ class WRFModel:
 
         NEEDS BETTER DOCUMENTATION!!!
 
-        NEEDS A TEST!!!
-
         """
 
         # Absolute path to WRF data file
@@ -720,13 +718,22 @@ class WRFModel:
                          + self.forecast_start.strftime('%m') + '/'
         else:
             ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
-            local_datpfxs = ['EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.',
-                             'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.',
-                             'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.']
-            if not os.path.exists(ERA5_ROOT + local_datpfxs[0] + self.forecast_start.strftime('%Y')
-                                  + self.forecast_start.strftime('%m') + '0100_'
-                                  + self.forecast_start.strftime('%Y')
-                                  + self.forecast_start.strftime('%m') + '3123.nc'):
+            # Desired absolute path to ERA data files
+            erafile_100u = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.' \
+                           + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0100_' \
+                           + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc'
+            erafile_100v = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.' \
+                           + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0100_' \
+                           + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc'
+            erafile_ssrd1 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' \
+                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0106_' \
+                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '1606.nc'
+            erafile_ssrd2 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' \
+                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '1606_' \
+                            + self.forecast_start.strftime('%Y') + next_month.strftime('%m') + '0106.nc'
+            local_filelist = [erafile_100u, erafile_100v, erafile_ssrd1, erafile_ssrd2]
+
+            if [os.path.exists(file) for file in local_filelist].count(False) is not 0:
 
                 rda_datpfxs_sfc = ['e5.oper.an.sfc.228_246_100u.ll025sc.',
                                    'e5.oper.an.sfc.228_247_100v.ll025sc.']
@@ -767,35 +774,15 @@ class WRFModel:
                 rda_download(filelist, dspath)
 
                 # Run ncks to reduce the size of the files
-                for rda_datpfx, local_datpfx in filelist, local_datpfxs:
+                for rda_file, local_file in filelist, local_filelist:
                     CMD_REDUCE = 'ncks -d longitude,265.,295. -d latitude,30.,50. %s %s' % \
-                                 (rda_datpfx + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') +
-                                  '0100_' + self.forecast_start.strftime('%Y') + self.forecast_start.strftime(
-                                     '%m') + '3123.nc',
-                                  local_datpfx + self.forecast_start.strftime('%Y') + self.forecast_start.strftime(
-                                      '%m') +
-                                  '0100_' + self.forecast_start.strftime('%Y') + self.forecast_start.strftime(
-                                      '%m') + '3123.nc')
+                                 (rda_file, local_file)
                     os.system(CMD_REDUCE)
 
                 # Move the files into the ERA5 data directory
-                for datpfx in local_datpfxs:
-                    cmd = self.CMD_MV % (datpfx + '*', ERA5_ROOT)
+                for file in local_filelist:
+                    cmd = self.CMD_MV % (file, ERA5_ROOT)
                     os.system(cmd)
-
-        # Absolute path to ERA data files
-        erafile_100u = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.' \
-                       + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0100_' \
-                       + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc'
-        erafile_100v = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.' \
-                       + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0100_' \
-                       + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc'
-        erafile_ssrd1 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' \
-                       + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0106_' \
-                       + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '1606.nc'
-        erafile_ssrd2 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' \
-                        + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '1606_' \
-                        + self.forecast_start.strftime('%Y') + next_month.strftime('%m') + '0106.nc'
 
         # Read in the ERA files using the xarray open_dataset method
         era_100u = xr.open_dataset(erafile_100u)
