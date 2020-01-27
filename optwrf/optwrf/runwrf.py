@@ -719,19 +719,21 @@ class WRFModel:
         else:
             ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
             # Desired absolute path to ERA data files
-            erafile_100u = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.' \
-                           + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0100_' \
-                           + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc'
-            erafile_100v = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.' \
-                           + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0100_' \
-                           + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc'
-            erafile_ssrd1 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' \
-                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0106_' \
-                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '1606.nc'
-            erafile_ssrd2 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' \
-                            + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '1606_' \
-                            + self.forecast_start.strftime('%Y') + next_month.strftime('%m') + '0106.nc'
+            date_suffix_01_31 = self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0100_' \
+                                + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc'
+            date_suffix_01_16 = self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0106_' \
+                                + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '1606.nc'
+            date_suffix_16_01 = self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '1606_' \
+                                + self.forecast_start.strftime('%Y') + next_month.strftime('%m') + '0106.nc'
+            erafile_100u = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.' + date_suffix_01_31
+            erafile_100v = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.' + date_suffix_01_31
+            erafile_ssrd1 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_01_16
+            erafile_ssrd2 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_16_01
             local_filelist = [erafile_100u, erafile_100v, erafile_ssrd1, erafile_ssrd2]
+            local_filenames = ['EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.' + date_suffix_01_31,
+                               'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.' + date_suffix_01_31,
+                               'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_01_16,
+                               'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_16_01]
 
             if [os.path.exists(file) for file in local_filelist].count(False) is not 0:
 
@@ -755,26 +757,14 @@ class WRFModel:
                 filelist = []
                 rda_filelist = []
                 for rda_datpfx in rda_datpfxs_sfc:
-                    date_suffix = self.forecast_start.strftime('%Y') \
-                                  + self.forecast_start.strftime('%m') \
-                                  + '0100_' + self.forecast_start.strftime('%Y') \
-                                  + self.forecast_start.strftime('%m') + '3123.nc'
-                    filelist.append(DATA_ROOT1 + rda_datpfx + date_suffix)
-                    rda_filelist.append(rda_datpfx + date_suffix)
+                    filelist.append(DATA_ROOT1 + rda_datpfx + date_suffix_01_31)
+                    rda_filelist.append(rda_datpfx + date_suffix_01_31)
 
                 for rda_datpfx in rda_datpfxs_sfc_accumu:
-                    date_suffix1 = self.forecast_start.strftime('%Y') \
-                                    + self.forecast_start.strftime('%m') + '0106_' \
-                                    + self.forecast_start.strftime('%Y') \
-                                    + self.forecast_start.strftime('%m') + '1606.nc'
-                    date_suffix2 = self.forecast_start.strftime('%Y') \
-                                    + self.forecast_start.strftime('%m') + '1606_' \
-                                    + self.forecast_start.strftime('%Y') \
-                                    + next_month.strftime('%m') + '0106.nc'
-                    filelist.append(DATA_ROOT2 + rda_datpfx + date_suffix1)
-                    filelist.append(DATA_ROOT2 + rda_datpfx + date_suffix2)
-                    rda_filelist.append(rda_datpfx + date_suffix1)
-                    rda_filelist.append(rda_datpfx + date_suffix2)
+                    filelist.append(DATA_ROOT2 + rda_datpfx + date_suffix_01_16)
+                    filelist.append(DATA_ROOT2 + rda_datpfx + date_suffix_16_01)
+                    rda_filelist.append(rda_datpfx + date_suffix_01_16)
+                    rda_filelist.append(rda_datpfx + date_suffix_16_01)
                 print(filelist)
 
                 # Download the data from the RDA
@@ -782,7 +772,7 @@ class WRFModel:
 
                 # Run ncks to reduce the size of the files
                 print(f'The following RDA files:\n{rda_filelist}\n will be reduced and renamed to:\n{local_filelist}')
-                for rda_file, local_file in rda_filelist, local_filelist:
+                for rda_file, local_file in rda_filelist, local_filenames:
                     CMD_REDUCE = 'ncks -d longitude,265.,295. -d latitude,30.,50. %s %s' % \
                                  (rda_file, local_file)
                     os.system(CMD_REDUCE)
