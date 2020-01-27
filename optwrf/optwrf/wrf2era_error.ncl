@@ -1,13 +1,13 @@
 ;----------------------------------------------------------------------
 ; wrf2era_error.ncl
 ;
-; This is an NCL/ESMF regridding from a WRF 
+; This is an NCL/ESMF regridding from a WRF
 ; (curvilinear) grid to the ERA5 grid. It uses
 ; ESMF_regrid to do the regridding.
 ;
 ; This function takes the year, month, day, WRFdir - so it can locate the
-; wrfout file and the corresponding ERA5 data - and paramstr to define 
-; the output file name as inputs and computes a single mean absolute 
+; wrfout file and the corresponding ERA5 data - and paramstr to define
+; the output file name as inputs and computes a single mean absolute
 ; error (MAE) across the entire domain for two different variables,
 ; global horizontal irradiance (GHI_MAE) and wind power density (WPD_MAE),
 ; which are written to a csv file named mae_wrf2era_<parmstr>.csv.
@@ -65,12 +65,13 @@ begin
                     "10","11","12"/)
 
     ;---Convert to UTC time. (I THINK THIS IS NO LONGER NECESSARY, SO I COMMENTED IT OUT)
-    ;utc_time_ERA = cd_calendar(ERA_time, 0)
-    utc_time_ERA = ERA_time
+    utc_time_ERA = cd_calendar(ERA_time, 0)
+    ;utc_time_ERA = ERA_time
+    printVarSummary(utc_time_ERA)
 
     ;---Store return information into more meaningful variables.
     year   = tointeger(utc_time_ERA(:,0))    ; Convert to integer for
-    month  = tointeger(utc_time_ERA(:,1))    ; use sprinti 
+    month  = tointeger(utc_time_ERA(:,1))    ; use sprinti
     day    = tointeger(utc_time_ERA(:,2))
     hour   = tointeger(utc_time_ERA(:,3))
 
@@ -141,11 +142,11 @@ begin
         n := n + 1
     end do        ; END OF TIME LOOP
 
-;---Compute the mean bias and save/print    
+;---Compute the mean bias and save/print
     n := n - 1
     GHI_MAE := GHI_MAE/n
     WPD_MAE := WPD_MAE/n
-    
+
     dq = str_get_dq()                ; double quote character
     csv_filename = "mae_wrfyera_" + paramstr + ".csv"
 
