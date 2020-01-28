@@ -65,7 +65,8 @@ begin
                     "10","11","12"/)
 
     ;---Convert to UTC time. (I THINK THIS IS NO LONGER NECESSARY, SO I COMMENTED IT OUT)
-    utc_time_ERA = cd_calendar(ERA_time, 0)
+    ;---(turn out it was necessary...)
+    utc_time_ERA = cd_calenard(ERA_time, 0)
     ;utc_time_ERA = ERA_time
     printVarSummary(utc_time_ERA)
 
@@ -80,6 +81,9 @@ begin
                 "_" + sprinti("%0.2i", hour) + ":00:00"
     ERA_GHI  = dfile->GHI
     ERA_WPD  = dfile->WPD
+
+    printVarSummary(ERA_GHI)
+    printVarSummary(ERA_WPD)
 
 ;---Set up regridding options
     Opt                   = True
@@ -108,8 +112,8 @@ begin
     GHI_regrid = ESMF_regrid(GHI,Opt)
     WPD_regrid = ESMF_regrid(WPD,Opt)
 
-    ;printVarSummary(GHI_regrid)
-    ;printVarSummary(WPD_regrid)
+    printVarSummary(GHI_regrid)
+    printVarSummary(WPD_regrid)
 
 ;---Loop through all the times in the WRF file to compute mean bias
     ntimes = dimsizes(wrf_time)                 ; number of times in the file
@@ -117,8 +121,11 @@ begin
     GHI_MAE = 0
     WPD_MAE = 0
     do iwrf = 0,ntimes-1,72                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
+        print("The iwrf time indes is:")
+        print(iwrf)
         iera = str_match_ind(date_str, wrf_time(iwrf))
-
+        print("The iera time indes is:")
+        print(iera)
         ;---Compute difference between ERA5 variable and WRF variable(s)
         GHI_diff = abs(GHI_regrid(iwrf,:,:) - ERA_GHI(iera,:,:))
         GHI_diff!0 = "lat"
