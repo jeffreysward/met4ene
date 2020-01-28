@@ -58,6 +58,7 @@ begin
     ERA_lat  = dfile->latitude
     ERA_lon  = dfile->longitude
     ERA_time = dfile->time
+    printVarSummary(ERA_time)
 
     ;---Array to hold month abbreviations. Don't store anything in index
     ; '0' (i.e. let index 1=Jan, 2=Feb, ..., index 12=Dec).
@@ -82,6 +83,7 @@ begin
     ERA_GHI  = dfile->GHI
     ERA_WPD  = dfile->WPD
 
+    printVarSummary(date_str)
     printVarSummary(ERA_GHI)
     printVarSummary(ERA_WPD)
 
