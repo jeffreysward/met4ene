@@ -58,7 +58,7 @@ begin
     ERA_lat  = dfile->latitude
     ERA_lon  = dfile->longitude
     ERA_time = dfile->time
-    printVarSummary(ERA_time)
+    ;printVarSummary(ERA_time)
 
     ;---Array to hold month abbreviations. Don't store anything in index
     ; '0' (i.e. let index 1=Jan, 2=Feb, ..., index 12=Dec).
@@ -68,8 +68,7 @@ begin
     ;---Convert to UTC time. (I THINK THIS IS NO LONGER NECESSARY, SO I COMMENTED IT OUT)
     ;---(turn out it was necessary...)
     utc_time_ERA = cd_calendar(ERA_time, 0)
-    ;utc_time_ERA = ERA_time
-    printVarSummary(utc_time_ERA)
+    ;printVarSummary(utc_time_ERA)
 
     ;---Store return information into more meaningful variables.
     year   = tointeger(utc_time_ERA(:,0))    ; Convert to integer for
@@ -83,9 +82,10 @@ begin
     ERA_GHI  = dfile->GHI
     ERA_WPD  = dfile->WPD
 
-    printVarSummary(date_str)
-    printVarSummary(ERA_GHI)
-    printVarSummary(ERA_WPD)
+    print(date_str[0])
+    ;printVarSummary(date_str)
+    ;printVarSummary(ERA_GHI)
+    ;printVarSummary(ERA_WPD)
 
 ;---Set up regridding options
     Opt                   = True
@@ -114,8 +114,8 @@ begin
     GHI_regrid = ESMF_regrid(GHI,Opt)
     WPD_regrid = ESMF_regrid(WPD,Opt)
 
-    printVarSummary(GHI_regrid)
-    printVarSummary(WPD_regrid)
+    ;printVarSummary(GHI_regrid)
+    ;printVarSummary(WPD_regrid)
 
 ;---Loop through all the times in the WRF file to compute mean bias
     ntimes = dimsizes(wrf_time)                 ; number of times in the file
@@ -125,7 +125,7 @@ begin
     do iwrf = 0,ntimes-1,72                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
         print("The iwrf time indes is:")
         print(iwrf)
-        iera = str_match_ind(date_str, wrf_time(iwrf))
+        iera = str_match_ind(ERA_time, wrf_time(iwrf))
         print("The iera time indes is:")
         print(iera)
         ;---Compute difference between ERA5 variable and WRF variable(s)
