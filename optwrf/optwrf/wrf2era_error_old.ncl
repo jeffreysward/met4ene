@@ -13,7 +13,7 @@
 ; which are written to a csv file named mae_wrf2era_<parmstr>.csv.
 ;
 ; Here is a syntax example of calling this script:
-; ncl in_yr=2011 in_mo=01 in_da=10 'WRFdir="/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-10_10mp1lw1sw2lsm2pbl2cu/"' 'paramstr="10mp1lw1sw2lsm2pbl2cu"' wrf2era_error.ncl
+; ncl in_yr=2011 in_mo=01 in_da=15 'WRFdir="/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_10mp1lw1sw2lsm2pbl3cu/"' 'paramstr="10mp1lw1sw2lsm2pbl3cu"' wrf2era_error_old.ncl
 ;
 ;----------------------------------------------------------------------
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
@@ -40,6 +40,7 @@ begin
     wrf_lat = sfile->XLAT(0,:,:)              
     wrf_lon = sfile->XLONG(0,:,:)
     wrf_time = wrf_user_getvar(sfile,"times",-1)   
+    print(wrf_time(0))
     t2      = wrf_user_getvar(sfile,"td2",-1) 
     ;DNI     = wrf_user_getvar(sfile,"SWDDNI",0)
     ;DHI     = wrf_user_getvar(sfile,"SWDDIF",0)

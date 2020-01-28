@@ -39,7 +39,7 @@ begin
 ;---Get wrf variable(s) to regrid
     wrf_lat = sfile->XLAT
     wrf_lon = sfile->XLONG
-    wrf_time = sfile->Time
+    wrf_time = sfile->times
     GHI     = sfile->ghi
     WPD     = sfile->wpd
 
@@ -58,7 +58,7 @@ begin
     ERA_lat  = dfile->latitude
     ERA_lon  = dfile->longitude
     ERA_time = dfile->time
-    ;printVarSummary(ERA_time)
+    print(ERA_time(0))
 
     ;---Array to hold month abbreviations. Don't store anything in index
     ; '0' (i.e. let index 1=Jan, 2=Feb, ..., index 12=Dec).
@@ -82,7 +82,7 @@ begin
     ERA_GHI  = dfile->GHI
     ERA_WPD  = dfile->WPD
 
-    print(date_str(:,0))
+    print(date_str(0))
     ;printVarSummary(date_str)
     ;printVarSummary(ERA_GHI)
     ;printVarSummary(ERA_WPD)
@@ -123,11 +123,9 @@ begin
     GHI_MAE = 0
     WPD_MAE = 0
     do iwrf = 0,ntimes-1,72                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
-        print("The iwrf time indes is:")
-        print(iwrf)
+        print("The wrf time is:")
+        print(wrf_time(iwrf))
         iera = str_match_ind(ERA_time, wrf_time(iwrf))
-        print("The iera time indes is:")
-        print(iera)
         ;---Compute difference between ERA5 variable and WRF variable(s)
         GHI_diff = abs(GHI_regrid(iwrf,:,:) - ERA_GHI(iera,:,:))
         GHI_diff!0 = "lat"

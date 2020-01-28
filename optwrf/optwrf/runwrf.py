@@ -650,8 +650,8 @@ class WRFModel:
         met_data = xr.Dataset.rename(met_data, variables)
         met_data = xr.Dataset.reset_coords(met_data, ['XTIME'], drop=True)
         times = met_data.times
-        met_data = xr.Dataset.set_coords(met_data, ['times'])
-        met_data = xr.Dataset.reset_coords(met_data, ['times'], drop=True)
+        #met_data = xr.Dataset.set_coords(met_data, ['times'])
+        #met_data = xr.Dataset.reset_coords(met_data, ['times'], drop=True)
         ntimes = met_data.sizes['Time']
         nlat = met_data.sizes['south_north']
         nlon = met_data.sizes['west_east']
