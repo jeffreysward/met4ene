@@ -877,7 +877,7 @@ class WRFModel:
         # Extract the total error after the script has run
         error_file = self.DIR_WRFOUT + 'mae_wrfyera_' + self.paramstr + '.csv'
         while not os.path.exists(error_file):
-            log_message = read_last_line('log.regrid')
+            log_message = read_last_3lines('log.regrid')
             if 'fatal' in log_message:
                 print('NCL has failed with the following message:')
                 print_last_3lines('log.regrid')
@@ -991,6 +991,37 @@ def read_2nd2_last_line(file_name):
         second2_last_line = 'IndexError in read_2nd2_last_line: ' \
                             'there do not appear to be at least two lines in this file.'
     return second2_last_line
+
+
+def read_last_3lines(file_name):
+    """
+    Reads the last three lines of a file.
+
+    Parameters:
+    ----------
+    file_name : string
+        Complete path of the file that you would like print.
+
+    Returns:
+    ----------
+    last_3lines : string
+        Last three lines of the input file.
+
+    """
+
+    try:
+        with open(file_name, mode='r') as infile:
+            lines = infile.readlines()
+    except IOError:
+        last_3lines = 'IOError in print_last_3lines: this file does not currently exist.'
+        return last_3lines
+    try:
+        txt = lines[-4:-1]
+        last_3lines = '\n'.join(txt)
+    except IndexError:
+        last_3lines = 'IndexError in print_last_3lines: there do not appear to be at least three lines in this file.'
+        return last_3lines
+    return last_3lines
 
 
 def print_last_3lines(file_name):

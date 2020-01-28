@@ -66,7 +66,7 @@ begin
 
     ;---Convert to UTC time. (I THINK THIS IS NO LONGER NECESSARY, SO I COMMENTED IT OUT)
     ;---(turn out it was necessary...)
-    utc_time_ERA = cd_calenard(ERA_time, 0)
+    utc_time_ERA = cd_calendar(ERA_time, 0)
     ;utc_time_ERA = ERA_time
     printVarSummary(utc_time_ERA)
 
