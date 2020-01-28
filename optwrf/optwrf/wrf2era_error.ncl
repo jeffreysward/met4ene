@@ -82,7 +82,7 @@ begin
     ERA_GHI  = dfile->GHI
     ERA_WPD  = dfile->WPD
 
-    print(date_str[0])
+    print(date_str(:,0))
     ;printVarSummary(date_str)
     ;printVarSummary(ERA_GHI)
     ;printVarSummary(ERA_WPD)
