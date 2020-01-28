@@ -868,7 +868,8 @@ class WRFModel:
         """
 
         # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
-        CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'paramstr="%s"\' %swrf2era_error.ncl' % \
+        CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'paramstr="%s"\' %swrf2era_error.ncl ' \
+                     '|& tee log.regrid' % \
                      (self.forecast_start.strftime('%Y'), self.forecast_start.strftime('%m'),
                       self.forecast_start.strftime('%d'), self.DIR_WRFOUT, self.paramstr, self.DIR_WRFOUT)
         os.system(CMD_REGRID)
@@ -876,7 +877,13 @@ class WRFModel:
         # Extract the total error after the script has run
         error_file = self.DIR_WRFOUT + 'mae_wrfyera_' + self.paramstr + '.csv'
         while not os.path.exists(error_file):
-            time.sleep(1)
+            log_message = read_last_line('log.regrid')
+            if 'fatal' in log_message:
+                print('NCL has failed with the following message:')
+                print_last_3lines('log.regrid')
+                raise RuntimeError
+            else:
+                time.sleep(1)
         mae = read_last_line(error_file)
         mae = mae.split(',')
         mae[-1] = mae[-1].strip()

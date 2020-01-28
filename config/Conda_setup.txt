@@ -14,3 +14,4 @@ pip install siphon
 # Install pvlib-python by cloning the repository and running (pip install -e .) in the directory with setup.py
 # Install optwrf by cloning the met4ene repository and running (pip install -e .) in the directory with setup.py
 conda install -c conda-forge nco  # I did this for the magma2 environment only.
+conda install -c conda-forge ncl
