@@ -39,9 +39,30 @@ begin
 ;---Get wrf variable(s) to regrid
     wrf_lat = sfile->XLAT
     wrf_lon = sfile->XLONG
-    wrf_time = sfile->Times 
+    wrf_time = sfile->Times
+    print(wrf_time(0))
     GHI     = sfile->ghi
     WPD     = sfile->wpd
+
+    ;---Array to hold month abbreviations. Don't store anything in index
+    ; '0' (i.e. let index 1=Jan, 2=Feb, ..., index 12=Dec).
+    month_abbr = (/"","01","02","03","04","05","06","07","08","09", \
+                    "10","11","12"/)
+
+    ;---Convert to global UTC time.
+    wrf_time_UTC = cd_calendar(wrf_time, 0)
+    ;printVarSummary(wrf_time_UTC)
+
+    ;---Store return information into more meaningful variables.
+    year   = tointeger(wrf_time_UTC(:,0))    ; Convert to integer for
+    month  = tointeger(wrf_time_UTC(:,1))    ; use sprinti
+    day    = tointeger(wrf_time_UTC(:,2))
+    hour   = tointeger(wrf_time_UTC(:,3))
+
+    ;---Write out strings in the format "yyyy-mm-dd_hh:mm:ss"
+    wrf_datestr = sprinti("%0.4i", year) + "-" + month_abbr(month) + "-" + sprinti("%0.2i", day) + \
+                "_" + sprinti("%0.2i", hour) + ":00:00"
+    print(wrf_datestr(0))
 
 ;---ERA data file(s)
     ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA5/"
@@ -59,31 +80,24 @@ begin
     ERA_lon  = dfile->longitude
     ERA_time = dfile->time
     print(ERA_time(0))
-
-    ;---Array to hold month abbreviations. Don't store anything in index
-    ; '0' (i.e. let index 1=Jan, 2=Feb, ..., index 12=Dec).
-    month_abbr = (/"","01","02","03","04","05","06","07","08","09", \
-                    "10","11","12"/)
-
-    ;---Convert to UTC time. (I THINK THIS IS NO LONGER NECESSARY, SO I COMMENTED IT OUT)
-    ;---(turn out it was necessary...)
-    utc_time_ERA = cd_calendar(ERA_time, 0)
-    ;printVarSummary(utc_time_ERA)
-
-    ;---Store return information into more meaningful variables.
-    year   = tointeger(utc_time_ERA(:,0))    ; Convert to integer for
-    month  = tointeger(utc_time_ERA(:,1))    ; use sprinti
-    day    = tointeger(utc_time_ERA(:,2))
-    hour   = tointeger(utc_time_ERA(:,3))
-
-    ;---Write out strings in the format "yyyy-mm-dd_hh:mm:ss"
-    date_str = sprinti("%0.4i", year) + "-" + month_abbr(month) + "-" + sprinti("%0.2i", day) + \
-                "_" + sprinti("%0.2i", hour) + ":00:00"
     ERA_GHI  = dfile->GHI
     ERA_WPD  = dfile->WPD
 
-    print(date_str(0))
-    ;printVarSummary(date_str)
+    ;---Convert to global UTC time.
+    ERA_time_UTC = cd_calendar(ERA_time, 0)
+    ;printVarSummary(ERA_time_UTC)
+
+    ;---Store return information into more meaningful variables.
+    year   = tointeger(ERA_time_UTC(:,0))    ; Convert to integer for
+    month  = tointeger(ERA_time_UTC(:,1))    ; use sprinti
+    day    = tointeger(ERA_time_UTC(:,2))
+    hour   = tointeger(ERA_time_UTC(:,3))
+
+    ;---Write out strings in the format "yyyy-mm-dd_hh:mm:ss"
+    ERA_datestr = sprinti("%0.4i", year) + "-" + month_abbr(month) + "-" + sprinti("%0.2i", day) + \
+                "_" + sprinti("%0.2i", hour) + ":00:00"
+    print(ERA_datestr(0))
+    ;printVarSummary(ERA_datestr)
     ;printVarSummary(ERA_GHI)
     ;printVarSummary(ERA_WPD)
 
@@ -123,9 +137,8 @@ begin
     GHI_MAE = 0
     WPD_MAE = 0
     do iwrf = 0,ntimes-1,72                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
-        print("The wrf time is:")
-        print(wrf_time(iwrf))
-        iera = str_match_ind(ERA_time, wrf_time(iwrf))
+        print("The wrf time is:" + wrf_datestr(iwrf))
+        iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
         ;---Compute difference between ERA5 variable and WRF variable(s)
         GHI_diff = abs(GHI_regrid(iwrf,:,:) - ERA_GHI(iera,:,:))
         GHI_diff!0 = "lat"
