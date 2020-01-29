@@ -615,7 +615,7 @@ class WRFModel:
 
         # Create an xarray.Dataset from the wrf qurery_variables.
         query_variables = [
-            'Times',
+            'times',
             'T2',
             'U10',
             'V10',
