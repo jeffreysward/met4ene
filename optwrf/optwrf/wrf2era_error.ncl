@@ -39,7 +39,7 @@ begin
 ;---Get wrf variable(s) to regrid
     wrf_lat = sfile->XLAT
     wrf_lon = sfile->XLONG
-    wrf_time = sfile->times
+    wrf_time = wrf_user_getvar(sfile,"times",-1) 
     GHI     = sfile->ghi
     WPD     = sfile->wpd
 
