@@ -1,5 +1,5 @@
 ;----------------------------------------------------------------------
-; wrf2era_error.ncl
+; plot_wrf2era_error_GHI.ncl 
 ;
 ; This is an NCL/ESMF regridding from a WRF
 ; (curvilinear) grid to the ERA5 grid. It uses
@@ -13,7 +13,7 @@
 ; which are written to a csv file named mae_wrf2era_<parmstr>.csv.
 ;
 ; Here is a syntax example of calling this script:
-; ncl in_yr=2011 in_mo=01 in_da=10 'WRFdir="/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-10_10mp1lw1sw2lsm2pbl2cu/"' 'paramstr="10mp1lw1sw2lsm2pbl2cu"' wrf2era_error.ncl
+; ncl in_yr=2011 in_mo=01 in_da=15 'WRFdir="/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_10mp1lw1sw2lsm2pbl3cu/"' 'paramstr="10mp1lw1sw2lsm2pbl3cu"' plot_wrf2era_error_GHI.ncl
 ;
 ;----------------------------------------------------------------------
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
@@ -23,9 +23,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
 begin
-;---WRF file containing source grid (the first two commented lines with WRFdir = "..." are for testing purposes only)
-;    WRFdir = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
-;    WRFdir   = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_10mp1lw1sw2lsm2pbl2cu/"
+;---WRF file containing source grid 
     WRFfile  = "wrfout_processed_d01.nc"
     if (fileexists(WRFdir+WRFfile)) then
         sfile = addfile(WRFdir+WRFfile, "r")
