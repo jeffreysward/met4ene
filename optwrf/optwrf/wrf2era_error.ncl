@@ -23,9 +23,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
 begin
-;---WRF file containing source grid (the first two commented lines with WRFdir = "..." are for testing purposes only)
-;    WRFdir = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-16_10mp1lw1sw2lsm2pbl2cu/"
-;    WRFdir   = "/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) + "-" + sprinti("%0.2i", in_da) + "_10mp1lw1sw2lsm2pbl2cu/"
+;---WRF file containing source grid
     WRFfile  = "wrfout_processed_d01.nc"
     if (fileexists(WRFdir+WRFfile)) then
         sfile = addfile(WRFdir+WRFfile, "r")
@@ -39,7 +37,8 @@ begin
 ;---Get wrf variable(s) to regrid
     wrf_lat = sfile->XLAT
     wrf_lon = sfile->XLONG
-    wrf_time = sfile->Times
+    wrf_time_raw = sfile->Times
+    wrf_time = toint(wrf_time_raw)
     print(wrf_time(0))
     GHI     = sfile->ghi
     WPD     = sfile->wpd
@@ -88,14 +87,14 @@ begin
     ;printVarSummary(ERA_time_UTC)
 
     ;---Store return information into more meaningful variables.
-    year   = tointeger(ERA_time_UTC(:,0))    ; Convert to integer for
-    month  = tointeger(ERA_time_UTC(:,1))    ; use sprinti
-    day    = tointeger(ERA_time_UTC(:,2))
-    hour   = tointeger(ERA_time_UTC(:,3))
+    year_ERA   = tointeger(ERA_time_UTC(:,0))    ; Convert to integer for
+    month_ERA  = tointeger(ERA_time_UTC(:,1))    ; use sprinti
+    day_ERA    = tointeger(ERA_time_UTC(:,2))
+    hour_ERA   = tointeger(ERA_time_UTC(:,3))
 
     ;---Write out strings in the format "yyyy-mm-dd_hh:mm:ss"
-    ERA_datestr = sprinti("%0.4i", year) + "-" + month_abbr(month) + "-" + sprinti("%0.2i", day) + \
-                "_" + sprinti("%0.2i", hour) + ":00:00"
+    ERA_datestr = sprinti("%0.4i", year_ERA) + "-" + month_abbr(month_ERA) + "-" + sprinti("%0.2i", day_ERA) + \
+                "_" + sprinti("%0.2i", hour_ERA) + ":00:00"
     print(ERA_datestr(0))
     ;printVarSummary(ERA_datestr)
     ;printVarSummary(ERA_GHI)
@@ -107,7 +106,7 @@ begin
     ;---"bilinear" is the default. "patch" and "conserve" are other options.
     Opt@InterpMethod      = "patch"        ;;---Change (maybe)
 
-    Opt@WgtFileName       = "WRF_to_ERA5.nc"
+    Opt@WgtFileName       = WRFdir + "WRF_to_ERA5.nc"
 
     Opt@SrcGridLat        = wrf_lat           ; source grid
     Opt@SrcGridLon        = wrf_lon
@@ -137,8 +136,9 @@ begin
     GHI_MAE = 0
     WPD_MAE = 0
     do iwrf = 0,ntimes-1,72                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
-        print("The wrf time is:" + wrf_datestr(iwrf))
+        print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
+        print("The ERA time is: " + ERA_datestr(iera))
         ;---Compute difference between ERA5 variable and WRF variable(s)
         GHI_diff = abs(GHI_regrid(iwrf,:,:) - ERA_GHI(iera,:,:))
         GHI_diff!0 = "lat"
@@ -168,7 +168,7 @@ begin
     WPD_MAE := WPD_MAE/n
 
     dq = str_get_dq()                ; double quote character
-    csv_filename = "mae_wrfyera_" + paramstr + ".csv"
+    csv_filename = WRFdir + "mae_wrfyera_" + paramstr + ".csv"
 
     fields = (/"GHI_MAE", "WPD_MAE"/)
     fields = dq + fields + dq           ; Pre/append quotes to field names
