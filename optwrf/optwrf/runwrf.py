@@ -181,6 +181,7 @@ class WRFModel:
             vtable_sfx = self.bc_data
         print('Using {} data for boundary condidions'.format(self.bc_data))
         print('The corresponding Vtable is: {}\n'.format(vtable_sfx))
+        print(f'Data Directory: {self.DIR_DATA}')
 
         # If no data directory exists, create one
         if not os.path.exists(self.DIR_DATA):
