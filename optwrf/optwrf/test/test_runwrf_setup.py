@@ -36,10 +36,12 @@ def test_WRFModel():
 
 
 def test_get_bc_data():
-    # I use this first one when testing on my local machines.
-    wrf_sim = WRFModel(param_ids, start_date, end_date, setup_yaml='linux_dirpath.yml')
-    # I use this second one when testing on Magma.
-    # wrf_sim = WRFModel(param_ids, start_date, end_date)
+    if on_magma:
+        wrf_sim = WRFModel(param_ids, start_date, end_date)
+    else:
+        # I use this first one when testing on my local machines.
+        print(f'WARNING: this test requires you to manually provide setup_yaml!')
+        wrf_sim = WRFModel(param_ids, start_date, end_date, setup_yaml='linux_dirpath.yml')
     vtable_sfx = wrf_sim.get_bc_data()
     assert vtable_sfx == 'ERA-interim.pl'
 
