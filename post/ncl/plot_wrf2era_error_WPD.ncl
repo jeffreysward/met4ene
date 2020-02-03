@@ -38,7 +38,9 @@ begin
     wrf_lat = sfile->XLAT
     wrf_lon = sfile->XLONG
     wrf_time_raw = sfile->Times
+    print(wrf_time_raw(0))
     wrf_time = toint(wrf_time_raw)
+    wrf_time@units = wrf_time_raw@units
     print(wrf_time(0))
     GHI     = sfile->ghi
     WPD     = sfile->wpd
