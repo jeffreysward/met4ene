@@ -1,5 +1,5 @@
 ;----------------------------------------------------------------------
-; plot_wrf2era_error_GHI.ncl 
+; plot_wrf2era_error_GHI.ncl
 ;
 ; This is an NCL/ESMF regridding from a WRF
 ; (curvilinear) grid to the ERA5 grid. It uses
@@ -23,7 +23,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
 begin
-;---WRF file containing source grid 
+;---WRF file containing source grid
     WRFfile  = "wrfout_processed_d01.nc"
     if (fileexists(WRFdir+WRFfile)) then
         sfile = addfile(WRFdir+WRFfile, "r")
@@ -37,7 +37,8 @@ begin
 ;---Get wrf variable(s) to regrid
     wrf_lat = sfile->XLAT
     wrf_lon = sfile->XLONG
-    wrf_time = sfile->Times
+    wrf_time_raw = sfile->Times
+    wrf_time = toint(wrf_time_raw)
     print(wrf_time(0))
     GHI     = sfile->ghi
     WPD     = sfile->wpd
@@ -86,14 +87,14 @@ begin
     ;printVarSummary(ERA_time_UTC)
 
     ;---Store return information into more meaningful variables.
-    year   = tointeger(ERA_time_UTC(:,0))    ; Convert to integer for
-    month  = tointeger(ERA_time_UTC(:,1))    ; use sprinti
-    day    = tointeger(ERA_time_UTC(:,2))
-    hour   = tointeger(ERA_time_UTC(:,3))
+    year_ERA   = tointeger(ERA_time_UTC(:,0))    ; Convert to integer for
+    month_ERA  = tointeger(ERA_time_UTC(:,1))    ; use sprinti
+    day_ERA    = tointeger(ERA_time_UTC(:,2))
+    hour_ERA   = tointeger(ERA_time_UTC(:,3))
 
     ;---Write out strings in the format "yyyy-mm-dd_hh:mm:ss"
-    ERA_datestr = sprinti("%0.4i", year) + "-" + month_abbr(month) + "-" + sprinti("%0.2i", day) + \
-                "_" + sprinti("%0.2i", hour) + ":00:00"
+    ERA_datestr = sprinti("%0.4i", year_ERA) + "-" + month_abbr(month_ERA) + "-" + sprinti("%0.2i", day_ERA) + \
+                "_" + sprinti("%0.2i", hour_ERA) + ":00:00"
     print(ERA_datestr(0))
     ;printVarSummary(ERA_datestr)
     ;printVarSummary(ERA_GHI)
