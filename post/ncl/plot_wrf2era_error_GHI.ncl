@@ -39,7 +39,8 @@ begin
     wrf_lon = sfile->XLONG
     wrf_time_raw = sfile->Times
     wrf_time = toint(wrf_time_raw)
-    print(wrf_time(0))
+    wrf_time@units = wrf_time_raw@units
+    wrf_time@calendar = wrf_time_raw@calendar
     GHI     = sfile->ghi
     WPD     = sfile->wpd
 
@@ -136,8 +137,9 @@ begin
     GHI_MAE = 0
     WPD_MAE = 0
     do iwrf = 0,ntimes-1,72                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
-        print("The wrf time is:" + wrf_datestr(iwrf))
+        print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
+        outfile = "./met_plots/WRF_ERA5diff_GHI."+sprinti("%0.3i", n)
         ;---Compute difference between ERA5 variable and WRF variable(s)
         GHI_diff = abs(GHI_regrid(iwrf,:,:) - ERA_GHI(iera,:,:))
         GHI_diff!0 = "lat"
