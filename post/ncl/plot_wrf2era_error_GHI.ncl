@@ -41,12 +41,14 @@ begin
     wrf_time = toint(wrf_time_raw)
     wrf_time@units = wrf_time_raw@units
     wrf_time@calendar = wrf_time_raw@calendar
-    GHI     = sfile->ghi
-    ;delete(GHI@coordinates)
+    GHI = sfile->ghi
+    GHI = GHI/1000
+    GHI@units = "kW m-2"
+    GHI@_FillValue = default_fillvalue("float")
     WPD     = sfile->wpd
     printVarSummary(GHI)
-    printVarSummary(wrf_lat)
-    printVarSummary(wrf_lon)
+    ;printVarSummary(wrf_lat)
+    ;printVarSummary(wrf_lon)
 
     ;---Array to hold month abbreviations. Don't store anything in index
     ; '0' (i.e. let index 1=Jan, 2=Feb, ..., index 12=Dec).
@@ -83,10 +85,12 @@ begin
     ERA_lat  = dfile->latitude
     ERA_lon  = dfile->longitude
     ERA_time = dfile->time
-    ;print(ERA_time(0))
     ERA_GHI  = dfile->GHI
+    ERA_GHI  = ERA_GHI/1000
+    ERA_GHI@units = "kW m-2"
+    ERA_GHI@_FillValue = default_fillvalue("float")
     ERA_WPD  = dfile->WPD
-    ;printVarSummary(ERA_GHI)
+    printVarSummary(ERA_GHI)
     
     ;---Convert to global UTC time.
     ERA_time_UTC = cd_calendar(ERA_time, 0)
@@ -110,7 +114,7 @@ begin
     Opt                   = True
 
     ;---"bilinear" is the default. "patch" and "conserve" are other options.
-    Opt@InterpMethod      = "patch"        ;;---Change (maybe)
+    Opt@InterpMethod      = "bilinear"        ;;---Change (maybe)
 
     Opt@WgtFileName       = "WRF_to_ERA5.nc"
 
@@ -134,14 +138,14 @@ begin
     WPD_regrid = ESMF_regrid(WPD,Opt)
 
     printVarSummary(GHI_regrid)
-    printVarSummary(WPD_regrid)
+    ;printVarSummary(WPD_regrid)
 
 ;---Loop through all the times in the WRF file to compute mean bias
     ntimes = dimsizes(wrf_time)                 ; number of times in the file
     n = 1
     GHI_MAE = 0
     WPD_MAE = 0
-    do iwrf = 12,ntimes-1,72                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
+    do iwrf = 0,ntimes-1,12                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
         print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
         outfile = "./met_plots/WRF_ERA5diff_GHI."+sprinti("%0.3i", n)
@@ -153,7 +157,7 @@ begin
         GHI_diff&lon = ERA_lon
         ;printVarSummary(GHI_diff)
 
-        WPD_diff = abs(WPD_regrid(iwrf,:,:) - ERA_GHI(iera,:,:))
+        WPD_diff = abs(WPD_regrid(iwrf,:,:) - ERA_WPD(iera,:,:))
         WPD_diff!0 = "lat"
         WPD_diff!1 = "lon"
         WPD_diff&lat = ERA_lat
@@ -175,7 +179,7 @@ begin
         GHI@lon2d = wrf_lon     ; already has these attrs attached.
 	;printVarSummary(GHI)
 
-        wks = gsn_open_wks("x11", "WRF_to_ERA5")
+        wks = gsn_open_wks("x11", outfile)
 
         res                       = True
         res@gsnMaximize           = True
@@ -183,7 +187,7 @@ begin
         res@gsnFrame              = False
 
         ;-- Set the center string to time
-        res@gsnCenterString        = wrf_datestr(iwrf)           ;-- write time to center string
+        res@gsnCenterString        = wrf_datestr(iwrf)  ;-- write time to center string
         res@gsnCenterStringOrthogonalPosF = 0.05        ;-- move center string upwards
 
         res@cnFillOn              = True
@@ -197,7 +201,8 @@ begin
         res@mpMaxLatF             = max(wrf_lat)
         res@mpMinLonF             = min(wrf_lon)
         res@mpMaxLonF             = max(wrf_lon)
-        d_res                     = res
+        
+	d_res                     = res
         d_res@lbLabelBarOn        = True
 
         ;--Set contour spacing interval         Change (maybe)
@@ -206,21 +211,27 @@ begin
         res@cnMinLevelValF        = mnmxint(0)
         res@cnMinLevelValF        = mnmxint(0)
         res@cnMaxLevelValF        = mnmxint(1)
-        ;res@cnLevelSpacingF       = 50 
-        ;res@cnMaxLevelValF        = 1000
-        ;res@cnLevelSpacingF       = 0
-	;print("The min GHI value is: " + mnmxint(0))
-	;print("The max GHI value is: " + mnmxint(1))
-	;print("The GHI interval is: " + mnmxint(2))
+        ;res@cnMinLevelValF        = 0 
+        ;res@cnMaxLevelValF        = 1
+        ;res@cnLevelSpacingF       = 0.1
+	print("The min GHI value is: " + mnmxint(0))
+	print("The max GHI value is: " + mnmxint(1))
+	print("The GHI interval is: " + mnmxint(2))
+        cmap_GHI = read_colormap_file("MPL_YlOrRd")      ;-- so we can subset later
+        res@cnFillPalette          = cmap_GHI(:,:)        ;-- subset the color map
+        res@pmLabelBarOrthogonalPosF = 0.15           ;-- move th color bar down
 
         mnmxint = nice_mnmxintvl( min(GHI_diff), max(GHI_diff), 18, False)
         d_res@cnLevelSelectionMode  = "ManualLevels"
-        d_res@cnMinLevelValF      = -mnmxint(1)
+        d_res@cnMinLevelValF      = mnmxint(0)
         d_res@cnMaxLevelValF      = mnmxint(1)
         d_res@cnLevelSpacingF     = mnmxint(2)
-        d_res@cnMinLevelValF      = -100
-        d_res@cnMaxLevelValF      = 100
-        d_res@cnLevelSpacingF     = 20
+	print("The min GHI_diff value is: " + min(GHI_diff))
+	print("The max GHI_diff value is: " + max(GHI_diff))
+	print("The GHI_diff interval is: " + mnmxint(2))
+        ;d_res@cnMinLevelValF      = 0
+        ;d_res@cnMaxLevelValF      = 1
+        ;d_res@cnLevelSpacingF     = 0.1
 
         ;---Resources for plotting regridded data
         res@gsnAddCyclic  = False            ;;---Change (maybe)
@@ -237,11 +248,11 @@ begin
         ;---Resources for plotting difference in WRF and ERA5 data
         d_res@gsnAddCyclic           = False            ;;---Change (maybe)
         d_res@tiMainString           = "WRF & ERA5 Difference"
-        d_res@lbTitleString          = "GHI Difference (W/m -2)"
+        d_res@lbTitleString          = "GHI Difference (kW/m -2)"
         d_res@lbTitleOffsetF         = -0.25            ;-- move the color bar label down
         d_res@lbTitleFontHeightF     = 0.02
         d_res@lbLabelFontHeightF     = 0.012
-        cmap = read_colormap_file("BlueDarkRed18")      ;-- so we can subset later
+        cmap = read_colormap_file("MPL_Purples")      ;-- so we can subset later
         d_res@cnFillPalette          = cmap(:,:)        ;-- subset the color map
         d_res@pmLabelBarOrthogonalPosF = 0.15           ;-- move th color bar down
         plot_diff = gsn_csm_contour_map(wks,GHI_diff,d_res)
@@ -264,5 +275,6 @@ begin
     n := n - 1
     GHI_MAE := GHI_MAE/n
     WPD_MAE := WPD_MAE/n
+    print("The mean bias in GHI is: " + GHI_MAE)
 
 end

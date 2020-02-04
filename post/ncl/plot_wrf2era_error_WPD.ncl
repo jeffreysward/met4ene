@@ -148,7 +148,7 @@ begin
         GHI_diff&lon = ERA_lon
         ;printVarSummary(GHI_diff)
 
-        WPD_diff = abs(WPD_regrid(iwrf,:,:) - ERA_GHI(iera,:,:))
+        WPD_diff = abs(WPD_regrid(iwrf,:,:) - ERA_WPD(iera,:,:))
         WPD_diff!0 = "lat"
         WPD_diff!1 = "lon"
         WPD_diff&lat = ERA_lat
@@ -203,12 +203,12 @@ begin
 
         mnmxint = nice_mnmxintvl( min(WPD_diff), max(WPD_diff), 18, False)
         d_res@cnLevelSelectionMode  = "ManualLevels"
-        ;d_res@cnMinLevelValF      = -mnmxint(1)
-        ;d_res@cnMaxLevelValF      = mnmxint(1)
-        ;d_res@cnLevelSpacingF     = mnmxint(2)
-        d_res@cnMinLevelValF      = -10
-        d_res@cnMaxLevelValF      = 10
-        d_res@cnLevelSpacingF     = 2
+        d_res@cnMinLevelValF      = -mnmxint(1)
+        d_res@cnMaxLevelValF      = mnmxint(1)
+        d_res@cnLevelSpacingF     = mnmxint(2)
+        ;d_res@cnMinLevelValF      = -10
+        ;d_res@cnMaxLevelValF      = 10
+        ;d_res@cnLevelSpacingF     = 2
 
         ;---Resources for plotting regridded data
         res@gsnAddCyclic  = False            ;;---Change (maybe)
