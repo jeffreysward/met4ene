@@ -177,7 +177,7 @@ begin
         res@gsnFrame              = False
 
         ;-- Set the center string to time
-        res@gsnCenterString        = wrf_datestr           ;-- write time to center string
+        res@gsnCenterString        = wrf_datestr(iwrf)           ;-- write time to center string
         res@gsnCenterStringOrthogonalPosF = 0.05        ;-- move center string upwards
 
         res@cnFillOn              = True
