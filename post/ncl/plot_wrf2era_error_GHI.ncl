@@ -42,7 +42,11 @@ begin
     wrf_time@units = wrf_time_raw@units
     wrf_time@calendar = wrf_time_raw@calendar
     GHI     = sfile->ghi
+    ;delete(GHI@coordinates)
     WPD     = sfile->wpd
+    printVarSummary(GHI)
+    printVarSummary(wrf_lat)
+    printVarSummary(wrf_lon)
 
     ;---Array to hold month abbreviations. Don't store anything in index
     ; '0' (i.e. let index 1=Jan, 2=Feb, ..., index 12=Dec).
@@ -62,7 +66,7 @@ begin
     ;---Write out strings in the format "yyyy-mm-dd_hh:mm:ss"
     wrf_datestr = sprinti("%0.4i", year) + "-" + month_abbr(month) + "-" + sprinti("%0.2i", day) + \
                 "_" + sprinti("%0.2i", hour) + ":00:00"
-    print(wrf_datestr(0))
+    ;print(wrf_datestr(0))
 
 ;---ERA data file(s)
     ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA5/"
@@ -79,10 +83,11 @@ begin
     ERA_lat  = dfile->latitude
     ERA_lon  = dfile->longitude
     ERA_time = dfile->time
-    print(ERA_time(0))
+    ;print(ERA_time(0))
     ERA_GHI  = dfile->GHI
     ERA_WPD  = dfile->WPD
-
+    ;printVarSummary(ERA_GHI)
+    
     ;---Convert to global UTC time.
     ERA_time_UTC = cd_calendar(ERA_time, 0)
     ;printVarSummary(ERA_time_UTC)
@@ -96,7 +101,7 @@ begin
     ;---Write out strings in the format "yyyy-mm-dd_hh:mm:ss"
     ERA_datestr = sprinti("%0.4i", year_ERA) + "-" + month_abbr(month_ERA) + "-" + sprinti("%0.2i", day_ERA) + \
                 "_" + sprinti("%0.2i", hour_ERA) + ":00:00"
-    print(ERA_datestr(0))
+    ;print(ERA_datestr(0))
     ;printVarSummary(ERA_datestr)
     ;printVarSummary(ERA_GHI)
     ;printVarSummary(ERA_WPD)
@@ -128,15 +133,15 @@ begin
     GHI_regrid = ESMF_regrid(GHI,Opt)
     WPD_regrid = ESMF_regrid(WPD,Opt)
 
-    ;printVarSummary(GHI_regrid)
-    ;printVarSummary(WPD_regrid)
+    printVarSummary(GHI_regrid)
+    printVarSummary(WPD_regrid)
 
 ;---Loop through all the times in the WRF file to compute mean bias
     ntimes = dimsizes(wrf_time)                 ; number of times in the file
     n = 1
     GHI_MAE = 0
     WPD_MAE = 0
-    do iwrf = 0,ntimes-1,72                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
+    do iwrf = 12,ntimes-1,72                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
         print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
         outfile = "./met_plots/WRF_ERA5diff_GHI."+sprinti("%0.3i", n)
@@ -166,10 +171,11 @@ begin
         ; This section creates filled contour plots of both the original
         ; data and the regridded data, and panels them.
         ;----------------------------------------------------------------------
-        GHI@lat2d = wrf_lat     ; Needed for plotting. "t2_regrid"
+        GHI@lat2d = wrf_lat     ; Needed for plotting. "GHI_regrid"
         GHI@lon2d = wrf_lon     ; already has these attrs attached.
+	;printVarSummary(GHI)
 
-        wks = gsn_open_wks("x11", outfile)
+        wks = gsn_open_wks("x11", "WRF_to_ERA5")
 
         res                       = True
         res@gsnMaximize           = True
@@ -177,7 +183,7 @@ begin
         res@gsnFrame              = False
 
         ;-- Set the center string to time
-        res@gsnCenterString        = wrf_datestr           ;-- write time to center string
+        res@gsnCenterString        = wrf_datestr(iwrf)           ;-- write time to center string
         res@gsnCenterStringOrthogonalPosF = 0.05        ;-- move center string upwards
 
         res@cnFillOn              = True
@@ -198,17 +204,23 @@ begin
         mnmxint = nice_mnmxintvl( min(GHI(iwrf,:,:)), max(GHI(iwrf,:,:)), 18, False)
         res@cnLevelSelectionMode  = "ManualLevels"
         res@cnMinLevelValF        = mnmxint(0)
+        res@cnMinLevelValF        = mnmxint(0)
         res@cnMaxLevelValF        = mnmxint(1)
-        res@cnLevelSpacingF       = mnmxint(2)
+        ;res@cnLevelSpacingF       = 50 
+        ;res@cnMaxLevelValF        = 1000
+        ;res@cnLevelSpacingF       = 0
+	;print("The min GHI value is: " + mnmxint(0))
+	;print("The max GHI value is: " + mnmxint(1))
+	;print("The GHI interval is: " + mnmxint(2))
 
         mnmxint = nice_mnmxintvl( min(GHI_diff), max(GHI_diff), 18, False)
         d_res@cnLevelSelectionMode  = "ManualLevels"
-        ;d_res@cnMinLevelValF      = -mnmxint(1)
-        ;d_res@cnMaxLevelValF      = mnmxint(1)
-        ;d_res@cnLevelSpacingF     = mnmxint(2)
-        d_res@cnMinLevelValF      = -10
-        d_res@cnMaxLevelValF      = 10
-        d_res@cnLevelSpacingF     = 2
+        d_res@cnMinLevelValF      = -mnmxint(1)
+        d_res@cnMaxLevelValF      = mnmxint(1)
+        d_res@cnLevelSpacingF     = mnmxint(2)
+        d_res@cnMinLevelValF      = -100
+        d_res@cnMaxLevelValF      = 100
+        d_res@cnLevelSpacingF     = 20
 
         ;---Resources for plotting regridded data
         res@gsnAddCyclic  = False            ;;---Change (maybe)
@@ -239,6 +251,7 @@ begin
         pres@gsnMaximize       = True
         pres@gsnPanelLabelBar  = True
         gsn_panel(wks,(/plot_orig,plot_regrid/),(/2,1/),pres)
+	;draw(plot_orig)
 
         ;---Plot the difference
         draw(plot_diff)
