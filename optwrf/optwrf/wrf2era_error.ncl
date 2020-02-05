@@ -185,6 +185,8 @@ begin
     n := n - 1
     GHI_MAE := GHI_MAE/n
     WPD_MAE := WPD_MAE/n
+    print("The mean bias in GHI is: " + GHI_MAE + " " + GHI@units)
+    print("The mean bias in WPD is: " + WPD_MAE + " " + WPD@units)
 
     dq = str_get_dq()                ; double quote character
     csv_filename = WRFdir + "mae_wrfyera_" + paramstr + ".csv"
