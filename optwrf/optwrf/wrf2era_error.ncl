@@ -34,14 +34,30 @@ begin
         exit
     end if
 
-;---Get wrf variable(s) to regrid
+;---Get wrf variable(s) to regrid, and format them for NCL.
     wrf_lat = sfile->XLAT
     wrf_lon = sfile->XLONG
     wrf_time_raw = sfile->Times
+    ;---The Times variable from wrf in datetime64 python format; NCL requires integer
     wrf_time = toint(wrf_time_raw)
-    print(wrf_time(0))
-    GHI     = sfile->ghi
-    WPD     = sfile->wpd
+    ;---Assign the units and calendar attributes to the integer time variable
+    wrf_time@units = wrf_time_raw@units
+    wrf_time@calendar = wrf_time_raw@calendar
+    ;---Read in and convert GHI from W m-2 to kW m-2
+    GHI = sfile->ghi
+    GHI = GHI/1000
+    GHI@units = "kW m-2"
+    ;---Python uses nan to denote missing data, which is not recognized by NCL, so 
+    ;---we must reset the default _FillValue to get NCL to regrid and carry out 
+    ;---calcualtions correctly.
+    GHI@_FillValue = default_fillvalue("float")
+    ;---Read in WPD, convert from W m-2 to kW m-2, and reset the default _FillValue
+    WPD = sfile->wpd
+    WPD = WPD/1000
+    WPD@units = "kW m-2"
+    WPD@_FillValue = default_fillvalue("float")
+    ;printVarSummary(GHI)
+    ;printVarSummary(WPD)
 
     ;---Array to hold month abbreviations. Don't store anything in index
     ; '0' (i.e. let index 1=Jan, 2=Feb, ..., index 12=Dec).
@@ -61,7 +77,6 @@ begin
     ;---Write out strings in the format "yyyy-mm-dd_hh:mm:ss"
     wrf_datestr = sprinti("%0.4i", year) + "-" + month_abbr(month) + "-" + sprinti("%0.2i", day) + \
                 "_" + sprinti("%0.2i", hour) + ":00:00"
-    print(wrf_datestr(0))
 
 ;---ERA data file(s)
     ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA5/"
@@ -75,13 +90,23 @@ begin
         exit
     end if
 
+    ;---Get variables to compare with regridded WRF variables.
     ERA_lat  = dfile->latitude
     ERA_lon  = dfile->longitude
     ERA_time = dfile->time
-    print(ERA_time(0))
+    ;---Read in ERA_GHI, convert from W m-2 to kW m-2, and reset the default _FillValue
     ERA_GHI  = dfile->GHI
+    ERA_GHI  = ERA_GHI/1000
+    ERA_GHI@units = "kW m-2"
+    ERA_GHI@_FillValue = default_fillvalue("float")
+    ;---Read in ERA_WPD, convert from W m-2 to kW m-2, and reset the default _FillValue
     ERA_WPD  = dfile->WPD
-
+    ERA_WPD  = ERA_WPD/1000
+    ERA_WPD@units = "kW m-2"
+    ERA_WPD@_FillValue = default_fillvalue("float")
+    ;printVarSummary(ERA_GHI)
+    ;printVarSummary(ERA_WPD)
+    
     ;---Convert to global UTC time.
     ERA_time_UTC = cd_calendar(ERA_time, 0)
     ;printVarSummary(ERA_time_UTC)
@@ -95,18 +120,14 @@ begin
     ;---Write out strings in the format "yyyy-mm-dd_hh:mm:ss"
     ERA_datestr = sprinti("%0.4i", year_ERA) + "-" + month_abbr(month_ERA) + "-" + sprinti("%0.2i", day_ERA) + \
                 "_" + sprinti("%0.2i", hour_ERA) + ":00:00"
-    print(ERA_datestr(0))
-    ;printVarSummary(ERA_datestr)
-    ;printVarSummary(ERA_GHI)
-    ;printVarSummary(ERA_WPD)
 
 ;---Set up regridding options
     Opt                   = True
 
     ;---"bilinear" is the default. "patch" and "conserve" are other options.
-    Opt@InterpMethod      = "patch"        ;;---Change (maybe)
+    Opt@InterpMethod      = "conserve"        ;;---Change (maybe)
 
-    Opt@WgtFileName       = WRFdir + "WRF_to_ERA5.nc"
+    Opt@WgtFileName       = "WRF_to_ERA5.nc"
 
     Opt@SrcGridLat        = wrf_lat           ; source grid
     Opt@SrcGridLon        = wrf_lon
@@ -126,7 +147,6 @@ begin
 ;---Do the regridding
     GHI_regrid = ESMF_regrid(GHI,Opt)
     WPD_regrid = ESMF_regrid(WPD,Opt)
-
     ;printVarSummary(GHI_regrid)
     ;printVarSummary(WPD_regrid)
 
@@ -135,7 +155,7 @@ begin
     n = 1
     GHI_MAE = 0
     WPD_MAE = 0
-    do iwrf = 0,ntimes-1,72                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
+    do iwrf = 0,ntimes-1,1  ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
         print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
         print("The ERA time is: " + ERA_datestr(iera))
@@ -147,7 +167,7 @@ begin
         GHI_diff&lon = ERA_lon
         ;printVarSummary(GHI_diff)
 
-        WPD_diff = abs(WPD_regrid(iwrf,:,:) - ERA_GHI(iera,:,:))
+        WPD_diff = abs(WPD_regrid(iwrf,:,:) - ERA_WPD(iera,:,:))
         WPD_diff!0 = "lat"
         WPD_diff!1 = "lon"
         WPD_diff&lat = ERA_lat
@@ -155,7 +175,6 @@ begin
         ;printVarSummary(WPD_diff)
 
         ;---Sum all computed biases across the domain
-        ;***May need to set the missing values for all the *_diff variables.
         GHI_MAE := GHI_MAE + sum(GHI_diff)
         WPD_MAE := WPD_MAE + sum(WPD_diff)
 

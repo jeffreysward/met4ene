@@ -175,7 +175,6 @@ begin
         ;printVarSummary(WPD_diff)
 
         ;---Sum all computed biases across the domain
-        ;***May need to set the missing values for all the *_diff variables.
         GHI_MAE := GHI_MAE + sum(GHI_diff)
         WPD_MAE := WPD_MAE + sum(WPD_diff)
 
