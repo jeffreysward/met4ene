@@ -56,8 +56,8 @@ begin
     WPD = WPD/1000
     WPD@units = "kW m-2"
     WPD@_FillValue = default_fillvalue("float")
-    printVarSummary(GHI)
-    printVarSummary(WPD)
+    ;printVarSummary(GHI)
+    ;printVarSummary(WPD)
 
     ;---Array to hold month abbreviations. Don't store anything in index
     ; '0' (i.e. let index 1=Jan, 2=Feb, ..., index 12=Dec).
@@ -104,8 +104,8 @@ begin
     ERA_WPD  = ERA_WPD/1000
     ERA_WPD@units = "kW m-2"
     ERA_WPD@_FillValue = default_fillvalue("float")
-    printVarSummary(ERA_GHI)
-    printVarSummary(ERA_WPD)
+    ;printVarSummary(ERA_GHI)
+    ;printVarSummary(ERA_WPD)
     
     ;---Convert to global UTC time.
     ERA_time_UTC = cd_calendar(ERA_time, 0)
@@ -125,7 +125,7 @@ begin
     Opt                   = True
 
     ;---"bilinear" is the default. "patch" and "conserve" are other options.
-    Opt@InterpMethod      = "patch"        ;;---Change (maybe)
+    Opt@InterpMethod      = "conserve"        ;;---Change (maybe)
 
     Opt@WgtFileName       = "WRF_to_ERA5.nc"
 
@@ -147,8 +147,8 @@ begin
 ;---Do the regridding
     GHI_regrid = ESMF_regrid(GHI,Opt)
     WPD_regrid = ESMF_regrid(WPD,Opt)
-    printVarSummary(GHI_regrid)
-    printVarSummary(WPD_regrid)
+    ;printVarSummary(GHI_regrid)
+    ;printVarSummary(WPD_regrid)
 
 ;---Loop through all the times in the WRF file to compute mean bias
     ntimes = dimsizes(wrf_time)                 ; number of times in the file
@@ -165,14 +165,14 @@ begin
         GHI_diff!1 = "lon"
         GHI_diff&lat = ERA_lat
         GHI_diff&lon = ERA_lon
-        printVarSummary(GHI_diff)
+        ;printVarSummary(GHI_diff)
 
         WPD_diff = abs(WPD_regrid(iwrf,:,:) - ERA_WPD(iera,:,:))
         WPD_diff!0 = "lat"
         WPD_diff!1 = "lon"
         WPD_diff&lat = ERA_lat
         WPD_diff&lon = ERA_lon
-        printVarSummary(WPD_diff)
+        ;printVarSummary(WPD_diff)
 
         ;---Sum all computed biases across the domain
         ;***May need to set the missing values for all the *_diff variables.
@@ -223,9 +223,8 @@ begin
         ;res@cnMinLevelValF        = 0 
         ;res@cnMaxLevelValF        = 1
         ;res@cnLevelSpacingF       = 0.1
-	    print("The min GHI value is: " + mnmxint(0) + GHI@units)
-	    print("The max GHI value is: " + mnmxint(1) + GHI@units)
-	    print("The GHI interval is: " + mnmxint(2) + GHI@units)
+	    print("The min GHI value is: " + mnmxint(0) + " " + GHI@units)
+	    print("The max GHI value is: " + mnmxint(1) + " " + GHI@units)
         cmap_GHI = read_colormap_file("MPL_YlOrRd")      ;-- so we can subset later
         res@cnFillPalette          = cmap_GHI(:,:)        ;-- subset the color map
         res@pmLabelBarOrthogonalPosF = 0.15           ;-- move th color bar down
@@ -235,9 +234,8 @@ begin
         d_res@cnMinLevelValF      = mnmxint(0)
         d_res@cnMaxLevelValF      = mnmxint(1)
         d_res@cnLevelSpacingF     = mnmxint(2)
-	    print("The min GHI_diff value is: " + min(GHI_diff) + GHI@units)
-	    print("The max GHI_diff value is: " + max(GHI_diff) + GHI@units)
-	    print("The GHI_diff interval is: " + mnmxint(2) + GHI@units)
+	    print("The min GHI_diff value is: " + min(GHI_diff) + " " + GHI@units)
+	    print("The max GHI_diff value is: " + max(GHI_diff) + " " + GHI@units)
         ;d_res@cnMinLevelValF      = 0
         ;d_res@cnMaxLevelValF      = 1
         ;d_res@cnLevelSpacingF     = 0.1
@@ -275,6 +273,9 @@ begin
         ;---Plot the difference
         draw(plot_diff)
         frame(wks)
+	delete(res)
+	delete(d_res)
+	delete(pres)
 
         n := n + 1
     end do        ; END OF TIME LOOP
@@ -283,6 +284,6 @@ begin
     n := n - 1
     GHI_MAE := GHI_MAE/n
     WPD_MAE := WPD_MAE/n
-    print("The mean bias in GHI is: " + GHI_MAE + GHI@units)
+    print("The mean bias in GHI is: " + GHI_MAE + " " + GHI@units)
 
 end
