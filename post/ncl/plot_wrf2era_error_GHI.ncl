@@ -155,7 +155,7 @@ begin
     n = 1
     GHI_MAE = 0
     WPD_MAE = 0
-    do iwrf = 0,ntimes-1,12                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
+    do iwrf = 0,ntimes-1,1                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
         print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
         outfile = "./met_plots/WRF_ERA5diff_GHI."+sprinti("%0.3i", n)
@@ -165,6 +165,7 @@ begin
         GHI_diff!1 = "lon"
         GHI_diff&lat = ERA_lat
         GHI_diff&lon = ERA_lon
+        GHI_diff@_FillValue = default_fillvalue("float")
         ;printVarSummary(GHI_diff)
 
         WPD_diff = abs(WPD_regrid(iwrf,:,:) - ERA_WPD(iera,:,:))
@@ -172,6 +173,7 @@ begin
         WPD_diff!1 = "lon"
         WPD_diff&lat = ERA_lat
         WPD_diff&lon = ERA_lon
+        WPD_diff@_FillValue = default_fillvalue("float")
         ;printVarSummary(WPD_diff)
 
         ;---Sum all computed biases across the domain
@@ -187,7 +189,7 @@ begin
         GHI@lat2d = wrf_lat     ; Needed for plotting. "GHI_regrid"
         GHI@lon2d = wrf_lon     ; already has these attrs attached.
 
-        wks = gsn_open_wks("x11", outfile)
+        wks = gsn_open_wks("png", outfile)
 
         res                       = True
         res@gsnMaximize           = True

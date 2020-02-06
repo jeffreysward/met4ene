@@ -104,8 +104,8 @@ begin
     ERA_WPD  = ERA_WPD/1000
     ERA_WPD@units = "kW m-2"
     ERA_WPD@_FillValue = default_fillvalue("float")
-    ;printVarSummary(ERA_GHI)
-    ;printVarSummary(ERA_WPD)
+    printVarSummary(ERA_GHI)
+    printVarSummary(ERA_WPD)
 
     ;---Convert to global UTC time.
     ERA_time_UTC = cd_calendar(ERA_time, 0)
@@ -147,15 +147,15 @@ begin
 ;---Do the regridding
     GHI_regrid = ESMF_regrid(GHI,Opt)
     WPD_regrid = ESMF_regrid(WPD,Opt)
-    ;printVarSummary(GHI_regrid)
-    ;printVarSummary(WPD_regrid)
+    printVarSummary(GHI_regrid)
+    printVarSummary(WPD_regrid)
 
 ;---Loop through all the times in the WRF file to compute mean bias
     ntimes = dimsizes(wrf_time)                 ; number of times in the file
     n = 1
     GHI_MAE = 0
     WPD_MAE = 0
-    do iwrf = 0,ntimes-1,12                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
+    do iwrf = 1,1,1                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
         print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
         outfile = "./met_plots/WRF_ERA5diff_WPD."+sprinti("%0.3i", n)
@@ -165,18 +165,22 @@ begin
         GHI_diff!1 = "lon"
         GHI_diff&lat = ERA_lat
         GHI_diff&lon = ERA_lon
-        ;printVarSummary(GHI_diff)
+        GHI_diff@_FillValue = default_fillvalue("float")
+        printVarSummary(GHI_diff)
 
         WPD_diff = abs(WPD_regrid(iwrf,:,:) - ERA_WPD(iera,:,:))
         WPD_diff!0 = "lat"
         WPD_diff!1 = "lon"
         WPD_diff&lat = ERA_lat
         WPD_diff&lon = ERA_lon
-        ;printVarSummary(WPD_diff)
+        WPD_diff@_FillValue = default_fillvalue("float")
+        printVarSummary(WPD_diff)
 
         ;---Sum all computed biases across the domain
         GHI_MAE := GHI_MAE + sum(GHI_diff)
         WPD_MAE := WPD_MAE + sum(WPD_diff)
+        print("The bias in WPD for this period is: " + sum(WPD_diff) + " " + WPD@units)
+        print("The accumulated bias in WPD is: " + WPD_MAE + " " + WPD@units)
 
         ;----------------------------------------------------------------------
         ; Plotting section
