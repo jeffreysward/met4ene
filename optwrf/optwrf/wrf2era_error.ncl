@@ -50,7 +50,6 @@ begin
     ;---Python uses nan to denote missing data, which is not recognized by NCL, so 
     ;---we must reset the default _FillValue to get NCL to regrid and carry out 
     ;---calcualtions correctly.
-    fillnan = GHI@_FillValue
     GHI@_FillValue = default_fillvalue("float")
     ;---Read in WPD, convert from W m-2 to kW m-2, and reset the default _FillValue
     WPD = sfile->wpd
@@ -126,7 +125,7 @@ begin
     Opt                   = True
 
     ;---"bilinear" is the default. "patch" and "conserve" are other options.
-    Opt@InterpMethod      = "patch"           ;;---Change (maybe)
+    Opt@InterpMethod      = "bilinear"           ;;---Change (maybe)
 
     Opt@WgtFileName       = "WRF_to_ERA5.nc"
 
@@ -157,9 +156,8 @@ begin
     GHI_MAE = 0
     WPD_MAE = 0
     do iwrf = 0,ntimes-1,1                      ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
-        print("The wrf time is: " + wrf_datestr(iwrf))
+        ;print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
-        outfile = "./met_plots/WRF_ERA5diff_WPD."+sprinti("%0.3i", n)
         ;---Compute absoulute difference between ERA5 variable and WRF variable(s)
         GHI_diff = abs(GHI_regrid(iwrf,:,:) - ERA_GHI(iera,:,:))
         GHI_diff!0 = "lat"
@@ -180,10 +178,10 @@ begin
         WPD_diff&lat = ERA_lat
         WPD_diff&lon = ERA_lon
         WPD_diff@_FillValue = default_fillvalue("float")
-        ;printVarSummary(WPD_diff)
         if (any(isnan_ieee(WPD_diff))) then
             replace_ieeenan (WPD_diff, WPD_diff@_FillValue, 0)
         end if
+        ;printVarSummary(WPD_diff)
 
         ;---Sum all computed biases across the domain
         GHI_MAE := GHI_MAE + sum(GHI_diff)
@@ -196,8 +194,8 @@ begin
     n := n - 1
     GHI_MAE := GHI_MAE/n
     WPD_MAE := WPD_MAE/n
-    print("The mean bias in GHI is: " + GHI_MAE + " " + GHI@units)
-    print("The mean bias in WPD is: " + WPD_MAE + " " + WPD@units)
+    ;print("The mean bias in GHI is: " + GHI_MAE + " " + GHI@units)
+    ;print("The mean bias in WPD is: " + WPD_MAE + " " + WPD@units)
 
     dq = str_get_dq()                ; double quote character
     csv_filename = WRFdir + "mae_wrfyera_" + paramstr + ".csv"

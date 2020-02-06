@@ -156,7 +156,7 @@ begin
     n = 1
     GHI_MAE = 0
     WPD_MAE = 0
-    do iwrf = 0,ntimes-1,1                      ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
+    do iwrf = 0,ntimes-1,12                      ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
         print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
         outfile = "./met_plots/WRF_ERA5diff_WPD."+sprinti("%0.3i", n)
@@ -218,10 +218,10 @@ begin
 
         res@lbLabelBarOn          = False    ; Turn on later in panel
         res@mpDataBaseVersion     = "MediumRes"
-        res@mpMinLatF             = min(wrf_lat)
-        res@mpMaxLatF             = max(wrf_lat)
-        res@mpMinLonF             = min(wrf_lon)
-        res@mpMaxLonF             = max(wrf_lon)
+        res@mpMinLatF             = min(ERA_lat)
+        res@mpMaxLatF             = max(ERA_lat)
+        res@mpMinLonF             = min(ERA_lon)
+        res@mpMaxLonF             = max(ERA_lon)
         d_res                     = res
         d_res@lbLabelBarOn        = True
 
