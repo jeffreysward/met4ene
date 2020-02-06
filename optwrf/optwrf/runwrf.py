@@ -886,7 +886,7 @@ class WRFModel:
         mae[-1] = mae[-1].strip()
         mae = [float(i) for i in mae]
         total_error = sum(mae)
-        print(f'!!! Parameters {self.paramstr} have a total error {mae}')
+        print(f'!!! Parameters {self.paramstr} have a total error {total_error} kW m-2')
         return total_error
 
 

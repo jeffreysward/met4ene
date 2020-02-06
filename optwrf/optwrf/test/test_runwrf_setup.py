@@ -5,7 +5,7 @@ There is no test for run_wps(), run_real(), or run_wrf() because these
 programs are all computationally expensive and I don't want them in this
 test suite. To test if WPS, REAL, and WRF are running correctly,
 I should probably make a separate test, but right now, I have been
-using runwrf_fromCL for this purpose.
+using runwrf_fromCL.py for this purpose.
 
 """
 
