@@ -3,10 +3,8 @@ A framework to run the simple genetic algorithm for optimizing the WRF model phy
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 Known Issues/Wishlist:
 - This whole things needs to change...
-    - I don't want to use unittest
     - I want the thread pool executor to operate within a Class or a function.
     - It would be cool if PyCharm recognized the SQL syntax.
-    - I need to get rid of runwrf_fromthisdir
 
 """
 
