@@ -50,6 +50,7 @@ begin
     ;---Python uses nan to denote missing data, which is not recognized by NCL, so 
     ;---we must reset the default _FillValue to get NCL to regrid and carry out 
     ;---calcualtions correctly.
+    fillnan = GHI@_FillValue
     GHI@_FillValue = default_fillvalue("float")
     ;---Read in WPD, convert from W m-2 to kW m-2, and reset the default _FillValue
     WPD = sfile->wpd
@@ -106,7 +107,7 @@ begin
     ERA_WPD@_FillValue = default_fillvalue("float")
     ;printVarSummary(ERA_GHI)
     ;printVarSummary(ERA_WPD)
-    
+
     ;---Convert to global UTC time.
     ERA_time_UTC = cd_calendar(ERA_time, 0)
     ;printVarSummary(ERA_time_UTC)
@@ -125,7 +126,7 @@ begin
     Opt                   = True
 
     ;---"bilinear" is the default. "patch" and "conserve" are other options.
-    Opt@InterpMethod      = "conserve"        ;;---Change (maybe)
+    Opt@InterpMethod      = "patch"           ;;---Change (maybe)
 
     Opt@WgtFileName       = "WRF_to_ERA5.nc"
 
@@ -155,17 +156,22 @@ begin
     n = 1
     GHI_MAE = 0
     WPD_MAE = 0
-    do iwrf = 0,ntimes-1,1                       ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
+    do iwrf = 0,ntimes-1,1                      ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
         print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
-        outfile = "./met_plots/WRF_ERA5diff_GHI."+sprinti("%0.3i", n)
-        ;---Compute difference between ERA5 variable and WRF variable(s)
+        outfile = "./met_plots/WRF_ERA5diff_WPD."+sprinti("%0.3i", n)
+        ;---Compute absoulute difference between ERA5 variable and WRF variable(s)
         GHI_diff = abs(GHI_regrid(iwrf,:,:) - ERA_GHI(iera,:,:))
         GHI_diff!0 = "lat"
         GHI_diff!1 = "lon"
         GHI_diff&lat = ERA_lat
         GHI_diff&lon = ERA_lon
         GHI_diff@_FillValue = default_fillvalue("float")
+        ;---For some reason, some nans may be left even after resetting the default_fillvalue()
+        ;---Therefore, we account for this using the following replace_ieenan function.
+        if (any(isnan_ieee(GHI_diff))) then
+            replace_ieeenan (GHI_diff, GHI_diff@_FillValue, 0)
+        end if
         ;printVarSummary(GHI_diff)
 
         WPD_diff = abs(WPD_regrid(iwrf,:,:) - ERA_WPD(iera,:,:))
@@ -175,10 +181,15 @@ begin
         WPD_diff&lon = ERA_lon
         WPD_diff@_FillValue = default_fillvalue("float")
         ;printVarSummary(WPD_diff)
+        if (any(isnan_ieee(WPD_diff))) then
+            replace_ieeenan (WPD_diff, WPD_diff@_FillValue, 0)
+        end if
 
         ;---Sum all computed biases across the domain
         GHI_MAE := GHI_MAE + sum(GHI_diff)
         WPD_MAE := WPD_MAE + sum(WPD_diff)
+        print("The bias in GHI for this period is: " + sum(GHI_diff) + " " + GHI@units)
+        print("The accumulated bias in GHI is: " + GHI_MAE + " " + GHI@units)
 
         ;----------------------------------------------------------------------
         ; Plotting section
@@ -274,9 +285,9 @@ begin
         ;---Plot the difference
         draw(plot_diff)
         frame(wks)
-	delete(res)
-	delete(d_res)
-	delete(pres)
+	    delete(res)
+	    delete(d_res)
+	    delete(pres)
 
         n := n + 1
     end do        ; END OF TIME LOOP
