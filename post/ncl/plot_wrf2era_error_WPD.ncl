@@ -50,6 +50,7 @@ begin
     ;---Python uses nan to denote missing data, which is not recognized by NCL, so 
     ;---we must reset the default _FillValue to get NCL to regrid and carry out 
     ;---calcualtions correctly.
+    fillnan = GHI@_FillValue
     GHI@_FillValue = default_fillvalue("float")
     ;---Read in WPD, convert from W m-2 to kW m-2, and reset the default _FillValue
     WPD = sfile->wpd
@@ -175,10 +176,14 @@ begin
         WPD_diff&lon = ERA_lon
         WPD_diff@_FillValue = default_fillvalue("float")
         printVarSummary(WPD_diff)
+        if (any(isnan_ieee(WPD_diff))) then
+            replace_ieeenan (WPD_diff, WPD_diff@_FillValue, 0)
+	end if
 
         ;---Sum all computed biases across the domain
         GHI_MAE := GHI_MAE + sum(GHI_diff)
         WPD_MAE := WPD_MAE + sum(WPD_diff)
+	print(WPD_diff)
         print("The bias in WPD for this period is: " + sum(WPD_diff) + " " + WPD@units)
         print("The accumulated bias in WPD is: " + WPD_MAE + " " + WPD@units)
 
