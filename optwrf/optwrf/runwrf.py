@@ -230,7 +230,9 @@ class WRFModel:
                 return vtable_sfx
             else:
                 # Download the data from the RDA
-                rda_download(filelist, dspath)
+		print(f'The path to the RDA dataset is: \n{dspath}')
+		print(f'The files to be downloaded are: \n{filelist}')
+		rda_download(filelist, dspath)
                 # Move the data files to the data directory
                 cmd = self.CMD_MV % (datpfx1 + '*', self.DIR_DATA)
                 cmd = cmd + '; ' + self.CMD_MV % (datpfx2 + '*', self.DIR_DATA)
