@@ -179,7 +179,7 @@ class WRFModel:
             vtable_sfx = 'ERA-interim.pl'
         else:
             vtable_sfx = self.bc_data
-        print('Using {} data for boundary condidions'.format(self.bc_data))
+        print('Using {} data for boundary conditions'.format(self.bc_data))
         print('The corresponding Vtable is: {}\n'.format(vtable_sfx))
         print(f'Data Directory: {self.DIR_DATA}')
 
@@ -193,11 +193,14 @@ class WRFModel:
             # THIS ONLY WORKS IF YOU WANT TO RUN WITHIN A SINGLE MONTH!
             while i <= n:
                 cmd = self.CMD_CP % (DATA_ROOT1 + datpfx1 + self.forecast_start.strftime('%Y')
-                                     + self.forecast_start.strftime('%m') + str(i) + '*', self.DIR_DATA)
+                                     + self.forecast_start.strftime('%m') + str(i).zfill(2)
+                                     + '*', self.DIR_DATA)
                 cmd = cmd + '; ' + self.CMD_CP % (DATA_ROOT1 + datpfx2 + self.forecast_start.strftime('%Y')
-                                                  + self.forecast_start.strftime('%m') + str(i) + '*', self.DIR_DATA)
+                                                  + self.forecast_start.strftime('%m') + str(i).zfill(2)
+                                                  + '*', self.DIR_DATA)
                 cmd = cmd + '; ' + self.CMD_CP % (DATA_ROOT2 + datpfx3 + self.forecast_start.strftime('%Y')
-                                                  + self.forecast_start.strftime('%m') + str(i) + '*', self.DIR_DATA)
+                                                  + self.forecast_start.strftime('%m') + str(i).zfill(2)
+                                                  + '*', self.DIR_DATA)
                 os.system(cmd)
                 i += 1
         else:
@@ -208,17 +211,17 @@ class WRFModel:
             while i <= n:
                 for hr in hrs:
                     filelist.append(DATA_ROOT1 + datpfx1 + self.forecast_start.strftime('%Y')
-                                    + self.forecast_start.strftime('%m') + str(i) + hr)
+                                    + self.forecast_start.strftime('%m') + str(i).zfill(2) + hr)
                     filelist.append(DATA_ROOT1 + datpfx2 + self.forecast_start.strftime('%Y')
-                                    + self.forecast_start.strftime('%m') + str(i) + hr)
+                                    + self.forecast_start.strftime('%m') + str(i).zfill(2) + hr)
                     filelist.append(DATA_ROOT2 + datpfx3 + self.forecast_start.strftime('%Y')
-                                    + self.forecast_start.strftime('%m') + str(i) + hr)
+                                    + self.forecast_start.strftime('%m') + str(i).zfill(2) + hr)
                     file_check.append(datpfx1 + self.forecast_start.strftime('%Y')
-                                      + self.forecast_start.strftime('%m') + str(i) + hr)
+                                      + self.forecast_start.strftime('%m') + str(i).zfill(2) + hr)
                     file_check.append(datpfx2 + self.forecast_start.strftime('%Y')
-                                      + self.forecast_start.strftime('%m') + str(i) + hr)
+                                      + self.forecast_start.strftime('%m') + str(i).zfill(2) + hr)
                     file_check.append(datpfx3 + self.forecast_start.strftime('%Y')
-                                      + self.forecast_start.strftime('%m') + str(i) + hr)
+                                      + self.forecast_start.strftime('%m') + str(i).zfill(2) + hr)
                 i += 1
 
             # Check to see if all these files already exist in the data directory
