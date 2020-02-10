@@ -233,9 +233,10 @@ class WRFModel:
                 return vtable_sfx
             else:
                 # Download the data from the RDA
-                print(f'The path to the RDA dataset is: \n{dspath}')
-                print(f'The files to be downloaded are: \n{filelist}')
-                rda_download(filelist, dspath)
+                success = rda_download(filelist, dspath)
+                if not success:
+                    print(f'Data was not successfully downloaded from RDA.')
+                    raise RuntimeError
                 # Move the data files to the data directory
                 cmd = self.CMD_MV % (datpfx1 + '*', self.DIR_DATA)
                 cmd = cmd + '; ' + self.CMD_MV % (datpfx2 + '*', self.DIR_DATA)
@@ -1065,6 +1066,10 @@ def rda_download(filelist, dspath):
     dspath : string
         Full path to file on the RDA. You can obtain this from
 
+    Returns:
+    ----------
+    A boolean success flag.
+
     """
 
     # Specify login information and url for RDA
@@ -1077,7 +1082,7 @@ def rda_download(filelist, dspath):
     if ret.status_code != 200:
         print('Bad Authentication for RDA')
         print(ret.text)
-        return
+        return False
 
     # Download files from RDA server
     print('Downloading data from RDA...')
@@ -1090,7 +1095,7 @@ def rda_download(filelist, dspath):
             filesize = int(req.headers['Content-length'])
         except KeyError as e:
             print('KeyError in rda_download:\n%s\nCHECK THAT RDA IS WORKING!!!' % e)
-            return
+            return False
         with open(file_base, 'wb') as outfile:
             chunk_size = 1048576
             for chunk in req.iter_content(chunk_size=chunk_size):
@@ -1099,6 +1104,7 @@ def rda_download(filelist, dspath):
         #             check_file_status(file_base, filesize)
         check_file_status(file_base, filesize)
     print('Done downloading data from RDA!')
+    return True
 
 
 def check_file_status(filepath, filesize):
