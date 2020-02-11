@@ -16,7 +16,7 @@ from optwrf.runwrf import determine_computer
 
 param_ids = [10, 1, 1, 2, 2, 3, 2]
 start_date = 'Jan 1 2011'
-end_date = 'Jan 2 2011'
+end_date = 'Feb 1 2011'
 on_aws, on_cheyenne, on_magma = determine_computer()
 
 
