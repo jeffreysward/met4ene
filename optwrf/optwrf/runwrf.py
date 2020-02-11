@@ -3,8 +3,6 @@ Class and supporting functions to run WRF within other scripts
 and process WRF output data.
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 Known Issues/Wishlist:
-- The section of code that downloads ERA5 data is WRONG! It does not yet carry out
-the ncks step; I did it manually previously and haven't added it into this module yet.
 - I'm unhappy with the output to screen from rda_download(). Perhaps edit that and
 check_file_status() as well.
 - I want to figure out a better way to set the command aliai.
@@ -160,25 +158,25 @@ class WRFModel:
 
         """
 
+        # Currently, only ERA data (ds627.0) is supported
         if self.bc_data == 'ERA':
             if self.on_cheyenne:
+                # The following variables define the path where ERA is located within the Cheyenne RDA
                 DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.pl/'
-                DATA_ROOT1 = DATA_ROOT1 + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '/'
                 DATA_ROOT2 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.sfc/'
-                DATA_ROOT2 = DATA_ROOT2 + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '/'
             else:
-                # The following define paths to the required data on the RDA site
+                # The following define paths to the ERA data on the RDA site
                 dspath = 'http://rda.ucar.edu/data/ds627.0/'
-                DATA_ROOT1 = 'ei.oper.an.pl/' + self.forecast_start.strftime('%Y') \
-                             + self.forecast_start.strftime('%m') + '/'
-                DATA_ROOT2 = 'ei.oper.an.sfc/' + self.forecast_start.strftime('%Y') \
-                             + self.forecast_start.strftime('%m') + '/'
+                DATA_ROOT1 = 'ei.oper.an.pl/'
+                DATA_ROOT2 = 'ei.oper.an.sfc/'
             datpfx1 = 'ei.oper.an.pl.regn128sc.'
             datpfx2 = 'ei.oper.an.pl.regn128uv.'
             datpfx3 = 'ei.oper.an.sfc.regn128sc.'
             vtable_sfx = 'ERA-interim.pl'
         else:
-            vtable_sfx = self.bc_data
+            print(f'Currently {self.bc_data} is not supportted; please use ERA for boundary condition data.')
+            raise ValueError
+
         print('Using {} data for boundary conditions'.format(self.bc_data))
         print('The corresponding Vtable is: {}\n'.format(vtable_sfx))
         print(f'Data Directory: {self.DIR_DATA}')
@@ -186,43 +184,35 @@ class WRFModel:
         # If no data directory exists, create one
         if not os.path.exists(self.DIR_DATA):
             os.makedirs(self.DIR_DATA, 0o755)
-        i = int(self.forecast_start.day)
-        n = int(self.forecast_start.day) + int(self.delt.days)
+        # Determine the forecast druation
+        forecast_duration = self.forecast_end - self.forecast_start
+        # Define the date list
+        date_list = [(self.forecast_start + datetime.timedelta(days=x)) for x in range(forecast_duration.days + 1)]
         if self.on_cheyenne:
             # Copy desired data files from RDA
-            # THIS ONLY WORKS IF YOU WANT TO RUN WITHIN A SINGLE MONTH!
-            while i <= n:
-                cmd = self.CMD_CP % (DATA_ROOT1 + datpfx1 + self.forecast_start.strftime('%Y')
-                                     + self.forecast_start.strftime('%m') + str(i).zfill(2)
-                                     + '*', self.DIR_DATA)
-                cmd = cmd + '; ' + self.CMD_CP % (DATA_ROOT1 + datpfx2 + self.forecast_start.strftime('%Y')
-                                                  + self.forecast_start.strftime('%m') + str(i).zfill(2)
-                                                  + '*', self.DIR_DATA)
-                cmd = cmd + '; ' + self.CMD_CP % (DATA_ROOT2 + datpfx3 + self.forecast_start.strftime('%Y')
-                                                  + self.forecast_start.strftime('%m') + str(i).zfill(2)
-                                                  + '*', self.DIR_DATA)
+            for date in date_list:
+                year_mo = date.strftime('%Y') + date.strftime('%m')
+                year_mo_day = date.strftime('%Y') + date.strftime('%m') + date.strftime('%d')
+                cmd = self.CMD_CP % (DATA_ROOT1 + year_mo + '/' + datpfx1 + year_mo_day + '*', self.DIR_DATA)
+                cmd = cmd + '; ' + self.CMD_CP % (DATA_ROOT1 + year_mo + '/'
+                                                  + datpfx2 + year_mo_day + '*', self.DIR_DATA)
+                cmd = cmd + '; ' + self.CMD_CP % (DATA_ROOT2 + year_mo + '/'
+                                                  + datpfx3 + year_mo_day + '*', self.DIR_DATA)
                 os.system(cmd)
-                i += 1
         else:
-            # Build the file list required for the WRF run.
             hrs = ['00', '06', '12', '18']
             filelist = []
             file_check = []
-            while i <= n:
+            for date in date_list:
                 for hr in hrs:
-                    filelist.append(DATA_ROOT1 + datpfx1 + self.forecast_start.strftime('%Y')
-                                    + self.forecast_start.strftime('%m') + str(i).zfill(2) + hr)
-                    filelist.append(DATA_ROOT1 + datpfx2 + self.forecast_start.strftime('%Y')
-                                    + self.forecast_start.strftime('%m') + str(i).zfill(2) + hr)
-                    filelist.append(DATA_ROOT2 + datpfx3 + self.forecast_start.strftime('%Y')
-                                    + self.forecast_start.strftime('%m') + str(i).zfill(2) + hr)
-                    file_check.append(datpfx1 + self.forecast_start.strftime('%Y')
-                                      + self.forecast_start.strftime('%m') + str(i).zfill(2) + hr)
-                    file_check.append(datpfx2 + self.forecast_start.strftime('%Y')
-                                      + self.forecast_start.strftime('%m') + str(i).zfill(2) + hr)
-                    file_check.append(datpfx3 + self.forecast_start.strftime('%Y')
-                                      + self.forecast_start.strftime('%m') + str(i).zfill(2) + hr)
-                i += 1
+                    year_mo = date.strftime('%Y') + date.strftime('%m')
+                    year_mo_day_hr = date.strftime('%Y') + date.strftime('%m') + date.strftime('%d') + hr
+                    filelist.append(DATA_ROOT1 + year_mo + '/' + datpfx1 + year_mo_day_hr)
+                    filelist.append(DATA_ROOT1 + year_mo + '/' + datpfx2 + year_mo_day_hr)
+                    filelist.append(DATA_ROOT2 + year_mo + '/' + datpfx3 + year_mo_day_hr)
+                    file_check.append(datpfx1 + year_mo_day_hr)
+                    file_check.append(datpfx2 + year_mo_day_hr)
+                    file_check.append(datpfx3 + year_mo_day_hr)
 
             # Check to see if all these files already exist in the data directory
             data_exists = []
@@ -235,7 +225,7 @@ class WRFModel:
                 # Download the data from the RDA
                 success = rda_download(filelist, dspath)
                 if not success:
-                    print(f'Data was not successfully downloaded from RDA.')
+                    print(f'{self.bc_data} data was not successfully downloaded from RDA.')
                     raise RuntimeError
                 # Move the data files to the data directory
                 cmd = self.CMD_MV % (datpfx1 + '*', self.DIR_DATA)
