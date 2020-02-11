@@ -174,6 +174,11 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         success = wrf_sim.run_wrf()
         print(f'WRF ran successfully? {success}')
 
+    # Postprocess wrfout file and ERA5 data
+    if success:
+        wrf_sim.process_wrfout_data()
+        wrf_sim.process_era5_data()
+
     # Compute the error between WRF run and ERA5 dataset and return fitness
     if success:
         fitness = wrf_sim.wrf_era5_diff()
