@@ -12,6 +12,7 @@ check_file_status() as well.
 import sys
 import os
 
+import calendar
 import dateutil
 import requests
 import time
@@ -711,7 +712,8 @@ class WRFModel:
         next_month = self.forecast_start + dateutil.relativedelta.relativedelta(months=+1)
         year_mo = self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m')
         year_nextmo = self.forecast_start.strftime('%Y') + next_month.strftime('%m')
-        date_suffix_01_end = year_mo + '0100_' + year_mo + '3123.nc'
+        mo_len = calendar.monthrange(self.forecast_start.year, self.forecast_start.month)[1]
+        date_suffix_01_end = year_mo + '0100_' + year_mo + str(mo_len) + '23.nc'
         date_suffix_01_16 = year_mo + '0106_' + year_mo + '1606.nc'
         date_suffix_16_01 = year_mo + '1606_' + year_nextmo + '0106.nc'
 
