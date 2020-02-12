@@ -226,7 +226,7 @@ class WRFModel:
                 data_exists.append(os.path.exists(self.DIR_DATA + data_file))
             print(f'This simulation requires {len(file_check)} files, '
                   f'{data_exists.count(True)} are already in your data directory.')
-            if data_exists.count(True) is len(file_check):
+            if data_exists.count(True) == len(file_check):
                 print('Boundary condition data was previously downloaded from RDA.')
                 return vtable_sfx
             else:
