@@ -147,7 +147,7 @@ class WRFModel:
 
     def get_bc_data(self):
         """
-        Downloads boundry condition data from the RDA
+        Downloads boundary condition data from the RDA
         if it does not already exist in the expected data directory.
 
         Returns:
@@ -174,7 +174,7 @@ class WRFModel:
             datpfx3 = 'ei.oper.an.sfc.regn128sc.'
             vtable_sfx = 'ERA-interim.pl'
         else:
-            print(f'Currently {self.bc_data} is not supportted; please use ERA for boundary condition data.')
+            print(f'Currently {self.bc_data} is not supported; please use ERA for boundary condition data.')
             raise ValueError
 
         print('Using {} data for boundary conditions'.format(self.bc_data))
@@ -184,12 +184,16 @@ class WRFModel:
         # If no data directory exists, create one
         if not os.path.exists(self.DIR_DATA):
             os.makedirs(self.DIR_DATA, 0o755)
-        # Determine the forecast druation
+
+        # Determine the forecast duration
         forecast_duration = self.forecast_end - self.forecast_start
+
         # Define the date list
         date_list = [(self.forecast_start + datetime.timedelta(days=x)) for x in range(forecast_duration.days + 1)]
+
+        # Depending on what computer you are on...
         if self.on_cheyenne:
-            # Copy desired data files from RDA
+            # Copy desired data files from local RDA
             for date in date_list:
                 year_mo = date.strftime('%Y') + date.strftime('%m')
                 year_mo_day = date.strftime('%Y') + date.strftime('%m') + date.strftime('%d')
@@ -200,6 +204,8 @@ class WRFModel:
                                                   + datpfx3 + year_mo_day + '*', self.DIR_DATA)
                 os.system(cmd)
         else:
+            # Build the complete RDA path to required files (filelist),
+            # and a list of the file names themselves (file_check)
             hrs = ['00', '06', '12', '18']
             filelist = []
             file_check = []
@@ -218,21 +224,20 @@ class WRFModel:
             data_exists = []
             for data_file in file_check:
                 data_exists.append(os.path.exists(self.DIR_DATA + data_file))
+            print(f'This simulation requires {len(file_check)} files, '
+                  f'{data_exists.count(True)} are already in your data directory.')
             if data_exists.count(True) is len(file_check):
                 print('Boundary condition data was previously downloaded from RDA.')
                 return vtable_sfx
             else:
-                # Download the data from the RDA
+                # Download the data from the online RDA (requires password and connection)
                 success = rda_download(filelist, dspath)
                 if not success:
                     print(f'{self.bc_data} data was not successfully downloaded from RDA.')
                     raise RuntimeError
                 # Move the data files to the data directory
-                cmd = self.CMD_MV % (datpfx1 + '*', self.DIR_DATA)
-                cmd = cmd + '; ' + self.CMD_MV % (datpfx2 + '*', self.DIR_DATA)
-                cmd = cmd + '; ' + self.CMD_MV % (datpfx3 + '*', self.DIR_DATA)
-                print(f'The copy command is {cmd}.')
-                os.system(cmd)
+                for file in file_check:
+                    os.system(self.CMD_MV % (file, self.DIR_DATA))
         return vtable_sfx
 
     def wrfdir_setup(self, vtable_sfx):
@@ -849,8 +854,6 @@ class WRFModel:
         *I don't need to copy the wrf2era_error.ncl script into each WRFOUT
         directory, but that's how I currently get the error file for each
         simulation to be written into the correct dirctory.
-
-        NEEDS A TEST!!!
 
         Returns:
         ----------
