@@ -883,6 +883,19 @@ class WRFModel:
         mae = [float(i) for i in mae]
         total_error = sum(mae)
         print(f'!!! Parameters {self.paramstr} have a total error {total_error} kW m-2')
+
+        # Clean up extraneous files that wrf2era_error.ncl created
+        regridding_files = ['source_grid_file.nc',
+                            'destination_grid_file.nc',
+                            'log.regrid',
+                            'PET0.RegridWeightGen.Log',
+                            'WRF_to_ERA5.nc'
+                            ]
+        for file in regridding_files:
+            try:
+                os.system(self.CMD_RM % file)
+            except FileNotFoundError:
+                print(f'WARNING: expected regridding file ({file}) was not deleted.')
         return total_error
 
 
@@ -1116,5 +1129,5 @@ def check_file_status(filepath, filesize):
     sys.stdout.flush()
     size = int(os.stat(filepath).st_size)
     percent_complete = (size / filesize) * 100
-    sys.stdout.write('%.3f %s\n' % (percent_complete, '% Completed'))
+    sys.stdout.write(f'{filepath}: {percent_complete}\n')
     sys.stdout.flush()
