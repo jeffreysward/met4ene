@@ -701,37 +701,39 @@ class WRFModel:
         and processes the data -- calculates the wind power density at 100m and write this variable
         back to the ERA5 NetCDF data file.
 
+        ***Note that this method only works for simulations within a single month.
+
         NEEDS BETTER DOCUMENTATION!!!
 
         """
 
-        # Download ERA5 data from RDA if it does not already exist in the expected place
+        # Define some convenient file suffixes
         next_month = self.forecast_start + dateutil.relativedelta.relativedelta(months=+1)
+        year_mo = self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m')
+        year_nextmo = self.forecast_start.strftime('%Y') + next_month.strftime('%m')
+        date_suffix_01_end = year_mo + '0100_' + year_mo + '3123.nc'
+        date_suffix_01_16 = year_mo + '0106_' + year_mo + '1606.nc'
+        date_suffix_16_01 = year_mo + '1606_' + year_nextmo + '0106.nc'
+
+        # Download ERA5 data from RDA if it does not already exist in the expected place
         if self.on_cheyenne:
             ERA5_ROOT = '/gpfs/fs1/collections/rda/data/ds633.0/'
-            DATA_ROOT1 = ERA5_ROOT + 'e5.oper.an.sfc/' + self.forecast_start.strftime('%Y') \
-                         + self.forecast_start.strftime('%m') + '/'
-            DATA_ROOT2 = ERA5_ROOT + 'e5.oper.fc.sfc.accumu/' + self.forecast_start.strftime('%Y') \
-                         + self.forecast_start.strftime('%m') + '/'
+            DATA_ROOT1 = ERA5_ROOT + 'e5.oper.an.sfc/' + year_mo + '/'
+            DATA_ROOT2 = ERA5_ROOT + 'e5.oper.fc.sfc.accumu/' + year_mo + '/'
         else:
+            # Define the expected absolute paths to ERA data files
             ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
-            # Desired absolute path to ERA data files
-            date_suffix_01_31 = self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0100_' \
-                                + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '3123.nc'
-            date_suffix_01_16 = self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '0106_' \
-                                + self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '1606.nc'
-            date_suffix_16_01 = self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m') + '1606_' \
-                                + self.forecast_start.strftime('%Y') + next_month.strftime('%m') + '0106.nc'
-            erafile_100u = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.' + date_suffix_01_31
-            erafile_100v = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.' + date_suffix_01_31
+            erafile_100u = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.' + date_suffix_01_end
+            erafile_100v = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.' + date_suffix_01_end
             erafile_ssrd1 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_01_16
             erafile_ssrd2 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_16_01
             local_filelist = [erafile_100u, erafile_100v, erafile_ssrd1, erafile_ssrd2]
-            local_filenames = ['EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.' + date_suffix_01_31,
-                               'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.' + date_suffix_01_31,
+            local_filenames = ['EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.' + date_suffix_01_end,
+                               'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.' + date_suffix_01_end,
                                'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_01_16,
                                'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_16_01]
 
+            # Download data from RDA if necessary
             if [os.path.exists(file) for file in local_filelist].count(False) is not 0:
 
                 rda_datpfxs_sfc = ['e5.oper.an.sfc.228_246_100u.ll025sc.',
@@ -743,19 +745,17 @@ class WRFModel:
                 if not os.path.exists(ERA5_ROOT):
                     os.mkdir(ERA5_ROOT)
 
-                # The following define paths to the required data on the RDA site
+                # Define paths to the required data on the RDA site
                 dspath = 'http://rda.ucar.edu/data/ds633.0/'
-                DATA_ROOT1 = 'e5.oper.an.sfc/' + self.forecast_start.strftime('%Y') \
-                             + self.forecast_start.strftime('%m') + '/'
-                DATA_ROOT2 = 'e5.oper.fc.sfc.accumu/' + self.forecast_start.strftime('%Y') \
-                             + self.forecast_start.strftime('%m') + '/'
+                DATA_ROOT1 = 'e5.oper.an.sfc/' + year_mo + '/'
+                DATA_ROOT2 = 'e5.oper.fc.sfc.accumu/' + year_mo + '/'
 
                 # Build the file list to be downloaded from the RDA
                 filelist = []
                 rda_filelist = []
                 for rda_datpfx in rda_datpfxs_sfc:
-                    filelist.append(DATA_ROOT1 + rda_datpfx + date_suffix_01_31)
-                    rda_filelist.append(rda_datpfx + date_suffix_01_31)
+                    filelist.append(DATA_ROOT1 + rda_datpfx + date_suffix_01_end)
+                    rda_filelist.append(rda_datpfx + date_suffix_01_end)
 
                 for rda_datpfx in rda_datpfxs_sfc_accumu:
                     filelist.append(DATA_ROOT2 + rda_datpfx + date_suffix_01_16)
@@ -764,8 +764,11 @@ class WRFModel:
                     rda_filelist.append(rda_datpfx + date_suffix_16_01)
                 print(filelist)
 
-                # Download the data from the RDA
-                rda_download(filelist, dspath)
+                # Download the data from the RDA (requires password and connection)
+                success = rda_download(filelist, dspath)
+                if not success:
+                    print(f'ERA5 benchmark data was not successfully downloaded from RDA.')
+                    raise RuntimeError
 
                 # Run ncks to reduce the size of the files
                 for rda_file, local_file in zip(rda_filelist, local_filenames):

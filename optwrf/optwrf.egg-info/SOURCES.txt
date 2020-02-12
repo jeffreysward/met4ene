@@ -19,4 +19,7 @@ optwrf/test/__init__.py
 optwrf/test/dirpath.yml
 optwrf/test/linux_dirpath.yml
 optwrf/test/mac_dirpath.yml
+optwrf/test/params.yml
+optwrf/test/test_optimize_wrf_physics.py
+optwrf/test/test_runwrf_postwrf.py
 optwrf/test/test_runwrf_setup.py
