@@ -256,7 +256,6 @@ class WRFModel:
             # Copy files in the data directory to the temporary data directory
             for file in file_check:
                 cmd = self.CMD_CP % (self.DIR_DATA + file, self.DIR_DATA_TMP)
-                print(cmd)
                 os.system(cmd)
 
         return vtable_sfx

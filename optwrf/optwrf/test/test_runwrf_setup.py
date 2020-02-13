@@ -15,8 +15,8 @@ from optwrf.runwrf import determine_computer
 
 
 param_ids = [10, 1, 1, 2, 2, 3, 2]
-start_date = 'Jan 1 2011'
-end_date = 'Feb 1 2011'
+start_date = 'Dec 1 2011'
+end_date = 'Dec 2 2011'
 on_aws, on_cheyenne, on_magma = determine_computer()
 
 
@@ -44,9 +44,9 @@ def test_get_bc_data():
         wrf_sim = WRFModel(param_ids, start_date, end_date, setup_yaml='linux_dirpath.yml')
     vtable_sfx = wrf_sim.get_bc_data()
     print(f'The following data files are in {wrf_sim.DIR_DATA_TMP}:\n')
-    [print(name) for name in os.listdir(wrf_sim.DIR_DATA_TMP) if os.path.isfile(name)]
+    [print(name) for name in os.listdir(wrf_sim.DIR_DATA_TMP)]
     assert vtable_sfx == 'ERA-interim.pl'
-    assert len([name for name in os.listdir(wrf_sim.DIR_DATA_TMP) if os.path.isfile(name)]) > 0
+    assert len([name for name in os.listdir(wrf_sim.DIR_DATA_TMP)]) > 0
 
 
 # The next set of tests will only be useful if you're on a machine with the WRF source code downloaded (i.e., Magma,
