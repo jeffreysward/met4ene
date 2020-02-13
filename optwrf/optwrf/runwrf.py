@@ -729,7 +729,12 @@ class WRFModel:
         # Define some convenient file suffixes
         next_month = self.forecast_start + dateutil.relativedelta.relativedelta(months=+1)
         year_mo = self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m')
-        year_nextmo = self.forecast_start.strftime('%Y') + next_month.strftime('%m')
+        # If we are running a simulation in December, the file suffix will have a different end year and month
+        if next_month.month == 1:
+            next_year = self.forecast_start + dateutil.relativedelta.relativedelta(years=+1)
+            year_nextmo = next_year.strftime('%Y') + next_month.strftime('%m')
+        else:
+            year_nextmo = self.forecast_start.strftime('%Y') + next_month.strftime('%m')
         mo_len = calendar.monthrange(self.forecast_start.year, self.forecast_start.month)[1]
         date_suffix_01_end = year_mo + '0100_' + year_mo + str(mo_len) + '23.nc'
         date_suffix_01_16 = year_mo + '0106_' + year_mo + '1606.nc'
