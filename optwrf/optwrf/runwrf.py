@@ -517,32 +517,47 @@ class WRFModel:
         print('Geogrid ran in: ' + str(elapsed))
 
         # Run ungrib and metgrid if necessary; start by checking for required met_em files
-        
+        hrs = ['00', '03', '06', '09', '12', '15', '18', '21']
+        # Determine the forecast duration
+        forecast_duration = self.forecast_end - self.forecast_start
+        # Build the list of required met_em files
+        metfilelist = []
+        for ii in range(forecast_duration.days + 1):
+            day = self.forecast_start + datetime.timedelta(days=ii)
+            for jj in range(1, self.n_domains + 1):
+                domain = str(jj).zfill(2)
+                for hr in hrs:
+                    metfilelist.append(f'met_em.d{domain}.{day.strftime("%Y-%m-%d")}_{hr}:00:00.nc')
+        if [os.path.exists(self.DIR_DATA + 'met_em/' + file)
+            for file in metfilelist].count(False) is not 0:
+            # Run ungrib and metgrid; link the grib files
+            sys.stdout.flush()
+            os.system(self.CMD_LINK_GRIB)
+            startTime = datetime.datetime.now()
+            startTimeInt = int(time.time())
+            print('Starting Ungrib and Metgrid at: ' + str(startTime))
+            sys.stdout.flush()
+            os.system(self.CMD_UNGMETG)
+            metgrid_sim = self.runwrf_finish_check('metgrid')
+            while metgrid_sim is not 'complete':
+                if metgrid_sim is 'failed':
+                    print_last_3lines(self.DIR_WRFOUT + 'metgrid.log')
+                    return False
+                elif (int(time.time()) - startTimeInt) < 600000:
+                    time.sleep(2)
+                    metgrid_sim = self.runwrf_finish_check('metgrid')
+                else:
+                    print('TimeoutError in run_wps: Ungrib and Metgrid took more than 10min to run... exiting.')
+                    return False
+            elapsed = datetime.datetime.now() - startTime
+            print('Ungrib and Metgrid ran in: ' + str(elapsed))
+        else:
+            # Link the existing met_em files
+            for file in metfilelist:
+                os.system(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_RUNWRF))
 
-        # Link the grib files
-        sys.stdout.flush()
-        os.system(self.CMD_LINK_GRIB)
-        startTime = datetime.datetime.now()
-        startTimeInt = int(time.time())
-        print('Starting Ungrib and Metgrid at: ' + str(startTime))
-        sys.stdout.flush()
-        os.system(self.CMD_UNGMETG)
-        metgrid_sim = self.runwrf_finish_check('metgrid')
-        while metgrid_sim is not 'complete':
-            if metgrid_sim is 'failed':
-                print_last_3lines(self.DIR_WRFOUT + 'metgrid.log')
-                return False
-            elif (int(time.time()) - startTimeInt) < 600000:
-                time.sleep(2)
-                metgrid_sim = self.runwrf_finish_check('metgrid')
-            else:
-                print('TimeoutError in run_wps: Ungrib and Metgrid took more than 10min to run... exiting.')
-                return False
-        elapsed = datetime.datetime.now() - startTime
-        print('Ungrib and Metgrid ran in: ' + str(elapsed))
-
-        # Remove the data directory after WPS has run
-        # lh.remove_dir(DIR_DATA)
+        # Remove the temporary data directory after WPS has run
+        lh.remove_dir(self.DIR_DATA_TMP)
         return True
 
     def run_real(self):
@@ -619,6 +634,9 @@ class WRFModel:
                                      + self.forecast_start.strftime('%m') + '-'
                                      + self.forecast_start.strftime('%d') + '_00:00:00',
                                      self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '.nc'))
+
+        # Move the met_em files to a permanent location
+
         return True
 
     def process_wrfout_data(self):
