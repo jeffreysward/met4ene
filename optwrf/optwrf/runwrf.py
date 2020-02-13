@@ -495,11 +495,8 @@ class WRFModel:
             returns 'complete' ('failed'), this function returns True (False).
 
         """
-        # Link the grib files
-        sys.stdout.flush()
-        os.system(self.CMD_LINK_GRIB)
 
-        # Run geogrid if it has not already been run
+        # Run geogrid if it has not already been run (right now it always runs...)
         startTime = datetime.datetime.now()
         startTimeInt = int(time.time())
         print('Starting Geogrid at: ' + str(startTime))
@@ -519,7 +516,12 @@ class WRFModel:
         elapsed = datetime.datetime.now() - startTime
         print('Geogrid ran in: ' + str(elapsed))
 
-        # Run ungrib and metgrid
+        # Run ungrib and metgrid if necessary; start by checking for required met_em files
+        
+
+        # Link the grib files
+        sys.stdout.flush()
+        os.system(self.CMD_LINK_GRIB)
         startTime = datetime.datetime.now()
         startTimeInt = int(time.time())
         print('Starting Ungrib and Metgrid at: ' + str(startTime))
