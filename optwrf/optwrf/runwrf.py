@@ -72,6 +72,7 @@ class WRFModel:
         self.DIR_DATA_ROOT = dirpaths.get('DIR_DATA_ROOT')
         self.DIR_WPS_GEOG = self.DIR_DATA_ROOT + 'WPS_GEOG/'
         self.DIR_DATA = self.DIR_DATA_ROOT + 'data/' + str(self.bc_data) + '/'
+        self.DIR_DATA_TMP = f'{self.DIR_DATA_ROOT}data/{self.forecast_start.strftime("%Y-%m-%d")}{self.paramstr}/'
         self.DIR_MET4ENE = dirpaths.get('DIR_MET4ENE')
         self.DIR_WRFOUT = self.DIR_MET4ENE + 'wrfout/ARW/%s_' % \
                           (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
@@ -84,7 +85,8 @@ class WRFModel:
         self.CMD_MV = 'mv %s %s'
         self.CMD_RM = 'rm %s'
         self.CMD_CHMOD = 'chmod -R %s %s'
-        self.CMD_LINK_GRIB = self.DIR_RUNWRF + 'link_grib.csh ' + self.DIR_DATA + '* ' + self.DIR_WRFOUT
+        self.CMD_LINK_GRIB = self.DIR_RUNWRF + 'link_grib.csh ' + self.DIR_DATA \
+                             + self.forecast_start.strftime('%Y')+ ' ' + self.DIR_WRFOUT
         if self.on_cheyenne:
             self.CMD_GEOGRID = 'qsub ' + self.DIR_WRFOUT + 'template_rungeogrid.csh'
             self.CMD_UNGMETG = 'qsub ' + self.DIR_WRFOUT + 'template_runungmetg.csh'
