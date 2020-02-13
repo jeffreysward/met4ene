@@ -72,7 +72,7 @@ class WRFModel:
         self.DIR_DATA_ROOT = dirpaths.get('DIR_DATA_ROOT')
         self.DIR_WPS_GEOG = self.DIR_DATA_ROOT + 'WPS_GEOG/'
         self.DIR_DATA = self.DIR_DATA_ROOT + 'data/' + str(self.bc_data) + '/'
-        self.DIR_DATA_TMP = f'{self.DIR_DATA_ROOT}data/{self.forecast_start.strftime("%Y-%m-%d")}{self.paramstr}/'
+        self.DIR_DATA_TMP = f'{self.DIR_DATA_ROOT}data/{self.forecast_start.strftime("%Y-%m-%d")}_{self.paramstr}/'
         self.DIR_MET4ENE = dirpaths.get('DIR_MET4ENE')
         self.DIR_WRFOUT = self.DIR_MET4ENE + 'wrfout/ARW/%s_' % \
                           (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
@@ -256,7 +256,9 @@ class WRFModel:
 
             # Copy files in the data directory to the temporary data directory
             for file in file_check:
-                os.system(self.CMD_CP % (self.DIR_DATA + file, self.DIR_DATA_TMP))
+                cmd = self.CMD_CP % (self.DIR_DATA + file, self.DIR_DATA_TMP)
+                print(cmd)
+                os.system(cmd)
 
         return vtable_sfx
 
