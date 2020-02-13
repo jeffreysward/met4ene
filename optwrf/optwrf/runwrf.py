@@ -243,7 +243,6 @@ class WRFModel:
                   f'{data_exists.count(True)} are already in your data directory.')
             if data_exists.count(True) == len(file_check):
                 print('Boundary condition data was previously downloaded from RDA.')
-                return vtable_sfx
             else:
                 # Download the data from the online RDA (requires password and connection)
                 success = rda_download(filelist, dspath)
