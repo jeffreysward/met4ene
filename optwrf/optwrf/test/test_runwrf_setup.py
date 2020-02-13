@@ -43,6 +43,8 @@ def test_get_bc_data():
         print(f'WARNING: this test requires you to manually provide setup_yaml!')
         wrf_sim = WRFModel(param_ids, start_date, end_date, setup_yaml='linux_dirpath.yml')
     vtable_sfx = wrf_sim.get_bc_data()
+    print(f'The following data files are in {wrf_sim.DIR_DATA_TMP}:\n')
+    [print(name) for name in os.listdir(wrf_sim.DIR_DATA_TMP) if os.path.isfile(name)]
     assert vtable_sfx == 'ERA-interim.pl'
     assert len([name for name in os.listdir(wrf_sim.DIR_DATA_TMP) if os.path.isfile(name)]) > 0
 
