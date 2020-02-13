@@ -31,8 +31,7 @@ else if ( ( ${#argv} > 1 ) && ( ${argv[${#argv}]} != "." ) ) then
    set outdir = ${argv[${#argv}]}
    echo "Linking GRIBFILE(s) to: $outdir"
    rm -f ${outdir}GRIBFILE.??? >& /dev/null
-
-   foreach f ( $* )
+   foreach f ( ${1}* )
    
       if ( $f != "." ) then
          ln -sf ${f} ${outdir}GRIBFILE.$alpha[$i3]$alpha[$i2]$alpha[$i1]

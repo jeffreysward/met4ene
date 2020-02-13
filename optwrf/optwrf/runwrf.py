@@ -85,8 +85,7 @@ class WRFModel:
         self.CMD_MV = 'mv %s %s'
         self.CMD_RM = 'rm %s'
         self.CMD_CHMOD = 'chmod -R %s %s'
-        forecast_year = self.forecast_start.strftime('%Y')
-        self.CMD_LINK_GRIB = f'{self.DIR_RUNWRF}link_grib.csh {self.DIR_DATA_TMP}{forecast_year[0:2]} {self.DIR_WRFOUT}'
+        self.CMD_LINK_GRIB = f'{self.DIR_RUNWRF}link_grib.csh {self.DIR_DATA_TMP} {self.DIR_WRFOUT}'
 
         if self.on_cheyenne:
             self.CMD_GEOGRID = 'qsub ' + self.DIR_WRFOUT + 'template_rungeogrid.csh'
@@ -253,9 +252,9 @@ class WRFModel:
                 for file in file_check:
                     os.system(self.CMD_MV % (file, self.DIR_DATA))
 
-            # Copy files in the data directory to the temporary data directory
+            # Link files in the data directory to the temporary data directory
             for file in file_check:
-                cmd = self.CMD_CP % (self.DIR_DATA + file, self.DIR_DATA_TMP)
+                cmd = self.CMD_LN % (self.DIR_DATA + file, self.DIR_DATA_TMP)
                 os.system(cmd)
 
         return vtable_sfx
