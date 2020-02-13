@@ -85,8 +85,9 @@ class WRFModel:
         self.CMD_MV = 'mv %s %s'
         self.CMD_RM = 'rm %s'
         self.CMD_CHMOD = 'chmod -R %s %s'
-        self.CMD_LINK_GRIB = self.DIR_RUNWRF + 'link_grib.csh ' + self.DIR_DATA \
-                             + self.forecast_start.strftime('%Y')+ ' ' + self.DIR_WRFOUT
+        forecast_year = self.forecast_start.strftime('%Y')
+        self.CMD_LINK_GRIB = f'{self.DIR_RUNWRF}link_grib.csh {self.DIR_DATA_TMP}{forecast_year[0:2]} {self.DIR_WRFOUT}'
+
         if self.on_cheyenne:
             self.CMD_GEOGRID = 'qsub ' + self.DIR_WRFOUT + 'template_rungeogrid.csh'
             self.CMD_UNGMETG = 'qsub ' + self.DIR_WRFOUT + 'template_runungmetg.csh'
@@ -151,7 +152,14 @@ class WRFModel:
     def get_bc_data(self):
         """
         Downloads boundary condition data from the RDA
-        if it does not already exist in the expected data directory.
+        if it does not already exist in the expected data directory (self.DIR_DATA).
+        Then, it creates a temporary data directory (self.DIR_DATA_TMP) and copies
+        data from the central data directory to the temporary data directory.
+
+        The justificaion for this approach is that the link_grib.csh script doesn't
+        contain a good way of picking files out of many. Therefore, it is much
+        easier to link all the files in the temporary data directory than to link
+        indidivdual files out of the central data directory.
 
         Returns:
         ----------
@@ -194,17 +202,21 @@ class WRFModel:
         # Define the date list
         date_list = [(self.forecast_start + datetime.timedelta(days=x)) for x in range(forecast_duration.days + 1)]
 
+        # Clean potential old temporary data directory (DIR_DATA_TMP) and remake the dir
+        lh.remove_dir(self.DIR_DATA_TMP)
+        os.makedirs(self.DIR_DATA_TMP, 0o755)
+
         # Depending on what computer you are on...
         if self.on_cheyenne:
             # Copy desired data files from local RDA
             for date in date_list:
                 year_mo = date.strftime('%Y') + date.strftime('%m')
                 year_mo_day = date.strftime('%Y') + date.strftime('%m') + date.strftime('%d')
-                cmd = self.CMD_CP % (DATA_ROOT1 + year_mo + '/' + datpfx1 + year_mo_day + '*', self.DIR_DATA)
+                cmd = self.CMD_CP % (DATA_ROOT1 + year_mo + '/' + datpfx1 + year_mo_day + '*', self.DIR_DATA_TMP)
                 cmd = cmd + '; ' + self.CMD_CP % (DATA_ROOT1 + year_mo + '/'
-                                                  + datpfx2 + year_mo_day + '*', self.DIR_DATA)
+                                                  + datpfx2 + year_mo_day + '*', self.DIR_DATA_TMP)
                 cmd = cmd + '; ' + self.CMD_CP % (DATA_ROOT2 + year_mo + '/'
-                                                  + datpfx3 + year_mo_day + '*', self.DIR_DATA)
+                                                  + datpfx3 + year_mo_day + '*', self.DIR_DATA_TMP)
                 os.system(cmd)
         else:
             # Build the complete RDA path to required files (filelist),
@@ -241,6 +253,11 @@ class WRFModel:
                 # Move the data files to the data directory
                 for file in file_check:
                     os.system(self.CMD_MV % (file, self.DIR_DATA))
+
+            # Copy files in the data directory to the temporary data directory
+            for file in file_check:
+                os.system(self.CMD_CP % (self.DIR_DATA + file, self.DIR_DATA_TMP))
+
         return vtable_sfx
 
     def wrfdir_setup(self, vtable_sfx):
@@ -253,7 +270,7 @@ class WRFModel:
 
         """
 
-        # Clean potential old simulation dir, remake the dir, and enter it.
+        # Clean potential old simulation dir and remake the dir
         lh.remove_dir(self.DIR_WRFOUT)
         os.makedirs(self.DIR_WRFOUT, 0o755)
 

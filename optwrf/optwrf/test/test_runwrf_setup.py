@@ -44,6 +44,7 @@ def test_get_bc_data():
         wrf_sim = WRFModel(param_ids, start_date, end_date, setup_yaml='linux_dirpath.yml')
     vtable_sfx = wrf_sim.get_bc_data()
     assert vtable_sfx == 'ERA-interim.pl'
+    assert len([name for name in os.listdir(wrf_sim.DIR_DATA_TMP) if os.path.isfile(name)]) > 0
 
 
 # The next set of tests will only be useful if you're on a machine with the WRF source code downloaded (i.e., Magma,
