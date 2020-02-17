@@ -80,6 +80,6 @@ def test_run_wps():
     wrf_sim.wrfdir_setup(vtable_sfx)
     wrf_sim.prepare_namelists()
     success = wrf_sim.run_wps()
-    lastmetfile = f'met_em.d{wrf_sim.n_domains.zfill(2)}.{wrf_sim.forecast_end.strftime("%Y-%m-%d")}_00:00:00.nc'
+    lastmetfile = f'met_em.d{str(wrf_sim.n_domains).zfill(2)}.{wrf_sim.forecast_end.strftime("%Y-%m-%d")}_00:00:00.nc'
     assert success is True
     assert os.path.exists(wrf_sim.DIR_WRFOUT + lastmetfile)
