@@ -501,7 +501,7 @@ class WRFModel:
         geogridfiles = [f'geo_em.d{str(domain).zfill(2)}.nc' for domain in range(1, self.n_domains + 1)]
         print(geogridfiles)
         # Check to see if the geogrid files exist in the expected directory
-        geogridfilesexist = [os.path.exists(self.DIR_DATA + 'domain/' + file) for file in geogridfiles]
+        geogridfilesexist = [os.path.exists(self.DIR_DATA_ROOT + 'data/domain/' + file) for file in geogridfiles]
         print(geogridfilesexist)
         if geogridfilesexist.count(False) is not 0:
             # Run geogrid
