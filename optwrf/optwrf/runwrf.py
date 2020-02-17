@@ -484,7 +484,7 @@ class WRFModel:
             namelist.write(NAMELIST_WRF.replace('%DOMAIN%', wrf_domains))
         print('Done writing WRF namelist!\n')
 
-    def run_wps(self):
+    def run_wps(self, disable_timeout=False):
         """
         Runs the WRF preprocessing executables and confirms thier success.
 
@@ -514,6 +514,9 @@ class WRFModel:
                     print_last_3lines(self.DIR_WRFOUT + 'geogrid.log')
                     return False
                 elif (int(time.time()) - startTimeInt) < 600:
+                    time.sleep(2)
+                    geogrid_sim = self.runwrf_finish_check('geogrid')
+                elif disable_timeout is True:
                     time.sleep(2)
                     geogrid_sim = self.runwrf_finish_check('geogrid')
                 else:
@@ -557,7 +560,10 @@ class WRFModel:
                 if metgrid_sim is 'failed':
                     print_last_3lines(self.DIR_WRFOUT + 'metgrid.log')
                     return False
-                elif (int(time.time()) - startTimeInt) < 600000:
+                elif (int(time.time()) - startTimeInt) < 600:
+                    time.sleep(2)
+                    metgrid_sim = self.runwrf_finish_check('metgrid')
+                elif disable_timeout is True:
                     time.sleep(2)
                     metgrid_sim = self.runwrf_finish_check('metgrid')
                 else:
@@ -575,7 +581,7 @@ class WRFModel:
         lh.remove_dir(self.DIR_DATA_TMP)
         return True
 
-    def run_real(self):
+    def run_real(self, disable_timeout=False):
         """
         Runs real.exe and checks to see that if it was successful.
 
@@ -597,7 +603,10 @@ class WRFModel:
             if real_sim is 'failed':
                 print_last_3lines(self.DIR_WRFOUT + 'rsl.out.0000')
                 return False
-            elif (int(time.time()) - startTimeInt) < 600000:
+            elif (int(time.time()) - startTimeInt) < 600:
+                time.sleep(2)
+                real_sim = self.runwrf_finish_check('real')
+            elif disable_timeout is True:
                 time.sleep(2)
                 real_sim = self.runwrf_finish_check('real')
             else:
@@ -607,7 +616,7 @@ class WRFModel:
         print('Real ran in: ' + str(elapsed) + ' seconds')
         return True
 
-    def run_wrf(self):
+    def run_wrf(self, disable_timeout=False):
         """
         Runs wrf.exe and checks to see if it was successful.
 
@@ -631,7 +640,10 @@ class WRFModel:
             if wrf_sim is 'failed':
                 print_last_3lines(self.DIR_WRFOUT + 'rsl.out.0000')
                 return False
-            elif (int(time.time()) - startTimeInt) < 7200000:
+            elif (int(time.time()) - startTimeInt) < 7200:
+                time.sleep(10)
+                wrf_sim = self.runwrf_finish_check('wrf')
+            elif disable_timeout is True:
                 time.sleep(10)
                 wrf_sim = self.runwrf_finish_check('wrf')
             else:

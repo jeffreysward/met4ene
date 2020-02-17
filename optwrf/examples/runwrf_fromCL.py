@@ -38,6 +38,9 @@ There are numerous other arguments that you can inclue to control how WRF runs:
       your paramterization yaml file.
 -cu : string identifying a cumulus parameterization scheme in
       your paramterization yaml file.
+
+By default, timeout of WPS, Real, and WRF have been disabled in this script.
+
 """
 
 from argparse import ArgumentParser
@@ -118,15 +121,15 @@ wrf_sim.wrfdir_setup(vtable_sfx)
 wrf_sim.prepare_namelists()
 
 # Run WPS
-success = wrf_sim.run_wps()
+success = wrf_sim.run_wps(disable_timeout=True)
 print(f'WPS ran successfully? {success}')
 
 # RUN REAL
 if success:
-    success = wrf_sim.run_real()
+    success = wrf_sim.run_real(disable_timeout=True)
     print(f'Real ran successfully? {success}')
 
 # RUN WRF
 if success:
-    success = wrf_sim.run_wrf()
+    success = wrf_sim.run_wrf(disable_timeout=True)
     print(f'WRF ran successfully? {success}')
