@@ -528,7 +528,10 @@ class WRFModel:
                 domain = str(jj).zfill(2)
                 for hr in hrs:
                     metfilelist.append(f'met_em.d{domain}.{day.strftime("%Y-%m-%d")}_{hr}:00:00.nc')
-        if [os.path.exists(self.DIR_DATA + 'met_em/' + file) for file in metfilelist].count(False) is not 0:
+        print(metfilelist)
+        metfileexist = [os.path.exists(self.DIR_DATA + 'met_em/' + file) for file in metfilelist]
+        print(metfileexist)
+        if metfileexist.count(False) is not 0:
             # Run ungrib and metgrid; start by linking the grib files
             sys.stdout.flush()
             os.system(self.CMD_LINK_GRIB)
