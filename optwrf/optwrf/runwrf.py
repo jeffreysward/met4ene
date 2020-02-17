@@ -554,8 +554,8 @@ class WRFModel:
             # Link the existing met_em files to the runwrf directory
             for file in metfilelist:
                 print('The following command is being used to link the met_em files:')
-                print(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_RUNWRF))
-                os.system(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_RUNWRF))
+                print(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_RUNWRF + '.'))
+                os.system(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_RUNWRF + '.'))
 
         # Remove the temporary data directory after WPS has run
         lh.remove_dir(self.DIR_DATA_TMP)
@@ -637,6 +637,7 @@ class WRFModel:
                                      self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '.nc'))
 
         # Move the met_em files to a permanent location
+        os.system(self.CMD_MV % (self.DIR_WRFOUT + 'met_em.*', self.DIR_DATA + 'met_em/'))
 
         return True
 
