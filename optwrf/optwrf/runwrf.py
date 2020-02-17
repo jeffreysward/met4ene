@@ -528,9 +528,8 @@ class WRFModel:
                 domain = str(jj).zfill(2)
                 for hr in hrs:
                     metfilelist.append(f'met_em.d{domain}.{day.strftime("%Y-%m-%d")}_{hr}:00:00.nc')
-        if [os.path.exists(self.DIR_DATA + 'met_em/' + file)
-            for file in metfilelist].count(False) is not 0:
-            # Run ungrib and metgrid; link the grib files
+        if [os.path.exists(self.DIR_DATA + 'met_em/' + file) for file in metfilelist].count(False) is not 0:
+            # Run ungrib and metgrid; start by linking the grib files
             sys.stdout.flush()
             os.system(self.CMD_LINK_GRIB)
             startTime = datetime.datetime.now()
@@ -552,8 +551,10 @@ class WRFModel:
             elapsed = datetime.datetime.now() - startTime
             print('Ungrib and Metgrid ran in: ' + str(elapsed))
         else:
-            # Link the existing met_em files
+            # Link the existing met_em files to the runwrf directory
             for file in metfilelist:
+                print('The following command is being used to link the met_em files:')
+                print(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_RUNWRF))
                 os.system(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_RUNWRF))
 
         # Remove the temporary data directory after WPS has run
