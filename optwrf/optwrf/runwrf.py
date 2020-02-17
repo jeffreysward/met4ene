@@ -528,7 +528,7 @@ class WRFModel:
             # Link the existing met_em files to the runwrf directory
             print('Geogrid was run previously. Linking geogrid file(s)...')
             for file in geogridfiles:
-                os.system(self.CMD_LN % (self.DIR_DATA + 'domain/' + file, self.DIR_WRFOUT + '.'))
+                os.system(self.CMD_LN % (self.DIR_DATA_ROOT + 'data/domain/' + file, self.DIR_WRFOUT + '.'))
 
         # Run ungrib and metgrid if necessary; start by checking for required met_em files
         hrs = ['00', '03', '06', '09', '12', '15', '18', '21']
