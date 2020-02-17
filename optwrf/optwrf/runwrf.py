@@ -500,7 +500,7 @@ class WRFModel:
         # Build the list of geogrid files
         geogridfiles = [f'geo_em.d{str(domain).zfill(2)}.nc' for domain in range(1, self.n_domains + 1)]
         # Check to see if the geogrid files exist in the expected directory
-        geogridfilesexist = [os.path.exists(self.DIR_DATA + 'domains/' + file) for file in geogridfiles]
+        geogridfilesexist = [os.path.exists(self.DIR_DATA + 'domain/' + file) for file in geogridfiles]
         if geogridfilesexist.count(False) is not 0:
             # Run geogrid
             startTime = datetime.datetime.now()
@@ -523,7 +523,7 @@ class WRFModel:
             print('Geogrid ran in: ' + str(elapsed))
         else:
             # Link the existing met_em files to the runwrf directory
-            print('Linking geogrid files...')
+            print('Linking geogrid file(s)...')
             for file in geogridfiles:
                 print('The following command is being used to link the geogrid files:')
                 print(self.CMD_LN % (self.DIR_DATA + 'domain/' + file, self.DIR_WRFOUT + '.'))
