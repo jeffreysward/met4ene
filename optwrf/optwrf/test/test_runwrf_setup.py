@@ -13,7 +13,6 @@ import os
 from optwrf.runwrf import WRFModel
 from optwrf.runwrf import determine_computer
 
-
 param_ids = [10, 1, 1, 2, 2, 3, 2]
 start_date = 'Dec 31 2011'
 end_date = 'Jan 1 2012'
@@ -70,3 +69,15 @@ def test_prepare_namelists():
     wrf_sim.wrfdir_setup(vtable_sfx)
     wrf_sim.prepare_namelists()
     assert 0 == 0
+
+
+def test_run_wps():
+    if [on_aws, on_cheyenne, on_magma].count(True) is 0:
+        print('\n!!!Not running test_run_wps -- switch to Magma, Cheyenne, or AWS.')
+        return
+    wrf_sim = WRFModel(param_ids, start_date, end_date)
+    vtable_sfx = wrf_sim.get_bc_data()
+    wrf_sim.wrfdir_setup(vtable_sfx)
+    wrf_sim.prepare_namelists()
+    success = wrf_sim.run_wps()
+    assert success is True
