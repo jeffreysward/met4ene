@@ -188,8 +188,8 @@ class WRFModel:
             raise ValueError
 
         print('Using {} data for boundary conditions'.format(self.bc_data))
-        print('The corresponding Vtable is: {}\n'.format(vtable_sfx))
-        print(f'Data Directory: {self.DIR_DATA}')
+        print('The corresponding Vtable is: {}'.format(vtable_sfx))
+        print(f'--> Data Directory:\n{self.DIR_DATA}')
 
         # If no data directory exists, create one
         if not os.path.exists(self.DIR_DATA):
@@ -305,7 +305,7 @@ class WRFModel:
         cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/VEGPARM*', self.DIR_WRFOUT)
         cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/*exe', self.DIR_WRFOUT)
         os.system(cmd)
-        print(f'Your WRFOUT directory is:\n{self.DIR_WRFOUT}')
+        print(f'--> WRFOUT Directory:\n{self.DIR_WRFOUT}')
 
         # Copy over namelists and submission scripts
         if self.on_cheyenne:
@@ -387,7 +387,7 @@ class WRFModel:
         wps_domains = ' max_dom                             = ' + str(self.n_domains) + ','
         with open(self.DIR_WRFOUT + 'namelist.wps', 'w') as namelist:
             namelist.write(NAMELIST_WPS.replace('%DOMAIN%', wps_domains))
-        print('Done writing WPS namelist')
+        print('Done writing WPS namelist!')
 
         # Write the runtime info and start dates and times to the WRF Namelist
         wrf_runtime = ' run_days                            = ' + str(self.delt.days) + ',\n'
@@ -482,7 +482,7 @@ class WRFModel:
         wrf_domains = ' max_dom                             = ' + str(self.n_domains) + ','
         with open(self.DIR_WRFOUT + 'namelist.input', 'w') as namelist:
             namelist.write(NAMELIST_WRF.replace('%DOMAIN%', wrf_domains))
-        print('Done writing WRF namelist\n')
+        print('Done writing WRF namelist!\n')
 
     def run_wps(self):
         """
@@ -496,13 +496,11 @@ class WRFModel:
 
         """
 
-        # Run geogrid if necessary (right now it always runs...)
+        # Run geogrid if necessary
         # Build the list of geogrid files
-        geogridfiles = [f'geo_em.d{str(domain).zfill(2)}' for domain in range(1, self.n_domains + 1)]
-        print(geogridfiles)
+        geogridfiles = [f'geo_em.d{str(domain).zfill(2)}.nc' for domain in range(1, self.n_domains + 1)]
         # Check to see if the geogrid files exist in the expected directory
         geogridfilesexist = [os.path.exists(self.DIR_DATA + 'domains/' + file) for file in geogridfiles]
-        print(geogridfilesexist)
         if geogridfilesexist.count(False) is not 0:
             # Run geogrid
             startTime = datetime.datetime.now()
@@ -1204,5 +1202,5 @@ def check_file_status(filepath, filesize):
     sys.stdout.flush()
     size = int(os.stat(filepath).st_size)
     percent_complete = (size / filesize) * 100
-    sys.stdout.write(f'{filepath}: {percent_complete}\n')
+    sys.stdout.write(f'{filepath}: {percent_complete}%\n')
     sys.stdout.flush()
