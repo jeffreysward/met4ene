@@ -496,25 +496,40 @@ class WRFModel:
 
         """
 
-        # Run geogrid if it has not already been run (right now it always runs...)
-        startTime = datetime.datetime.now()
-        startTimeInt = int(time.time())
-        print('Starting Geogrid at: ' + str(startTime))
-        sys.stdout.flush()
-        os.system(self.CMD_GEOGRID)
-        geogrid_sim = self.runwrf_finish_check('geogrid')
-        while geogrid_sim is not 'complete':
-            if geogrid_sim is 'failed':
-                print_last_3lines(self.DIR_WRFOUT + 'geogrid.log')
-                return False
-            elif (int(time.time()) - startTimeInt) < 600:
-                time.sleep(2)
-                geogrid_sim = self.runwrf_finish_check('geogrid')
-            else:
-                print('TimeoutError in run_wps: Geogrid took more than 10min to run... exiting.')
-                return False
-        elapsed = datetime.datetime.now() - startTime
-        print('Geogrid ran in: ' + str(elapsed))
+        # Run geogrid if necessary (right now it always runs...)
+        # Build the list of geogrid files
+        geogridfiles = [f'geo_em.d{domain.zfill(2)}' for domain in range(1, self.n_domains + 1)]
+        print(geogridfiles)
+        # Check to see if the geogrid files exist in the expected directory
+        geogridfilesexist = [os.path.exists(self.DIR_DATA + 'domains/' + file) for file in geogridfiles]
+        print(geogridfilesexist)
+        if geogridfilesexist.count(False) is not 0:
+            # Run geogrid
+            startTime = datetime.datetime.now()
+            startTimeInt = int(time.time())
+            print('Starting Geogrid at: ' + str(startTime))
+            sys.stdout.flush()
+            os.system(self.CMD_GEOGRID)
+            geogrid_sim = self.runwrf_finish_check('geogrid')
+            while geogrid_sim is not 'complete':
+                if geogrid_sim is 'failed':
+                    print_last_3lines(self.DIR_WRFOUT + 'geogrid.log')
+                    return False
+                elif (int(time.time()) - startTimeInt) < 600:
+                    time.sleep(2)
+                    geogrid_sim = self.runwrf_finish_check('geogrid')
+                else:
+                    print('TimeoutError in run_wps: Geogrid took more than 10min to run... exiting.')
+                    return False
+            elapsed = datetime.datetime.now() - startTime
+            print('Geogrid ran in: ' + str(elapsed))
+        else:
+            # Link the existing met_em files to the runwrf directory
+            print('Linking geogrid files...')
+            for file in geogridfiles:
+                print('The following command is being used to link the geogrid files:')
+                print(self.CMD_LN % (self.DIR_DATA + 'domain/' + file, self.DIR_WRFOUT + '.'))
+                os.system(self.CMD_LN % (self.DIR_DATA + 'domain/' + file, self.DIR_WRFOUT + '.'))
 
         # Run ungrib and metgrid if necessary; start by checking for required met_em files
         hrs = ['00', '03', '06', '09', '12', '15', '18', '21']
@@ -558,10 +573,11 @@ class WRFModel:
             print('Ungrib and Metgrid ran in: ' + str(elapsed))
         else:
             # Link the existing met_em files to the runwrf directory
+            print('Linking met_em files...')
             for file in metfilelist:
                 print('The following command is being used to link the met_em files:')
-                print(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_RUNWRF + '.'))
-                os.system(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_RUNWRF + '.'))
+                print(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_WRFOUT + '.'))
+                os.system(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_WRFOUT + '.'))
 
         # Remove the temporary data directory after WPS has run
         lh.remove_dir(self.DIR_DATA_TMP)
