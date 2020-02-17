@@ -650,6 +650,9 @@ class WRFModel:
                                      + self.forecast_start.strftime('%d') + '_00:00:00',
                                      self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '.nc'))
 
+        # Move the geo_em file(s) to a permanent location
+        os.system(self.CMD_MV % (self.DIR_WRFOUT + 'geo_em.*', self.DIR_DATA_ROOT + 'data/domain/'))
+
         # Move the met_em files to a permanent location
         os.system(self.CMD_MV % (self.DIR_WRFOUT + 'met_em.*', self.DIR_DATA + 'met_em/'))
 
