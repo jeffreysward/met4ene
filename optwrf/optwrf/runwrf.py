@@ -499,8 +499,10 @@ class WRFModel:
         # Run geogrid if necessary
         # Build the list of geogrid files
         geogridfiles = [f'geo_em.d{str(domain).zfill(2)}.nc' for domain in range(1, self.n_domains + 1)]
+        print(geogridfiles)
         # Check to see if the geogrid files exist in the expected directory
         geogridfilesexist = [os.path.exists(self.DIR_DATA + 'domain/' + file) for file in geogridfiles]
+        print(geogridfilesexist)
         if geogridfilesexist.count(False) is not 0:
             # Run geogrid
             startTime = datetime.datetime.now()
@@ -525,8 +527,6 @@ class WRFModel:
             # Link the existing met_em files to the runwrf directory
             print('Linking geogrid file(s)...')
             for file in geogridfiles:
-                print('The following command is being used to link the geogrid files:')
-                print(self.CMD_LN % (self.DIR_DATA + 'domain/' + file, self.DIR_WRFOUT + '.'))
                 os.system(self.CMD_LN % (self.DIR_DATA + 'domain/' + file, self.DIR_WRFOUT + '.'))
 
         # Run ungrib and metgrid if necessary; start by checking for required met_em files
@@ -573,8 +573,6 @@ class WRFModel:
             # Link the existing met_em files to the runwrf directory
             print('Linking met_em files...')
             for file in metfilelist:
-                print('The following command is being used to link the met_em files:')
-                print(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_WRFOUT + '.'))
                 os.system(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_WRFOUT + '.'))
 
         # Remove the temporary data directory after WPS has run
