@@ -526,8 +526,11 @@ class WRFModel:
             day = self.forecast_start + datetime.timedelta(days=ii)
             for jj in range(1, self.n_domains + 1):
                 domain = str(jj).zfill(2)
-                for hr in hrs:
-                    metfilelist.append(f'met_em.d{domain}.{day.strftime("%Y-%m-%d")}_{hr}:00:00.nc')
+                if day == self.forecast_end:
+                    metfilelist.append(f'met_em.d{domain}.{day.strftime("%Y-%m-%d")}_00:00:00.nc')
+                else:
+                    for hr in hrs:
+                        metfilelist.append(f'met_em.d{domain}.{day.strftime("%Y-%m-%d")}_{hr}:00:00.nc')
         print(metfilelist)
         metfileexist = [os.path.exists(self.DIR_DATA + 'met_em/' + file) for file in metfilelist]
         print(metfileexist)
