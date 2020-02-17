@@ -499,10 +499,8 @@ class WRFModel:
         # Run geogrid if necessary
         # Build the list of geogrid files
         geogridfiles = [f'geo_em.d{str(domain).zfill(2)}.nc' for domain in range(1, self.n_domains + 1)]
-        print(geogridfiles)
         # Check to see if the geogrid files exist in the expected directory
         geogridfilesexist = [os.path.exists(self.DIR_DATA_ROOT + 'data/domain/' + file) for file in geogridfiles]
-        print(geogridfilesexist)
         if geogridfilesexist.count(False) is not 0:
             # Run geogrid
             startTime = datetime.datetime.now()
@@ -525,7 +523,7 @@ class WRFModel:
             print('Geogrid ran in: ' + str(elapsed))
         else:
             # Link the existing met_em files to the runwrf directory
-            print('Linking geogrid file(s)...')
+            print('Geogrid was run previously. Linking geogrid file(s)...')
             for file in geogridfiles:
                 os.system(self.CMD_LN % (self.DIR_DATA + 'domain/' + file, self.DIR_WRFOUT + '.'))
 
@@ -544,9 +542,7 @@ class WRFModel:
                 else:
                     for hr in hrs:
                         metfilelist.append(f'met_em.d{domain}.{day.strftime("%Y-%m-%d")}_{hr}:00:00.nc')
-        print(metfilelist)
         metfileexist = [os.path.exists(self.DIR_DATA + 'met_em/' + file) for file in metfilelist]
-        print(metfileexist)
         if metfileexist.count(False) is not 0:
             # Run ungrib and metgrid; start by linking the grib files
             sys.stdout.flush()
@@ -571,7 +567,7 @@ class WRFModel:
             print('Ungrib and Metgrid ran in: ' + str(elapsed))
         else:
             # Link the existing met_em files to the runwrf directory
-            print('Linking met_em files...')
+            print('Metgrid was run previously. Linking met_em files...')
             for file in metfilelist:
                 os.system(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_WRFOUT + '.'))
 
