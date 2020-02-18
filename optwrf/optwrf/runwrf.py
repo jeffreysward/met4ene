@@ -640,7 +640,7 @@ class WRFModel:
             if wrf_sim is 'failed':
                 print_last_3lines(self.DIR_WRFOUT + 'rsl.out.0000')
                 return False
-            elif (int(time.time()) - startTimeInt) < 7200:
+            elif (int(time.time()) - startTimeInt) < 120:
                 time.sleep(10)
                 wrf_sim = self.runwrf_finish_check('wrf')
             elif disable_timeout is True:
