@@ -92,10 +92,9 @@ def get_individual_by_genes(geneset, c):
 #         self.TotalError < other.TotalError
 
 
-# Define a function that produces a random fitness value between 0 - 100
 def get_fitness(param_ids):
     """
-
+    This function produces a random fitness value between 0 - 100
 
     Parameters:
     ----------
@@ -181,7 +180,8 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
 
     # Compute the error between WRF run and ERA5 dataset and return fitness
     if success:
-        fitness = wrf_sim.wrf_era5_diff()
+        mae = wrf_sim.wrf_era5_diff()
+        fitness = sum(mae)
     else:
         fitness = 10**10
 

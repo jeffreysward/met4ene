@@ -4,6 +4,7 @@ Tests the optimize_wrf_physics functions
 """
 
 from optwrf.optimize_wrf_physics import get_wrf_fitness
+from optwrf.optimize_wrf_physics import run_simplega
 from optwrf.runwrf import determine_computer
 
 param_ids = [10, 1, 1, 2, 2, 3, 2]
@@ -18,3 +19,8 @@ def test_get_wrf_fitness():
         return
     fitness = get_wrf_fitness(param_ids, start_date, end_date)
     assert fitness >= 0
+
+
+def test_run_simplega():
+    WRFga_winner = run_simplega(pop_size=10, n_generations=2, testing=True)
+    assert WRFga_winner.Fitness >= 0

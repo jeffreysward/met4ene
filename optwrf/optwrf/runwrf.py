@@ -963,8 +963,8 @@ class WRFModel:
         mae = mae.split(',')
         mae[-1] = mae[-1].strip()
         mae = [float(i) for i in mae]
-        total_error = sum(mae)
-        print(f'!!! Parameters {self.paramstr} have a total error {total_error} kW m-2')
+        # total_error = sum(mae)
+        print(f'!!! Parameters {self.paramstr} have a total error {mae} kW m-2')
 
         # Clean up extraneous files that wrf2era_error.ncl created
         regridding_files = ['source_grid_file.nc',
@@ -978,7 +978,7 @@ class WRFModel:
                 os.system(self.CMD_RM % file)
             except FileNotFoundError:
                 print(f'WARNING: expected regridding file ({file}) was not deleted.')
-        return total_error
+        return mae
 
 
 def determine_computer():

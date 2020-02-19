@@ -59,5 +59,6 @@ def test_wrf_era5_diff():
         wrf_sim.process_wrfout_data()
     if not os.path.exists(processed_era_file):
         wrf_sim.process_era5_data()
-    total_error = wrf_sim.wrf_era5_diff()
+    mae = wrf_sim.wrf_era5_diff()
+    total_error = sum(mae)
     assert total_error >= 0
