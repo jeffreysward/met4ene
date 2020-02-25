@@ -47,8 +47,8 @@ begin
     GHI = sfile->ghi
     GHI = GHI/1000
     GHI@units = "kW m-2"
-    ;---Python uses nan to denote missing data, which is not recognized by NCL, so 
-    ;---we must reset the default _FillValue to get NCL to regrid and carry out 
+    ;---Python uses nan to denote missing data, which is not recognized by NCL, so
+    ;---we must reset the default _FillValue to get NCL to regrid and carry out
     ;---calcualtions correctly.
     GHI@_FillValue = default_fillvalue("float")
     ;---Read in WPD, convert from W m-2 to kW m-2, and reset the default _FillValue
@@ -121,6 +121,10 @@ begin
     ERA_datestr = sprinti("%0.4i", year_ERA) + "-" + month_abbr(month_ERA) + "-" + sprinti("%0.2i", day_ERA) + \
                 "_" + sprinti("%0.2i", hour_ERA) + ":00:00"
 
+    ;---Misc variables
+    dq = str_get_dq()                ; double quote character
+    csv_filename = WRFdir + "mae_wrfyera_" + paramstr + ".csv"
+
 ;---Set up regridding options
     Opt                   = True
 
@@ -183,9 +187,27 @@ begin
         end if
         ;printVarSummary(WPD_diff)
 
-        ;---Sum all computed biases across the domain
-        GHI_MAE := GHI_MAE + sum(GHI_diff)
-        WPD_MAE := WPD_MAE + sum(WPD_diff)
+        ;---Sum all computed biases across the domain and save/print
+        GHI_MAE_hr = sum(GHI_diff)
+        WPD_MAE_hr = sum(WPD_diff)
+        ;print("The hourly bias in GHI is: " + GHI_MAE_hr + " " + GHI@units)
+        ;print("The hourly bias in WPD is: " + WPD_MAE_hr + " " + WPD@units)
+
+        fields = (/"GHI_MAE_hr", "WPD_MAE_hr"/) ; Define field names
+        fields = dq + fields + dq               ; Pre/append quotes to field names
+        header = [/str_join(fields,", ")/]      ; Header is field names separated by commas
+        alist  = [/GHI_MAE_hr, WPD_MAE_hr/]     ; List of variables to write
+        format = "%7.2f,%7.2f"                  ; Format to use for each variable
+        if (fileexists(csv_filename)) then
+            write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
+        else
+            write_table(csv_filename, "w", header, "%s")   ; Write header to CSV file.
+            write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
+        end if
+
+        ;---Update the accumulated biases
+        GHI_MAE := GHI_MAE + GHI_MAE_hr
+        WPD_MAE := WPD_MAE + WPD_MAE_hr
 
         n := n + 1
     end do        ; END OF TIME LOOP
@@ -197,20 +219,12 @@ begin
     ;print("The mean bias in GHI is: " + GHI_MAE + " " + GHI@units)
     ;print("The mean bias in WPD is: " + WPD_MAE + " " + WPD@units)
 
-    dq = str_get_dq()                ; double quote character
-    csv_filename = WRFdir + "mae_wrfyera_" + paramstr + ".csv"
-
-    fields = (/"GHI_MAE", "WPD_MAE"/)
+    fields = (/"GHI_MAE", "WPD_MAE"/)   ; Define field names
     fields = dq + fields + dq           ; Pre/append quotes to field names
-    header = [/str_join(fields,", ")/]  ; Header is field names separated by commas.
-    alist  = [/GHI_MAE, WPD_MAE/]        ; List of variables to write.
-    format = "%7.2f,%7.2f"              ; Format to use for each variable.
-
-    if (fileexists(csv_filename)) then
-        write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
-    else
-        write_table(csv_filename, "w", header, "%s")   ; Write header to CSV file.
-        write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
-    end if
+    header = [/str_join(fields,", ")/]  ; Header is field names separated by commas
+    alist  = [/GHI_MAE, WPD_MAE/]       ; List of variables to write
+    format = "%7.2f,%7.2f"              ; Format to use for each variable
+    write_table(csv_filename, "w", header, "%s")   ; Write header to CSV file.
+    write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
 
 end

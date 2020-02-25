@@ -63,8 +63,8 @@ for start_date, end_date, ghi, wpd in zip(start_dates, end_dates, mean_ghi, mean
     print(f'The GHI is {ghi}, and the WPD is {wpd}\n')
     pmean_ghi = pmean_ghi + n_hours / 8760 * ghi
     pmean_wpd = pmean_wpd + n_hours / 8760 * wpd
-print(f'The annual GHI mean is: {pmean_ghi} kW m-2')
-print(f'The annual WPD mean is: {pmean_wpd} kW m-2')
+print(f'The annual mean GHI error is: {pmean_ghi} kW m-2')
+print(f'The annual mean WPD error is: {pmean_wpd} kW m-2')
 
 # Calculate the correction factor
 alpha = pmean_ghi / pmean_wpd
