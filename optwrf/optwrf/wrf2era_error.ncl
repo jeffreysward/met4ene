@@ -227,11 +227,11 @@ begin
     ;print("The mean bias in GHI is: " + GHI_MAE + " " + GHI@units)
     ;print("The mean bias in WPD is: " + WPD_MAE + " " + WPD@units)
 
-    fields = (/"GHI_MAE", "WPD_MAE"/)   ; Define field names
+    fields = (/"N/A","GHI_MAE", "WPD_MAE"/)   ; Define field names
     fields = dq + fields + dq           ; Pre/append quotes to field names
     header = [/str_join(fields,", ")/]  ; Header is field names separated by commas
-    alist  = [/GHI_MAE, WPD_MAE/]       ; List of variables to write
-    format = "%7.2f,%7.2f"              ; Format to use for each variable
+    alist  = [/0, GHI_MAE, WPD_MAE/]       ; List of variables to write
+    format = "%7.2f,%7.2f,%7.2f"              ; Format to use for each variable
     write_table(csv_filename, "a", header, "%s")   ; Write header to CSV file.
     write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
 
