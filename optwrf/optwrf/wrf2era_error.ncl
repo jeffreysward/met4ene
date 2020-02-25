@@ -124,6 +124,10 @@ begin
     ;---Misc variables
     dq = str_get_dq()                ; double quote character
     csv_filename = WRFdir + "mae_wrfyera_" + paramstr + ".csv"
+    ;---Remove potential existing mae_wrfyera_* file
+    if (fileexists(csv_filename)) then
+        system("rm " + csv_filename)
+    end if
 
 ;---Set up regridding options
     Opt                   = True
