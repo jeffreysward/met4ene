@@ -232,7 +232,7 @@ begin
     header = [/str_join(fields,", ")/]  ; Header is field names separated by commas
     alist  = [/GHI_MAE, WPD_MAE/]       ; List of variables to write
     format = "%7.2f,%7.2f"              ; Format to use for each variable
-    write_table(csv_filename, "w", header, "%s")   ; Write header to CSV file.
+    write_table(csv_filename, "a", header, "%s")   ; Write header to CSV file.
     write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
 
 end
