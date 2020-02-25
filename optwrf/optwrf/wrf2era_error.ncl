@@ -51,11 +51,19 @@ begin
     ;---we must reset the default _FillValue to get NCL to regrid and carry out
     ;---calcualtions correctly.
     GHI@_FillValue = default_fillvalue("float")
+    ;---For some reason, some nans may be left even after resetting the default_fillvalue()
+    ;---Therefore, we account for this using the following replace_ieenan function.
+    if (any(isnan_ieee(GHI))) then
+        replace_ieeenan (GHI, GHI@_FillValue, 0)
+    end if
     ;---Read in WPD, convert from W m-2 to kW m-2, and reset the default _FillValue
     WPD = sfile->wpd
     WPD = WPD/1000
     WPD@units = "kW m-2"
     WPD@_FillValue = default_fillvalue("float")
+    if (any(isnan_ieee(WPD))) then
+        replace_ieeenan (WPD, WPD@_FillValue, 0)
+    end if
     ;printVarSummary(GHI)
     ;printVarSummary(WPD)
 
@@ -101,11 +109,17 @@ begin
     ERA_GHI  = ERA_GHI/1000
     ERA_GHI@units = "kW m-2"
     ERA_GHI@_FillValue = default_fillvalue("float")
+    if (any(isnan_ieee(ERA_GHI))) then
+        replace_ieeenan (ERA_GHI, ERA_GHI@_FillValue, 0)
+    end if
     ;---Read in ERA_WPD, convert from W m-2 to kW m-2, and reset the default _FillValue
     ERA_WPD  = dfile->WPD
     ERA_WPD  = ERA_WPD/1000
     ERA_WPD@units = "kW m-2"
     ERA_WPD@_FillValue = default_fillvalue("float")
+    if (any(isnan_ieee(ERA_WPD))) then
+        replace_ieeenan (ERA_WPD, ERA_WPD@_FillValue, 0)
+    end if
     ;printVarSummary(ERA_GHI)
     ;printVarSummary(ERA_WPD)
 
@@ -177,8 +191,6 @@ begin
         GHI_diff&lat = ERA_lat
         GHI_diff&lon = ERA_lon
         GHI_diff@_FillValue = default_fillvalue("float")
-        ;---For some reason, some nans may be left even after resetting the default_fillvalue()
-        ;---Therefore, we account for this using the following replace_ieenan function.
         if (any(isnan_ieee(GHI_diff))) then
             replace_ieeenan (GHI_diff, GHI_diff@_FillValue, 0)
         end if
