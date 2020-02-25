@@ -122,7 +122,7 @@ begin
     ;---Write out strings in the format "yyyy-mm-dd_hh:mm:ss"
     ERA_datestr = sprinti("%0.4i", year_ERA) + "-" + month_abbr(month_ERA) + "-" + sprinti("%0.2i", day_ERA) + \
                 "_" + sprinti("%0.2i", hour_ERA) + ":00:00"
-    print("First ERA time: " + ERA_datestr(0)
+    print("First ERA time: " + ERA_datestr(0))
     print("Last ERA time: " + ERA_datestr(dimsizes(ERA_datestr)))
 
     ;---Misc variables
