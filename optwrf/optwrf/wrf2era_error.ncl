@@ -201,11 +201,11 @@ begin
         ;print("The hourly bias in GHI is: " + GHI_MAE_hr + " " + GHI@units)
         ;print("The hourly bias in WPD is: " + WPD_MAE_hr + " " + WPD@units)
 
-        fields = (/"GHI_MAE_hr", "WPD_MAE_hr"/) ; Define field names
+        fields = (/"Date/Time", "GHI_MAE_hr", "WPD_MAE_hr"/) ; Define field names
         fields = dq + fields + dq               ; Pre/append quotes to field names
         header = [/str_join(fields,", ")/]      ; Header is field names separated by commas
-        alist  = [/GHI_MAE_hr, WPD_MAE_hr/]     ; List of variables to write
-        format = "%7.2f,%7.2f"                  ; Format to use for each variable
+        alist  = [/wrf_datestr(iwrf), GHI_MAE_hr, WPD_MAE_hr/]     ; List of variables to write
+        format = "%s,%7.2f,%7.2f"                  ; Format to use for each variable
         if (fileexists(csv_filename)) then
             write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
         else
