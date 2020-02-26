@@ -84,8 +84,8 @@ begin
     ;---Write out strings in the format "yyyy-mm-dd_hh:mm:ss"
     wrf_datestr = sprinti("%0.4i", year) + "-" + month_abbr(month) + "-" + sprinti("%0.2i", day) + \
                 "_" + sprinti("%0.2i", hour) + ":00:00"
-    print("First WRF time: " + wrf_datestr(0))
-    print("Last WRF time: " + wrf_datestr(dimsizes(wrf_datestr) - 1))
+    ; print("First WRF time: " + wrf_datestr(0))
+    ; print("Last WRF time: " + wrf_datestr(dimsizes(wrf_datestr) - 1))
 
 ;---ERA data file(s)
     ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA5/"
@@ -135,8 +135,8 @@ begin
     ;---Write out strings in the format "yyyy-mm-dd_hh:mm:ss"
     ERA_datestr = sprinti("%0.4i", year_ERA) + "-" + month_abbr(month_ERA) + "-" + sprinti("%0.2i", day_ERA) + \
                 "_" + sprinti("%0.2i", hour_ERA) + ":00:00"
-    print("First ERA time: " + ERA_datestr(0))
-    print("Last ERA time: " + ERA_datestr(dimsizes(ERA_datestr) - 1))
+    ; print("First ERA time: " + ERA_datestr(0))
+    ; print("Last ERA time: " + ERA_datestr(dimsizes(ERA_datestr) - 1))
 
     ;---Misc variables
     dq = str_get_dq()                ; double quote character
@@ -233,6 +233,8 @@ begin
 
 ;---Compute the mean bias and save/print
     n := n - 1
+    print("The biases in GHI are:\n" + GHI_MAE)
+    print("The biases in WPD are:\n" + WPD_MAE)
     GHI_MAE := sum(GHI_MAE)/n
     WPD_MAE := sum(WPD_MAE)/n
     ;print("The mean bias in GHI is: " + GHI_MAE + " " + GHI@units)
