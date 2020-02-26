@@ -850,7 +850,7 @@ class WRFModel:
                 for rda_file, local_file in zip(rda_filelist, local_filenames):
                     CMD_REDUCE = 'ncks -d longitude,265.,295. -d latitude,30.,50. %s %s' % \
                                  (rda_file, local_file)
-                    print(f'Running the followind from the command line:\n{CMD_REDUCE}')
+                    print(f'Running the following from the command line:\n{CMD_REDUCE}')
                     os.system(CMD_REDUCE)
 
                 # Move the files into the ERA5 data directory
@@ -936,7 +936,7 @@ class WRFModel:
 
         Returns:
         ----------
-        total_error : float
+        total_error : list
             Sum of the mean absolute error accumulated for each grid cell
             during each time period in the WRF simulation.
 
@@ -964,7 +964,7 @@ class WRFModel:
         mae[-1] = mae[-1].strip()
         mae = [float(i) for i in mae]
         # total_error = sum(mae)
-        print(f'!!! Parameters {self.paramstr} have a total error {mae} kW m-2')
+        print(f'!!! Parameters {self.paramstr} have a total error {mae[1:2]} kW m-2')
 
         # Clean up extraneous files that wrf2era_error.ncl created
         regridding_files = ['source_grid_file.nc',
@@ -1213,3 +1213,28 @@ def check_file_status(filepath, filesize):
     percent_complete = (size / filesize) * 100
     sys.stdout.write(f'{filepath}: {percent_complete}%\n')
     sys.stdout.flush()
+
+
+def format_date(in_date):
+    """
+        Formats an input date so that it can be correctly written to the namelist.
+
+        This is currently not implemented because I don't
+        like the way it prints information to the command line.
+
+        Parameters:
+        ----------
+        in_date : string
+            String specifying the date
+
+        Returns:
+        ----------
+        end_date: datetime64
+
+        """
+    out_date = datetime.datetime.strptime(in_date, '%b %d %Y')
+    # try:
+    #     out_date = datetime.datetime.strptime(in_date, '%b %d %Y')
+    # except Exception as e:
+    #     print(e)
+    return out_date

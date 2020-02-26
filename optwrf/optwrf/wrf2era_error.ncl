@@ -236,8 +236,6 @@ begin
 
 ;---Compute the mean bias and save/print
     n := n - 1
-    print("The biases in GHI are: " + GHI_MAE)
-    print("The biases in WPD are: " + WPD_MAE)
     GHI_MAE := sum(GHI_MAE)/n
     WPD_MAE := sum(WPD_MAE)/n
     ;print("The mean bias in GHI is: " + GHI_MAE + " " + GHI@units)

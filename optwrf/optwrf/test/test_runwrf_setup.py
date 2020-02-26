@@ -11,7 +11,7 @@ using runwrf_fromCL.py for this purpose.
 
 import os
 from optwrf.runwrf import WRFModel
-from optwrf.runwrf import determine_computer
+from optwrf.runwrf import determine_computer, format_date
 
 param_ids = [10, 1, 1, 2, 2, 3, 2]
 start_date = 'Dec 31 2011'
@@ -24,6 +24,12 @@ on_aws, on_cheyenne, on_magma = determine_computer()
 def test_determine_computer():
     on_aws, on_cheyenne, on_magma = determine_computer()
     print(f'On AWS???: {on_aws}\nOn Cheyenne???: {on_cheyenne}\nOn Magma???: {on_magma}')
+
+
+def test_format_date():
+    date = format_date(start_date)
+    print(f'Starting forecast at {date}')
+
 
 
 def test_WRFModel():
