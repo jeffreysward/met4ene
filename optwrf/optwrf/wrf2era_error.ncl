@@ -111,8 +111,8 @@ begin
     print("Before _FillValue reset: " + ERA_GHI(0,0,0))
     ERA_GHI@_FillValue = default_fillvalue("float")
     print("After _FillValue reset: " + ERA_GHI(0,0,0))
-    print("The default fill value is: " default_fillvalue("float"))
-    print("The fill value is: " ERA_GHI@_FillValue)
+    print("The default fill value is: " + default_fillvalue("float"))
+    print("The fill value is: " + ERA_GHI@_FillValue)
     if (any(isnan_ieee(ERA_GHI))) then
         replace_ieeenan (ERA_GHI, ERA_GHI@_FillValue, 0)
     end if
