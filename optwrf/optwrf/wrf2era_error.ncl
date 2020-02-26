@@ -47,15 +47,14 @@ begin
     GHI = sfile->ghi
     GHI = GHI/1000
     GHI@units = "kW m-2"
-    ;---Python uses nan to denote missing data, which is not recognized by NCL, so
-    ;---we must reset the default _FillValue to get NCL to regrid and carry out
-    ;---calcualtions correctly.
-    GHI@_FillValue = default_fillvalue("float")
-    ;---For some reason, some nans may be left even after resetting the default_fillvalue()
-    ;---Therefore, we account for this using the following replace_ieenan function.
+    ;---Python uses nan to denote missing data, which is not recognized by NCL, 
+    ;--- so we reset nans using the following replace_ieenan function.
     if (any(isnan_ieee(GHI))) then
         replace_ieeenan (GHI, GHI@_FillValue, 0)
     end if
+    ;---We must also reset the default _FillValue to get NCL to regrid and carry out
+    ;---calcualtions correctly.
+    GHI@_FillValue = default_fillvalue("float")
     ;---Read in WPD, convert from W m-2 to kW m-2, and reset the default _FillValue
     WPD = sfile->wpd
     WPD = WPD/1000
@@ -110,7 +109,7 @@ begin
     ERA_GHI@units = "kW m-2"
     print("Before replace_ieeenan: " + ERA_GHI(0,0,0))
     if (any(isnan_ieee(ERA_GHI))) then
-        replace_ieeenan (ERA_GHI, default_fillvalue("float"), 0)
+        replace_ieeenan (ERA_GHI, ERA_GHI@_FillValue, 0)
     end if
     print("After replace_ieeenan: " + GHI(0,0,0))
     ERA_GHI@_FillValue = default_fillvalue("float")
@@ -195,10 +194,10 @@ begin
         GHI_diff!1 = "lon"
         GHI_diff&lat = ERA_lat
         GHI_diff&lon = ERA_lon
-        GHI_diff@_FillValue = default_fillvalue("float")
         if (any(isnan_ieee(GHI_diff))) then
             replace_ieeenan (GHI_diff, GHI_diff@_FillValue, 0)
         end if
+        GHI_diff@_FillValue = default_fillvalue("float")
         ;printVarSummary(GHI_diff)
 
         WPD_diff = abs(WPD_regrid(iwrf,:,:) - ERA_WPD(iera,:,:))
@@ -206,10 +205,10 @@ begin
         WPD_diff!1 = "lon"
         WPD_diff&lat = ERA_lat
         WPD_diff&lon = ERA_lon
-        WPD_diff@_FillValue = default_fillvalue("float")
         if (any(isnan_ieee(WPD_diff))) then
             replace_ieeenan (WPD_diff, WPD_diff@_FillValue, 0)
         end if
+        WPD_diff@_FillValue = default_fillvalue("float")
         ;printVarSummary(WPD_diff)
 
         ;---Sum all computed biases across the domain and save/print
