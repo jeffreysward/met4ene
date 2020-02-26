@@ -178,8 +178,6 @@ begin
 ;---Loop through all the times in the WRF file to compute mean bias
     ntimes = dimsizes(wrf_time)                 ; number of times in the file
     n = 1
-    GHI_MAE = 0.0
-    WPD_MAE = 0.0
     do iwrf = 0,ntimes-1,1                      ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
         ;print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
@@ -225,16 +223,21 @@ begin
         end if
 
         ;---Update the accumulated biases
-        GHI_MAE := array_append_record(GHI_MAE, GHI_MAE_hr, 0)
-        WPD_MAE := array_append_record(WPD_MAE, WPD_MAE_hr, 0)
+        if n == 1 then
+            GHI_MAE = GHI_MAE_hr
+            WPD_MAE = WPD_MAE_hr
+        else
+            GHI_MAE := array_append_record(GHI_MAE, GHI_MAE_hr, 0)
+            WPD_MAE := array_append_record(WPD_MAE, WPD_MAE_hr, 0)
+        end if
 
         n := n + 1
     end do        ; END OF TIME LOOP
 
 ;---Compute the mean bias and save/print
     n := n - 1
-    print("The biases in GHI are:\n" + GHI_MAE)
-    print("The biases in WPD are:\n" + WPD_MAE)
+    print("The biases in GHI are: " + GHI_MAE)
+    print("The biases in WPD are: " + WPD_MAE)
     GHI_MAE := sum(GHI_MAE)/n
     WPD_MAE := sum(WPD_MAE)/n
     ;print("The mean bias in GHI is: " + GHI_MAE + " " + GHI@units)
