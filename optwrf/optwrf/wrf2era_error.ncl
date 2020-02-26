@@ -223,7 +223,7 @@ begin
         end if
 
         ;---Update the accumulated biases
-        if n == 1 then
+        if (n .eq. 1) then
             GHI_MAE = GHI_MAE_hr
             WPD_MAE = WPD_MAE_hr
         else
