@@ -178,8 +178,8 @@ begin
 ;---Loop through all the times in the WRF file to compute mean bias
     ntimes = dimsizes(wrf_time)                 ; number of times in the file
     n = 1
-    GHI_MAE = new((/0/),float)
-    WPD_MAE = new((/0/),float)
+    GHI_MAE = 0.0
+    WPD_MAE = 0.0
     do iwrf = 0,ntimes-1,1                      ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
         ;print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
