@@ -110,7 +110,7 @@ begin
     ERA_GHI@units = "kW m-2"
     print("Before replace_ieeenan: " + ERA_GHI(0,0,0))
     if (any(isnan_ieee(ERA_GHI))) then
-        replace_ieeenan (ERA_GHI, ERA_GHI@_FillValue, 0)
+        replace_ieeenan (ERA_GHI, default_fillvalue("float"), 0)
     end if
     print("After replace_ieeenan: " + GHI(0,0,0))
     ERA_GHI@_FillValue = default_fillvalue("float")
