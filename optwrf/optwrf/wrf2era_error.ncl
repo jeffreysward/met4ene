@@ -109,7 +109,7 @@ begin
     ERA_GHI@units = "kW m-2"
     print("Before replace_ieeenan: " + ERA_GHI(0,0,0))
     if (any(isnan_ieee(ERA_GHI))) then
-        replace_ieeenan (ERA_GHI, ERA_GHI@_FillValue, 0)
+        replace_ieeenan (ERA_GHI, default_fillvalue("float"), 0)
     end if
     print("After replace_ieeenan: " + GHI(0,0,0))
     ERA_GHI@_FillValue = default_fillvalue("float")
@@ -120,10 +120,10 @@ begin
     ERA_WPD  = dfile->WPD
     ERA_WPD  = ERA_WPD/1000
     ERA_WPD@units = "kW m-2"
-    ERA_WPD@_FillValue = default_fillvalue("float")
     if (any(isnan_ieee(ERA_WPD))) then
-        replace_ieeenan (ERA_WPD, ERA_WPD@_FillValue, 0)
+        replace_ieeenan (ERA_WPD, default_fillvalue("float"), 0)
     end if
+    ERA_WPD@_FillValue = default_fillvalue("float")
     ;printVarSummary(ERA_GHI)
     ;printVarSummary(ERA_WPD)
 
@@ -195,7 +195,7 @@ begin
         GHI_diff&lat = ERA_lat
         GHI_diff&lon = ERA_lon
         if (any(isnan_ieee(GHI_diff))) then
-            replace_ieeenan (GHI_diff, GHI_diff@_FillValue, 0)
+            replace_ieeenan (GHI_diff, default_fillvalue("float"), 0)
         end if
         GHI_diff@_FillValue = default_fillvalue("float")
         ;printVarSummary(GHI_diff)
@@ -206,7 +206,7 @@ begin
         WPD_diff&lat = ERA_lat
         WPD_diff&lon = ERA_lon
         if (any(isnan_ieee(WPD_diff))) then
-            replace_ieeenan (WPD_diff, WPD_diff@_FillValue, 0)
+            replace_ieeenan (WPD_diff, default_fillvalue("float"), 0)
         end if
         WPD_diff@_FillValue = default_fillvalue("float")
         ;printVarSummary(WPD_diff)
