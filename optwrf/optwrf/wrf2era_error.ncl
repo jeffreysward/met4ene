@@ -108,15 +108,15 @@ begin
     ERA_GHI  = dfile->GHI
     ERA_GHI  = ERA_GHI/1000
     ERA_GHI@units = "kW m-2"
-    print("Before _FillValue reset: " + ERA_GHI(0,0,0))
-    ERA_GHI@_FillValue = default_fillvalue("float")
-    print("After _FillValue reset: " + ERA_GHI(0,0,0))
-    print("The default fill value is: " + default_fillvalue("float"))
-    print("The fill value is: " + ERA_GHI@_FillValue)
+    print("Before replace_ieeenan: " + ERA_GHI(0,0,0))
     if (any(isnan_ieee(ERA_GHI))) then
         replace_ieeenan (ERA_GHI, ERA_GHI@_FillValue, 0)
     end if
     print("After replace_ieeenan: " + GHI(0,0,0))
+    ERA_GHI@_FillValue = default_fillvalue("float")
+    print("After _FillValue reset: " + ERA_GHI(0,0,0))
+    print("The default fill value is: " + default_fillvalue("float"))
+    print("The fill value is: " + ERA_GHI@_FillValue)
     ;---Read in ERA_WPD, convert from W m-2 to kW m-2, and reset the default _FillValue
     ERA_WPD  = dfile->WPD
     ERA_WPD  = ERA_WPD/1000
