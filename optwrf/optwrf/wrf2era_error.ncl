@@ -47,15 +47,18 @@ begin
     GHI = sfile->ghi
     GHI = GHI/1000
     GHI@units = "kW m-2"
+    print("Before _FillValue reset: " + GHI(0,0,0))
     ;---Python uses nan to denote missing data, which is not recognized by NCL, so
     ;---we must reset the default _FillValue to get NCL to regrid and carry out
     ;---calcualtions correctly.
     GHI@_FillValue = default_fillvalue("float")
+    print("After _FillValue reset: " + GHI(0,0,0))
     ;---For some reason, some nans may be left even after resetting the default_fillvalue()
     ;---Therefore, we account for this using the following replace_ieenan function.
     if (any(isnan_ieee(GHI))) then
         replace_ieeenan (GHI, GHI@_FillValue, 0)
     end if
+    print("After replace_ieeenan: " + GHI(0,0,0))
     ;---Read in WPD, convert from W m-2 to kW m-2, and reset the default _FillValue
     WPD = sfile->wpd
     WPD = WPD/1000
