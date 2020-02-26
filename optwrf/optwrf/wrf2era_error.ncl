@@ -107,15 +107,10 @@ begin
     ERA_GHI  = dfile->GHI
     ERA_GHI  = ERA_GHI/1000
     ERA_GHI@units = "kW m-2"
-    print("Before replace_ieeenan: " + ERA_GHI(0,0,0))
     if (any(isnan_ieee(ERA_GHI))) then
         replace_ieeenan (ERA_GHI, default_fillvalue("float"), 0)
     end if
-    print("After replace_ieeenan: " + GHI(0,0,0))
     ERA_GHI@_FillValue = default_fillvalue("float")
-    print("After _FillValue reset: " + ERA_GHI(0,0,0))
-    print("The default fill value is: " + default_fillvalue("float"))
-    print("The fill value is: " + ERA_GHI@_FillValue)
     ;---Read in ERA_WPD, convert from W m-2 to kW m-2, and reset the default _FillValue
     ERA_WPD  = dfile->WPD
     ERA_WPD  = ERA_WPD/1000
@@ -230,16 +225,16 @@ begin
         end if
 
         ;---Update the accumulated biases
-        GHI_MAE := GHI_MAE + GHI_MAE_hr
-        WPD_MAE := WPD_MAE + WPD_MAE_hr
+        GHI_MAE := array_append_record(GHI_MAE, GHI_MAE_hr, 0)
+        WPD_MAE := array_append_record(WPD_MAE, WPD_MAE_hr, 0)
 
         n := n + 1
     end do        ; END OF TIME LOOP
 
 ;---Compute the mean bias and save/print
     n := n - 1
-    GHI_MAE := GHI_MAE/n
-    WPD_MAE := WPD_MAE/n
+    GHI_MAE := sum(GHI_MAE)/n
+    WPD_MAE := sum(WPD_MAE)/n
     ;print("The mean bias in GHI is: " + GHI_MAE + " " + GHI@units)
     ;print("The mean bias in WPD is: " + WPD_MAE + " " + WPD@units)
 
