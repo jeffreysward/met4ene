@@ -673,13 +673,14 @@ class WRFModel:
     def process_wrfout_data(self):
         """
         Processes the wrfout file -- calculates GHI and wind power denity (WPD) and writes these variables
-        back to the wrfout NetCDF data file to be used by the regridding script.
+        to wrfout_processed_d01.nc data file to be used by the regridding script (wrf2era_error.ncl) in
+        wrf_era5_diff().
 
         NEEDS BETTER DOCUMENTATION!!!
 
         """
 
-        # Absolute path to WRF data file
+        # Absolute path to wrfout data file
         datapath = self.DIR_WRFOUT + 'wrfout_d01.nc'
 
         # Read in the wrfout file using the netCDF4.Dataset method (I think you can also do this with an xarray method)
@@ -761,7 +762,10 @@ class WRFModel:
             except KeyError:
                 pass
 
-        # Write the processed data back to a wrfout NetCDF file
+        # Slice the last time from the wrfout data to remove duplicates
+        met_data = met_data.isel(time=slice(0, -1))
+
+        # Write the processed data to a wrfout NetCDF file
         new_filename = self.DIR_WRFOUT + 'wrfout_processed_d01.nc'
         met_data.to_netcdf(path=new_filename)
 
@@ -789,7 +793,7 @@ class WRFModel:
         i.e., YYYY-MM-01 00:00:00 - YYYY-MM-<end day> 23:00:00. Otherwise, wrf_era5_diff()
         will fail. Times are in UTC.
 
-        NEEDS BETTER DOCUMENTATION!!!
+        ***This method does not currently support running on Cheyenne; it's about halfway there...
 
         """
 
@@ -813,7 +817,7 @@ class WRFModel:
         mo_len = calendar.monthrange(self.forecast_start.year, self.forecast_start.month)[1]
         # Finally, create all four necessary file date suffixes
         date_suffix_01_end = year_mo + '0100_' + year_mo + str(mo_len) + '23.nc'
-        date_suffix_lastmo_16_01 = year_lastmo + '1606' + year_mo + '0106.nc'
+        date_suffix_lastmo_16_01 = year_lastmo + '1606_' + year_mo + '0106.nc'
         date_suffix_01_16 = year_mo + '0106_' + year_mo + '1606.nc'
         date_suffix_16_01 = year_mo + '1606_' + year_nextmo + '0106.nc'
 
@@ -1219,7 +1223,7 @@ def rda_download(filelist, dspath):
         try:
             filesize = int(req.headers['Content-length'])
         except KeyError as e:
-            print('KeyError in rda_download:\n%s\nCHECK THAT RDA IS WORKING!!!' % e)
+            print(f'KeyError in rda_download: {e}\nCHECK YOUR RDA FILE NAMES!!!')
             return False
         with open(file_base, 'wb') as outfile:
             chunk_size = 1048576
