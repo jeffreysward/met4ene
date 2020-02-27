@@ -14,8 +14,8 @@ from optwrf.runwrf import WRFModel
 from optwrf.runwrf import determine_computer, format_date
 
 param_ids = [10, 1, 1, 2, 2, 3, 2]
-start_date = 'Dec 31 2011'
-end_date = 'Jan 1 2012'
+start_date = 'Dec 31, 2011 00'
+end_date = 'Dec 31, 2011 23'
 on_aws, on_cheyenne, on_magma = determine_computer()
 
 
@@ -29,6 +29,7 @@ def test_determine_computer():
 def test_format_date():
     date = format_date(start_date)
     print(f'Starting forecast at {date}')
+    assert date is not None
 
 
 

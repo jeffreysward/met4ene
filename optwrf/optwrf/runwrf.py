@@ -45,8 +45,8 @@ class WRFModel:
         self.n_domains = n_domains
 
         # Format the forecast start/end and determine the total time.
-        self.forecast_start = datetime.datetime.strptime(self.start_date, '%b %d %Y')
-        self.forecast_end = datetime.datetime.strptime(self.end_date, '%b %d %Y')
+        self.forecast_start = format_date(start_date)
+        self.forecast_end = format_date(end_date)
         self.delt = self.forecast_end - self.forecast_start
         print('Forecast starting on: {}'.format(self.forecast_start))
         print('Forecast ending on: {}'.format(self.forecast_end))
@@ -1219,22 +1219,23 @@ def format_date(in_date):
     """
         Formats an input date so that it can be correctly written to the namelist.
 
-        This is currently not implemented because I don't
-        like the way it prints information to the command line.
-
         Parameters:
         ----------
         in_date : string
-            String specifying the date
+            string specifying the date
 
         Returns:
         ----------
-        end_date: datetime64
+        datetime64 array specifying the date
 
         """
-    out_date = datetime.datetime.strptime(in_date, '%b %d %Y')
-    # try:
-    #     out_date = datetime.datetime.strptime(in_date, '%b %d %Y')
-    # except Exception as e:
-    #     print(e)
-    return out_date
+
+    for fmt in ('%b %d %Y', '%B %d %Y', '%b %d, %Y', '%B %d, %Y',
+                '%m-%d-%Y', '%m.%d.%Y', '%m/%d/%Y',
+                '%b %d %Y %H', '%B %d %Y %H', '%b %d, %Y %H', '%B %d, %Y %H',
+                '%m-%d-%Y %H', '%m.%d.%Y %H', '%m/%d/%Y %H'):
+        try:
+            return datetime.datetime.strptime(in_date, fmt)
+        except ValueError:
+            pass
+    raise ValueError('No valid date format found; please use a common US format (e.g., Jan 01, 2011 00)')
