@@ -763,7 +763,7 @@ class WRFModel:
                 pass
 
         # Slice the last time from the wrfout data to remove duplicates
-        met_data = met_data.isel(time=slice(0, -1))
+        met_data = met_data.isel(Time=slice(0, -1))
 
         # Write the processed data to a wrfout NetCDF file
         new_filename = self.DIR_WRFOUT + 'wrfout_processed_d01.nc'
