@@ -947,8 +947,8 @@ class WRFModel:
         first_hour = self.forecast_start.strftime('%Y') + '-' + self.forecast_start.strftime('%m') \
                      + '-01 00:00:00'
         last_hour = self.forecast_start.strftime('%Y') + '-' + self.forecast_start.strftime('%m') \
-                    + str(mo_len) + '23:00:00'
-        era_out.sel(time=slice(first_hour, last_hour))
+                    + '-' + str(mo_len) + ' 23:00:00'
+        era_out = era_out.sel(time=slice(first_hour, last_hour))
 
         # Write the processed data back to a NetCDF file
         processed_era_file = ERA5_ROOT + 'ERA5_EastUS_WPD-GHI_' \
