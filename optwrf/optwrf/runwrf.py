@@ -768,26 +768,52 @@ class WRFModel:
     def process_era5_data(self):
         """
         Downloads ERA5 data from the Research Data Archive if it doesn't already exist in ERA5_ROOT,
-        and processes the data -- calculates the wind power density at 100m and write this variable
-        back to the ERA5 NetCDF data file.
+        and processes the data -- reduces the size of the ERA5 files using ncks and
+        calculates the wind power density at 100m and the GHI -- and writes
+        these variables to a montly ERA5 NetCDF data file named ERA5_EastUS_WPD-GHI_YYYY-MM.nc.
 
-        ***Note that this method only works for simulations within a single month.
+        Unfortunately, the ERA5 surface solar radiation downward (ssrd) data is provided in incredibly
+        inconvenient temporal windows, so to build a montly file, we must download three ssrd files
+        and two wind files (U and V wind components). For example, the following filelist would be
+        built for January 2011:
+
+        filelist = ['e5.oper.an.sfc/201101/e5.oper.an.sfc.228_246_100u.ll025sc.2011010100_2011013123.nc',
+                    'e5.oper.an.sfc/201101/e5.oper.an.sfc.228_247_100v.ll025sc.2011010100_2011013123.nc',
+                    'e5.oper.fc.sfc.accumu/201012/e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2010121606_2011010106.nc',
+                    'e5.oper.fc.sfc.accumu/201101/e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2011010106_2011011606.nc',
+                    'e5.oper.fc.sfc.accumu/201101/e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2011011606_2011020106.nc']
+
+        which means there are three separate directories on RDA that files must be downloaded from.
+
+        ***Note that this method currently only supports simulations within a single month
+        i.e., YYYY-MM-01 00:00:00 - YYYY-MM-<end day> 23:00:00. Otherwise, wrf_era5_diff()
+        will fail. Times are in UTC.
 
         NEEDS BETTER DOCUMENTATION!!!
 
         """
 
         # Define some convenient file suffixes
+        last_month = self.forecast_start + dateutil.relativedelta.relativedelta(months=-1)
         next_month = self.forecast_start + dateutil.relativedelta.relativedelta(months=+1)
         year_mo = self.forecast_start.strftime('%Y') + self.forecast_start.strftime('%m')
-        # If we are running a simulation in December, the file suffix will have a different end year and month
+        # If we are running a simulation in January, the year_lastmo file suffix will have a different year
+        if last_month.month == 12:
+            last_year = self.forecast_start + dateutil.relativedelta.relativedelta(years=-1)
+            year_lastmo = last_year.strftime('%Y') + last_month.strftime('%m')
+        else:
+            year_lastmo = self.forecast_start.strftime('%Y') + last_month.strftime('%m')
+        # If we are running a simulation in December, the year_nextmo file suffix will have a different year
         if next_month.month == 1:
             next_year = self.forecast_start + dateutil.relativedelta.relativedelta(years=+1)
             year_nextmo = next_year.strftime('%Y') + next_month.strftime('%m')
         else:
             year_nextmo = self.forecast_start.strftime('%Y') + next_month.strftime('%m')
+        # Determine the last day of the month
         mo_len = calendar.monthrange(self.forecast_start.year, self.forecast_start.month)[1]
+        # Finally, create all four necessary file date suffixes
         date_suffix_01_end = year_mo + '0100_' + year_mo + str(mo_len) + '23.nc'
+        date_suffix_lastmo_16_01 = year_lastmo + '1606' + year_mo + '0106.nc'
         date_suffix_01_16 = year_mo + '0106_' + year_mo + '1606.nc'
         date_suffix_16_01 = year_mo + '1606_' + year_nextmo + '0106.nc'
 
@@ -795,26 +821,29 @@ class WRFModel:
         if self.on_cheyenne:
             ERA5_ROOT = '/gpfs/fs1/collections/rda/data/ds633.0/'
             DATA_ROOT1 = ERA5_ROOT + 'e5.oper.an.sfc/' + year_mo + '/'
-            DATA_ROOT2 = ERA5_ROOT + 'e5.oper.fc.sfc.accumu/' + year_mo + '/'
+            DATA_ROOT2 = 'e5.oper.fc.sfc.accumu/' + year_lastmo + '/'
+            DATA_ROOT3 = ERA5_ROOT + 'e5.oper.fc.sfc.accumu/' + year_mo + '/'
         else:
             # Define the expected absolute paths to ERA data files
             ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
             erafile_100u = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.' + date_suffix_01_end
             erafile_100v = ERA5_ROOT + 'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.' + date_suffix_01_end
-            erafile_ssrd1 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_01_16
-            erafile_ssrd2 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_16_01
-            local_filelist = [erafile_100u, erafile_100v, erafile_ssrd1, erafile_ssrd2]
+            erafile_ssrd1 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_lastmo_16_01
+            erafile_ssrd2 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_01_16
+            erafile_ssrd3 = ERA5_ROOT + 'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_16_01
+            local_filelist = [erafile_100u, erafile_100v, erafile_ssrd1, erafile_ssrd2, erafile_ssrd3]
             local_filenames = ['EastUS_e5.oper.an.sfc.228_246_100u.ll025sc.' + date_suffix_01_end,
                                'EastUS_e5.oper.an.sfc.228_247_100v.ll025sc.' + date_suffix_01_end,
+                               'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_lastmo_16_01,
                                'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_01_16,
                                'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_16_01]
 
             # Download data from RDA if necessary
             if [os.path.exists(file) for file in local_filelist].count(False) is not 0:
-
+                # Define the rda file prefixes for the wind data
                 rda_datpfxs_sfc = ['e5.oper.an.sfc.228_246_100u.ll025sc.',
                                    'e5.oper.an.sfc.228_247_100v.ll025sc.']
-
+                # Define the rda file prefix for the ssrfd data
                 rda_datpfxs_sfc_accumu = ['e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.']
 
                 # Make the ERA5 data directory if it does not exist
@@ -824,7 +853,8 @@ class WRFModel:
                 # Define paths to the required data on the RDA site
                 dspath = 'http://rda.ucar.edu/data/ds633.0/'
                 DATA_ROOT1 = 'e5.oper.an.sfc/' + year_mo + '/'
-                DATA_ROOT2 = 'e5.oper.fc.sfc.accumu/' + year_mo + '/'
+                DATA_ROOT2 = 'e5.oper.fc.sfc.accumu/' + year_lastmo + '/'
+                DATA_ROOT3 = 'e5.oper.fc.sfc.accumu/' + year_mo + '/'
 
                 # Build the file list to be downloaded from the RDA
                 filelist = []
@@ -834,8 +864,10 @@ class WRFModel:
                     rda_filelist.append(rda_datpfx + date_suffix_01_end)
 
                 for rda_datpfx in rda_datpfxs_sfc_accumu:
-                    filelist.append(DATA_ROOT2 + rda_datpfx + date_suffix_01_16)
-                    filelist.append(DATA_ROOT2 + rda_datpfx + date_suffix_16_01)
+                    filelist.append(DATA_ROOT2 + rda_datpfx + date_suffix_lastmo_16_01)
+                    filelist.append(DATA_ROOT3 + rda_datpfx + date_suffix_01_16)
+                    filelist.append(DATA_ROOT3 + rda_datpfx + date_suffix_16_01)
+                    rda_filelist.append(rda_datpfx + date_suffix_lastmo_16_01)
                     rda_filelist.append(rda_datpfx + date_suffix_01_16)
                     rda_filelist.append(rda_datpfx + date_suffix_16_01)
                 print(filelist)
@@ -863,16 +895,17 @@ class WRFModel:
                     cmd = self.CMD_RM % file
                     os.system(cmd)
 
-        # Read in the ERA files using the xarray open_dataset method
+        # Read in the wind files using the xarray open_dataset method
         era_100u = xr.open_dataset(erafile_100u)
         era_100v = xr.open_dataset(erafile_100v)
         era_100wind = xr.merge([era_100u, era_100v])
         era_100wind = era_100wind.drop('utc_date')
 
-        # Read in the ERA files using the xarray open_dataset method
+        # Read in the ssrd files using the xarray open_dataset method
         era_ssrd1 = xr.open_dataset(erafile_ssrd1)
         era_ssrd2 = xr.open_dataset(erafile_ssrd2)
-        era_ssrd_raw = xr.concat([era_ssrd1, era_ssrd2], 'forecast_initial_time')
+        era_ssrd3 = xr.open_dataset(erafile_ssrd3)
+        era_ssrd_raw = xr.concat([era_ssrd1, era_ssrd2, era_ssrd3], 'forecast_initial_time')
 
         # Calculate the 100m wind speed
         wind_speed100 = np.sqrt(era_100wind['VAR_100U'] ** 2 + era_100wind['VAR_100V'] ** 2)
@@ -905,6 +938,13 @@ class WRFModel:
 
         # Combine the wind power density and ghi datasets
         era_out = xr.merge([era_100wind, era_ssrd])
+
+        # Slice the dataset to only one month (UTC)
+        first_hour = self.forecast_start.strftime('%Y') + '-' + self.forecast_start.strftime('%m') \
+                     + '-01 00:00:00'
+        last_hour = self.forecast_start.strftime('%Y') + '-' + self.forecast_start.strftime('%m') \
+                    + str(mo_len) + '23:00:00'
+        era_out.sel(time=slice(first_hour, last_hour))
 
         # Write the processed data back to a NetCDF file
         processed_era_file = ERA5_ROOT + 'ERA5_EastUS_WPD-GHI_' \

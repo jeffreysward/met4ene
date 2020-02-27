@@ -32,7 +32,6 @@ def test_format_date():
     assert date is not None
 
 
-
 def test_WRFModel():
     wrf_sim = WRFModel(param_ids, start_date, end_date)
     assert wrf_sim.DIR_WRF == '/home/jas983/models/wrf/WRF/'

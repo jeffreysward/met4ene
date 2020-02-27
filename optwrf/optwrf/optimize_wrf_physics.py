@@ -114,7 +114,7 @@ def get_fitness(param_ids):
     return fitness
 
 
-def get_wrf_fitness(param_ids, start_date='Jan 15 2011 00', end_date='Jan 15 2011 23',
+def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
                     bc_data='ERA', n_domains=1, setup_yaml='dirpath.yml'):
     """
     Using the input physics parameters, date, boundary condition, and domain data,
