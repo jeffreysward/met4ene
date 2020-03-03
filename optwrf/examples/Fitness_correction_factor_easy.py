@@ -14,8 +14,8 @@ import sys
 
 # Define the parameters and start/end dates for the 'default' simulation
 param_ids = [10, 1, 1, 2, 2, 3, 2]
-start_dates = ['Jul 1 2011']
-end_dates = ['Aug 1 2011']
+start_dates = ['Dec 1 2011']
+end_dates = ['Jan 1 2012']
 
 # Postprocess all the wrfout files if necessary
 print('Starting wrfout file processing...')
@@ -51,8 +51,8 @@ print('Calculating difference between WRF and ERA5...')
 for start_date, end_date in zip(start_dates, end_dates):
     wrf_sim = WRFModel(param_ids, start_date, end_date)
     mae = wrf_sim.wrf_era5_diff()
-    mean_ghi.append(mae[0])
-    mean_wpd.append(mae[1])
+    mean_ghi.append(mae[1])
+    mean_wpd.append(mae[2])
     sys.stdout.flush()
 print('!Done!')
 

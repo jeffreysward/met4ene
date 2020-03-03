@@ -1008,7 +1008,7 @@ class WRFModel:
         mae[-1] = mae[-1].strip()
         mae = [float(i) for i in mae]
         # total_error = sum(mae)
-        print(f'!!! Parameters {self.paramstr} have a total error {mae[1:2]} kW m-2')
+        print(f'!!! Parameters {self.paramstr} have a total error {sum(mae)} kW m-2')
 
         # Clean up extraneous files that wrf2era_error.ncl created
         regridding_files = ['source_grid_file.nc',
