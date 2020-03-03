@@ -13,8 +13,8 @@ import os
 
 # Define the parameters and start/end dates for the 'default' simulation
 param_ids = [10, 1, 1, 2, 2, 3, 2]
-start_dates = ['Jan 1 2011']
-end_dates = ['Feb 1 2011']
+start_dates = ['Jul 1 2011']
+end_dates = ['Aug 1 2011']
 
 # Postprocess all the wrfout files if necessary
 for start_date, end_date in zip(start_dates, end_dates):
@@ -45,8 +45,6 @@ for start_date, end_date in zip(start_dates, end_dates):
     mae = wrf_sim.wrf_era5_diff()
     mean_ghi.append(mae[0])
     mean_wpd.append(mae[1])
-print(f'Monthly mean GHI error: {mean_ghi}')
-print(f'Monthly mean WPD error: {mean_wpd}')
 
 # Calculate the annual mean MAE for both GHI and WPD
 pmean_ghi = 0

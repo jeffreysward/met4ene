@@ -49,8 +49,8 @@ for start_date, end_date in zip(start_dates, end_dates):
     mae = wrf_sim.wrf_era5_diff()
     mean_ghi.append(mae[0])
     mean_wpd.append(mae[1])
-print(f'Monthly mean GHI error: {mean_ghi}')
-print(f'Monthly mean WPD error: {mean_wpd}')
+#print(f'Monthly mean GHI error: {mean_ghi}')
+#print(f'Monthly mean WPD error: {mean_wpd}')
 
 # Calculate the annual mean MAE for both GHI and WPD
 pmean_ghi = 0
