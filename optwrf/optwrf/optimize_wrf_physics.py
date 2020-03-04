@@ -215,8 +215,8 @@ def run_simplega(pop_size, n_generations, testing=False):
         The simulation preforming the best in the genetic algorithm.
 
     """
-
-    conn = sqlite3.connect(':memory:')
+    db_name = f'optwrf_n{pop_size}_g{n_generations}.db'
+    conn = sqlite3.connect(db_name)
     c = conn.cursor()
     c.execute("""CREATE TABLE simulations (
                 mp_physics INTEGER, 
