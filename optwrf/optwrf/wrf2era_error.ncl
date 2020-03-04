@@ -181,7 +181,16 @@ begin
     do iwrf = 0,ntimes-1,1                      ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
         print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
+	printVarSummary(iera)
+	if (iwrf .eq. 0) then
+		if (isatt(iera,"_FillValue")) then
+			if (ismissing(iera)) then
+		    		iera := 0
+			end if
+	    	end if
+	end if
         ;---Compute absoulute difference between ERA5 variable and WRF variable(s)
+        print("The ERA5 index is: " + iera)
         print("The ERA5 time is: " + ERA_datestr(iera))
         GHI_diff = abs(GHI_regrid(iwrf,:,:) - ERA_GHI(iera,:,:))
         GHI_diff!0 = "lat"

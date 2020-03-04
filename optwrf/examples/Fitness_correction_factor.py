@@ -55,8 +55,8 @@ print('Calculating difference between WRF and ERA5...')
 for start_date, end_date in zip(start_dates, end_dates):
     wrf_sim = WRFModel(param_ids, start_date, end_date)
     mae = wrf_sim.wrf_era5_diff()
-    mean_ghi.append(mae[0])
-    mean_wpd.append(mae[1])
+    mean_ghi.append(mae[1])
+    mean_wpd.append(mae[2])
     sys.stdout.flush()
 print('!Done!')
 
