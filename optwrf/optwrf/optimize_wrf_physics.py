@@ -115,7 +115,7 @@ def get_fitness(param_ids):
 
 
 def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
-                    bc_data='ERA', n_domains=1, setup_yaml='dirpath.yml'):
+                    bc_data='ERA', n_domains=1, correction_factor=0.00033806364898425066, setup_yaml='dirpath.yml'):
     """
     Using the input physics parameters, date, boundary condition, and domain data,
     this function runs the WRF model and computes the error between WRF and ERA5.
@@ -181,9 +181,11 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     # Compute the error between WRF run and ERA5 dataset and return fitness
     if success:
         mae = wrf_sim.wrf_era5_diff()
-        fitness = sum(mae)
+        ghi_mean_error = mae[1]
+        wpd_mean_error = mae[2]
+        fitness = ghi_mean_error + correction_factor * wpd_mean_error
     else:
-        fitness = 10**10
+        fitness = 6.022*10**23
 
     # The following comment is deprecated code ... I now use an SQLite database to hold simulaiton information.
     # Write parameter combinations to CSV
