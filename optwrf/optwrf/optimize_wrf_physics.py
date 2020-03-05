@@ -170,7 +170,7 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
 
     # RUN WRF
     if success:
-        success = wrf_sim.run_wrf()
+        success = wrf_sim.run_wrf(disable_timeout=True)
         print(f'WRF ran successfully? {success}')
 
     # Postprocess wrfout file and ERA5 data

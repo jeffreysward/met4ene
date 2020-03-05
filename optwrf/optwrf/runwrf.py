@@ -628,6 +628,7 @@ class WRFModel:
 
         """
 
+        wrf_runtime = 3600 * 2
         startTime = datetime.datetime.now()
         startTimeInt = int(time.time())
         print('Starting WRF at: ' + str(startTime))
@@ -640,15 +641,15 @@ class WRFModel:
             if wrf_sim is 'failed':
                 print_last_3lines(self.DIR_WRFOUT + 'rsl.out.0000')
                 return False
-            elif (int(time.time()) - startTimeInt) < 120:
+            elif (int(time.time()) - startTimeInt) < wrf_runtime:
                 time.sleep(10)
                 wrf_sim = self.runwrf_finish_check('wrf')
             elif disable_timeout is True:
                 time.sleep(10)
                 wrf_sim = self.runwrf_finish_check('wrf')
             else:
-                print('TimeoutError in run_wrf at {}: WRF took more than 2hrs to run... exiting.'.format(
-                    datetime.datetime.now()))
+                print(f'TimeoutError in run_wrf at {datetime.datetime.now()}: '
+                      f'WRF took more than {wrf_runtime/3600} hrs to run... exiting.')
                 return False
         print('WRF finished running at: ' + str(datetime.datetime.now()))
         elapsed = datetime.datetime.now() - startTime

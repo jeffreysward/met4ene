@@ -1,6 +1,5 @@
 # List of parameter choices in WRF
 microphysics:
-  no mp: 0
   kressler: 1
   lin: 2
   wsm3: 3
@@ -36,7 +35,6 @@ lw radiation:
   held-suarez: 31
   gfdl: 99
 sw radiation:
-  no sw: 0
   dudia: 1
   goddard: 2
   cam: 3
@@ -46,16 +44,13 @@ sw radiation:
   rrtmg fast: 24
   gfdl: 99
 land surface:
-  no lsm: 0
   5 layer: 1
   noah: 2
   ruc: 3
   noah-mp: 4
   clm4: 5
   pleim-xiu: 7
-  ssib: 8
 PBL:
-  no pbl: 0
   ysu: 1
   myj: 2
   qnse: 4
@@ -68,7 +63,6 @@ PBL:
   shin-hong: 11
   gbm: 12
 cumulus:
-  no cu: 0
   kain-fritsch: 1
   bmj: 2
   grell-freitas: 3
