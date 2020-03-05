@@ -217,7 +217,7 @@ def pbl2sfclay(id_pbl, rnd=False):
         id_sfclay = 10
     elif id_pbl == 11:
         if rnd:
-            id_sfclay = random.choice([1, 2, 4, 5, 7, 10, 91])
+            id_sfclay = random.choice([1, 91])
         else:
             id_sfclay = 1
     elif id_pbl == 12:
@@ -280,7 +280,32 @@ def flexible_generate(generate_params=True, mp=None, lw=None, sw=None,
     # Set the sf_sfclay_pysics option based on that selected for PBL
     id_sfclay = pbl2sfclay(param_ids[4])
     param_ids.append(id_sfclay)
-    print('The following parameters were generated: {}'.format(param_ids))
+    # Apply known parameter dependencies
+    param_ids = apply_dependencies(param_ids)
+    print(f'The following parameters were generated: {param_ids}')
+    return param_ids
+
+
+def apply_dependencies(param_ids):
+    """
+    Applies depependencies among parameters discovered during runtime
+
+    Parameters:
+    ----------
+    param_ids: list
+        List of WRF physics parameters
+
+
+    Returns:
+    -------
+    param_ids: list
+        List of WRF physics parameters after known dependencies have been applied
+
+    """
+    # The following exception takes care of the error:
+    # CAMZMSCHEME requires MYJPBLSCHEME or CAMUWPBLSCHEME
+    if param_ids[5] is 7 and param_ids[4] not in [2, 9]:
+        param_ids[4] = random.choice([2, 9])
     return param_ids
 
 
