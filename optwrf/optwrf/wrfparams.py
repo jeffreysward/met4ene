@@ -306,6 +306,10 @@ def apply_dependencies(param_ids):
     # CAMZMSCHEME requires MYJPBLSCHEME or CAMUWPBLSCHEME
     if param_ids[5] is 7 and param_ids[4] not in [2, 9]:
         param_ids[4] = random.choice([2, 9])
+    # The following exception takes care of the error:
+    # bl_pbl_physics must be set to 1 for cu_physics = 11
+    if param_ids[5] is 11:
+        param_ids[4] = 1
     return param_ids
 
 
