@@ -1,0 +1,79 @@
+# List of parameter choices in WRF
+microphysics:
+  kressler: 1
+  lin: 2
+  wsm3: 3
+  wsm5: 4
+  eta: 5
+  wsm6: 6
+  goddard: 7
+  thompson: 8
+  milbrandt2mom: 9 
+  morrison2mom: 10
+  cam5.1: 11
+  sbu-ylin: 13  
+  wdm5: 14
+  ferrier: 15
+  wdm6: 16
+  nssl 2mom: 17
+  nssl 2mom w/ccn: 18
+  nssl 1mom: 19
+  nssl 1mom lfo: 21 
+  nssl 1mom no hail: 22
+  thompson aerosol: 28
+  huji fast: 30
+  huji full: 32
+  p3: 50
+  p3 2mom: 51
+lw radiation:
+  rrtm: 1
+  cam: 3
+  rrtmg: 4
+  new goddard: 5
+  flg: 7
+  rrtmg fast: 24
+  held-suarez: 31
+  gfdl: 99
+sw radiation:
+  dudia: 1
+  goddard: 2
+  cam: 3
+  rrtmg: 4
+  new goddard: 5
+  flg: 7
+  rrtmg fast: 24
+  gfdl: 99
+land surface:
+  5 layer: 1
+  noah: 2
+  ruc: 3
+  noah-mp: 4
+  clm4: 5
+  pleim-xiu: 7
+PBL:
+  ysu: 1
+  myj: 2
+  qnse: 4
+  mynn2: 5
+  mynn3: 6
+  acm2: 7
+  boulac: 8
+  uw: 9
+  temf: 10
+  shin-hong: 11
+  gbm: 12
+cumulus:
+  kain-fritsch: 1
+  bmj: 2
+  grell-freitas: 3
+  gfs sas: 4
+  grell3d: 5
+  tiedtke: 6
+  zhang-mcfarlane: 7
+  mod kain-fritsch: 10
+  multi kain-fritsch: 11
+  ysu gfs sas: 14
+  new tiedtke: 16
+  grell-devenyi: 93
+  hwrf gfs sas: 94
+  old kain-fritsch: 99

@@ -115,7 +115,8 @@ def get_fitness(param_ids):
 
 
 def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
-                    bc_data='ERA', n_domains=1, correction_factor=0.00033806364898425066, setup_yaml='dirpath.yml'):
+                    bc_data='ERA', n_domains=1, correction_factor=0.00033806364898425066,
+                    setup_yaml='dirpath.yml', verbose=False):
     """
     Using the input physics parameters, date, boundary condition, and domain data,
     this function runs the WRF model and computes the error between WRF and ERA5.
@@ -147,7 +148,7 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
 
     # Create a WRFModel instance
     wrf_sim = WRFModel(param_ids, start_date, end_date,
-                       bc_data=bc_data, n_domains=n_domains, setup_yaml=setup_yaml)
+                       bc_data=bc_data, n_domains=n_domains, setup_yaml=setup_yaml, verbose=verbose)
 
     # Next, get boundary condition data for the simulation
     # ERA is the only supported data type right now.
@@ -161,17 +162,20 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
 
     # Run WPS
     success = wrf_sim.run_wps()
-    print(f'WPS ran successfully? {success}')
+    if verbose:
+        print(f'WPS ran successfully? {success}')
 
     # Run REAL
     if success:
         success = wrf_sim.run_real()
-        print(f'Real ran successfully? {success}')
+        if verbose:
+            print(f'Real ran successfully? {success}')
 
     # RUN WRF
     if success:
         success = wrf_sim.run_wrf(disable_timeout=True)
-        print(f'WRF ran successfully? {success}')
+        if verbose:
+            print(f'WRF ran successfully? {success}')
 
     # Postprocess wrfout file and ERA5 data
     if success:

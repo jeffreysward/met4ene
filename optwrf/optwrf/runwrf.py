@@ -37,19 +37,21 @@ class WRFModel:
     """
 
     def __init__(self, param_ids, start_date, end_date, bc_data='ERA',
-                 n_domains=1, setup_yaml='dirpath.yml'):
+                 n_domains=1, setup_yaml='dirpath.yml', verbose=True):
         self.param_ids = param_ids
         self.start_date = start_date
         self.end_date = end_date
         self.bc_data = bc_data
         self.n_domains = n_domains
+        self.verbose = verbose
 
         # Format the forecast start/end and determine the total time.
         self.forecast_start = format_date(start_date)
         self.forecast_end = format_date(end_date)
         self.delt = self.forecast_end - self.forecast_start
-        print('Forecast starting on: {}'.format(self.forecast_start))
-        print('Forecast ending on: {}'.format(self.forecast_end))
+        if self.verbose:
+            print('Forecast starting on: {}'.format(self.forecast_start))
+            print('Forecast ending on: {}'.format(self.forecast_end))
         self.paramstr = ids2str(self.param_ids)
 
         # Determine which computer you are running on
@@ -187,9 +189,10 @@ class WRFModel:
             print(f'Currently {self.bc_data} is not supported; please use ERA for boundary condition data.')
             raise ValueError
 
-        print('Using {} data for boundary conditions'.format(self.bc_data))
-        print('The corresponding Vtable is: {}'.format(vtable_sfx))
-        print(f'--> Data Directory:\n{self.DIR_DATA}')
+        if self.verbose:
+            print('Using {} data for boundary conditions'.format(self.bc_data))
+            print('The corresponding Vtable is: {}'.format(vtable_sfx))
+            print(f'--> Data Directory:\n{self.DIR_DATA}')
 
         # If no data directory exists, create one
         if not os.path.exists(self.DIR_DATA):
@@ -238,10 +241,12 @@ class WRFModel:
             data_exists = []
             for data_file in file_check:
                 data_exists.append(os.path.exists(self.DIR_DATA + data_file))
-            print(f'This simulation requires {len(file_check)} files, '
-                  f'{data_exists.count(True)} are already in your data directory.')
+            if self.verbose:
+                print(f'This simulation requires {len(file_check)} files, '
+                      f'{data_exists.count(True)} are already in your data directory.')
             if data_exists.count(True) == len(file_check):
-                print('Boundary condition data was previously downloaded from RDA.')
+                if self.verbose:
+                    print('Boundary condition data was previously downloaded from RDA.')
             else:
                 # Download the data from the online RDA (requires password and connection)
                 success = rda_download(filelist, dspath)
@@ -305,7 +310,8 @@ class WRFModel:
         cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/VEGPARM*', self.DIR_WRFOUT)
         cmd = cmd + '; ' + self.CMD_LN % (self.DIR_WRF + 'run/*exe', self.DIR_WRFOUT)
         os.system(cmd)
-        print(f'--> WRFOUT Directory:\n{self.DIR_WRFOUT}')
+        if self.verbose:
+            print(f'--> WRFOUT Directory:\n{self.DIR_WRFOUT}')
 
         # Copy over namelists and submission scripts
         if self.on_cheyenne:
@@ -387,7 +393,8 @@ class WRFModel:
         wps_domains = ' max_dom                             = ' + str(self.n_domains) + ','
         with open(self.DIR_WRFOUT + 'namelist.wps', 'w') as namelist:
             namelist.write(NAMELIST_WPS.replace('%DOMAIN%', wps_domains))
-        print('Done writing WPS namelist!')
+        if self.verbose:
+            print('Done writing WPS namelist!')
 
         # Write the runtime info and start dates and times to the WRF Namelist
         wrf_runtime = ' run_days                            = ' + str(self.delt.days) + ',\n'
@@ -482,7 +489,8 @@ class WRFModel:
         wrf_domains = ' max_dom                             = ' + str(self.n_domains) + ','
         with open(self.DIR_WRFOUT + 'namelist.input', 'w') as namelist:
             namelist.write(NAMELIST_WRF.replace('%DOMAIN%', wrf_domains))
-        print('Done writing WRF namelist!\n')
+        if self.verbose:
+            print('Done writing WRF namelist!\n')
 
     def run_wps(self, disable_timeout=False):
         """
@@ -505,8 +513,9 @@ class WRFModel:
             # Run geogrid
             startTime = datetime.datetime.now()
             startTimeInt = int(time.time())
-            print('Starting Geogrid at: ' + str(startTime))
-            sys.stdout.flush()
+            if self.verbose:
+                print('Starting Geogrid at: ' + str(startTime))
+                sys.stdout.flush()
             os.system(self.CMD_GEOGRID)
             geogrid_sim = self.runwrf_finish_check('geogrid')
             while geogrid_sim is not 'complete':
@@ -523,10 +532,12 @@ class WRFModel:
                     print('TimeoutError in run_wps: Geogrid took more than 10min to run... exiting.')
                     return False
             elapsed = datetime.datetime.now() - startTime
-            print('Geogrid ran in: ' + str(elapsed))
+            if self.verbose:
+                print('Geogrid ran in: ' + str(elapsed))
         else:
             # Link the existing met_em files to the runwrf directory
-            print('Geogrid was run previously. Linking geogrid file(s)...')
+            if self.verbose:
+                print('Geogrid was run previously. Linking geogrid file(s)...')
             for file in geogridfiles:
                 os.system(self.CMD_LN % (self.DIR_DATA_ROOT + 'data/domain/' + file, self.DIR_WRFOUT + '.'))
 
@@ -552,8 +563,9 @@ class WRFModel:
             os.system(self.CMD_LINK_GRIB)
             startTime = datetime.datetime.now()
             startTimeInt = int(time.time())
-            print('Starting Ungrib and Metgrid at: ' + str(startTime))
-            sys.stdout.flush()
+            if self.verbose:
+                print('Starting Ungrib and Metgrid at: ' + str(startTime))
+                sys.stdout.flush()
             os.system(self.CMD_UNGMETG)
             metgrid_sim = self.runwrf_finish_check('metgrid')
             while metgrid_sim is not 'complete':
@@ -570,10 +582,12 @@ class WRFModel:
                     print('TimeoutError in run_wps: Ungrib and Metgrid took more than 10min to run... exiting.')
                     return False
             elapsed = datetime.datetime.now() - startTime
-            print('Ungrib and Metgrid ran in: ' + str(elapsed))
+            if self.verbose:
+                print('Ungrib and Metgrid ran in: ' + str(elapsed))
         else:
             # Link the existing met_em files to the runwrf directory
-            print('Metgrid was run previously. Linking met_em files...')
+            if self.verbose:
+                print('Metgrid was run previously. Linking met_em files...')
             for file in metfilelist:
                 os.system(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_WRFOUT + '.'))
 
@@ -595,8 +609,9 @@ class WRFModel:
 
         startTime = datetime.datetime.now()
         startTimeInt = int(time.time())
-        print('Starting Real at: ' + str(startTime))
-        sys.stdout.flush()
+        if self.verbose:
+            print('Starting Real at: ' + str(startTime))
+            sys.stdout.flush()
         os.system(self.CMD_REAL)
         real_sim = self.runwrf_finish_check('real')
         while real_sim is not 'complete':
@@ -613,7 +628,8 @@ class WRFModel:
                 print('TimeoutError in run_real: Real took more than 10min to run... exiting.')
                 return False
         elapsed = datetime.datetime.now() - startTime
-        print('Real ran in: ' + str(elapsed) + ' seconds')
+        if self.verbose:
+            print('Real ran in: ' + str(elapsed) + ' seconds')
         return True
 
     def run_wrf(self, disable_timeout=False):
@@ -631,8 +647,9 @@ class WRFModel:
         wrf_runtime = 3600 * 2
         startTime = datetime.datetime.now()
         startTimeInt = int(time.time())
-        print('Starting WRF at: ' + str(startTime))
-        sys.stdout.flush()
+        if self.verbose:
+            print('Starting WRF at: ' + str(startTime))
+            sys.stdout.flush()
         os.system(self.CMD_WRF)
         # Make the script sleep for 5 minutes to allow for the rsl.out.0000 file to reset.
         time.sleep(300)
@@ -651,9 +668,10 @@ class WRFModel:
                 print(f'TimeoutError in run_wrf at {datetime.datetime.now()}: '
                       f'WRF took more than {wrf_runtime/3600} hrs to run... exiting.')
                 return False
-        print('WRF finished running at: ' + str(datetime.datetime.now()))
-        elapsed = datetime.datetime.now() - startTime
-        print('WRF ran in: ' + str(elapsed))
+        if self.verbose:
+            print('WRF finished running at: ' + str(datetime.datetime.now()))
+            elapsed = datetime.datetime.now() - startTime
+            print('WRF ran in: ' + str(elapsed))
 
         # Rename the wrfout files.
         for n in range(1, self.n_domains + 1):
@@ -875,7 +893,8 @@ class WRFModel:
                     rda_filelist.append(rda_datpfx + date_suffix_lastmo_16_01)
                     rda_filelist.append(rda_datpfx + date_suffix_01_16)
                     rda_filelist.append(rda_datpfx + date_suffix_16_01)
-                print(filelist)
+                if self.verbose:
+                    print(filelist)
 
                 # Download the data from the RDA (requires password and connection)
                 success = rda_download(filelist, dspath)
@@ -887,8 +906,9 @@ class WRFModel:
                 for rda_file, local_file in zip(rda_filelist, local_filenames):
                     CMD_REDUCE = 'ncks -d longitude,265.,295. -d latitude,30.,50. %s %s' % \
                                  (rda_file, local_file)
-                    print(f'Running the following from the command line:\n{CMD_REDUCE}')
-                    os.system(CMD_REDUCE)
+                    if self.verbose:
+                        print(f'Running the following from the command line:\n{CMD_REDUCE}')
+                        os.system(CMD_REDUCE)
 
                 # Move the files into the ERA5 data directory
                 for file in local_filenames:
@@ -1009,7 +1029,8 @@ class WRFModel:
         mae[-1] = mae[-1].strip()
         mae = [float(i) for i in mae]
         # total_error = sum(mae)
-        print(f'!!! Parameters {self.paramstr} have a total error {sum(mae)} kW m-2')
+        if self.verbose:
+            print(f'!!! Parameters {self.paramstr} have a total error {sum(mae)} kW m-2')
 
         # Clean up extraneous files that wrf2era_error.ncl created
         regridding_files = ['source_grid_file.nc',

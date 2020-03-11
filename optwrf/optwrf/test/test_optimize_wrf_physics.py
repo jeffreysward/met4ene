@@ -22,5 +22,5 @@ def test_get_wrf_fitness():
 
 
 def test_run_simplega():
-    WRFga_winner = run_simplega(pop_size=10, n_generations=2, testing=True)
+    WRFga_winner = run_simplega(pop_size=4, n_generations=0, testing=True)
     assert WRFga_winner.Fitness >= 0
