@@ -1,16 +1,15 @@
-.. optwrf documentation master file, created by
-   sphinx-quickstart on Wed Mar 11 19:14:29 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Optwrf Documentation
+====================
 
-Welcome to optwrf's documentation!
-==================================
 
-Contents:
+.. include:: ../../README.rst
+  :start-after:  placeholder-for-doc-index
+
 
 .. toctree::
    :maxdepth: 2
-
+   :hidden:
+   :caption: Getting Started
 
 
 Indices and tables
