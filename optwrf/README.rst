@@ -1,3 +1,6 @@
+.. image:: https://readthedocs.org/projects/optwrf/badge/?version=latest
+   :target: https://optwrf.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 .. placeholder-for-doc-index
 
