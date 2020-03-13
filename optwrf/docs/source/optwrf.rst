@@ -1,62 +1,47 @@
 optwrf package
 ==============
 
-Subpackages
------------
-
 .. toctree::
 
-   optwrf.data
    optwrf.test
 
-Submodules
-----------
-
-optwrf.linuxhelper module
--------------------------
+optwrf.linuxhelper
+------------------
 
 .. automodule:: optwrf.linuxhelper
    :members:
    :undoc-members:
    :show-inheritance:
 
-optwrf.optimize\_wrf\_physics module
-------------------------------------
+optwrf.optimize\_wrf\_physics
+-----------------------------
 
 .. automodule:: optwrf.optimize_wrf_physics
    :members:
    :undoc-members:
    :show-inheritance:
 
-optwrf.runwrf module
---------------------
+optwrf.runwrf
+-------------
 
 .. automodule:: optwrf.runwrf
    :members:
    :undoc-members:
    :show-inheritance:
 
-optwrf.simplega module
-----------------------
+optwrf.simplega
+---------------
 
 .. automodule:: optwrf.simplega
    :members:
    :undoc-members:
    :show-inheritance:
 
-optwrf.wrfparams module
------------------------
+optwrf.wrfparams
+----------------
 
 .. automodule:: optwrf.wrfparams
    :members:
    :undoc-members:
    :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: optwrf
-   :members:
-   :undoc-members:
-   :show-inheritance:

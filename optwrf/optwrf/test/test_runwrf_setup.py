@@ -10,6 +10,7 @@ using runwrf_fromCL.py for this purpose.
 """
 
 import os
+
 from optwrf.runwrf import WRFModel
 from optwrf.runwrf import determine_computer, format_date
 
