@@ -1,6 +1,7 @@
 Optwrf Documentation
 ====================
 
+.. title:: Home
 
 .. include:: ../../README.rst
   :start-after:  placeholder-for-doc-index
@@ -12,10 +13,11 @@ Optwrf Documentation
    :caption: Getting Started
 
 
-Indices and tables
-==================
+User Guide
+==========
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. toctree::
+   :maxdepth: 2
+   :hidden:
 
+   modules

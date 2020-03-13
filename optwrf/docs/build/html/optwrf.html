@@ -1,0 +1,663 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>optwrf package &#8212; optwrf 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="optwrf.data package" href="optwrf.data.html" />
+    <link rel="prev" title="optwrf" href="modules.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="optwrf.data.html" title="optwrf.data package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="optwrf"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">optwrf 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">optwrf</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="optwrf-package">
+<h1>optwrf package<a class="headerlink" href="#optwrf-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="optwrf.data.html">optwrf.data package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="optwrf.data.html#module-optwrf.data">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="optwrf.test.html">optwrf.test package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="optwrf.test.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optwrf.test.html#module-optwrf.test.test_optimize_wrf_physics">optwrf.test.test_optimize_wrf_physics module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optwrf.test.html#module-optwrf.test.test_runwrf_postwrf">optwrf.test.test_runwrf_postwrf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optwrf.test.html#module-optwrf.test.test_runwrf_setup">optwrf.test.test_runwrf_setup module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optwrf.test.html#module-optwrf.test">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-optwrf.linuxhelper">
+<span id="optwrf-linuxhelper-module"></span><h2>optwrf.linuxhelper module<a class="headerlink" href="#module-optwrf.linuxhelper" title="Permalink to this headline">¶</a></h2>
+<p>Functions that simplify running in a linux environment.
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Known Issues/Wishlist:</p>
+<dl class="function">
+<dt id="optwrf.linuxhelper.remove_dir">
+<code class="sig-prename descclassname">optwrf.linuxhelper.</code><code class="sig-name descname">remove_dir</code><span class="sig-paren">(</span><em class="sig-param">directory</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.linuxhelper.remove_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function utilized an exception clause to delete a directory.</p>
+<dl class="simple">
+<dt>directory<span class="classifier">string</span></dt><dd><p>complete path to the directory to be removed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-optwrf.optimize_wrf_physics">
+<span id="optwrf-optimize-wrf-physics-module"></span><h2>optwrf.optimize_wrf_physics module<a class="headerlink" href="#module-optwrf.optimize_wrf_physics" title="Permalink to this headline">¶</a></h2>
+<p>A framework to run the simple genetic algorithm for optimizing the WRF model physics.
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Known Issues/Wishlist:
+- This whole things needs to change…</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>I want the thread pool executor to operate within a Class or a function.</p></li>
+<li><p>It would be cool if PyCharm recognized the SQL syntax.</p></li>
+</ul>
+</div></blockquote>
+<dl class="function">
+<dt id="optwrf.optimize_wrf_physics.get_fitness">
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">get_fitness</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.get_fitness" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function produces a random fitness value between 0 - 100</p>
+<dl class="simple">
+<dt>param_ids<span class="classifier">list of integers</span></dt><dd><p>Numeric values corresponding to each WRF physics parameterization.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>fitness<span class="classifier">integer</span></dt><dd><p>A randomly generated integer between 1 and 100.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.optimize_wrf_physics.get_individual_by_genes">
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">get_individual_by_genes</code><span class="sig-paren">(</span><em class="sig-param">geneset</em>, <em class="sig-param">c</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.get_individual_by_genes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Looks for an indivual set of genes in an SQLite database.</p>
+<dl class="simple">
+<dt>geneset :</dt><dd><p>lorem ipsum</p>
+</dd>
+<dt>c :</dt><dd><p>lorem ipsum</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>past_sim<span class="classifier">simplega.Chromosome</span></dt><dd><p>Simulation that was run previously and stored in the SQLite database.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.optimize_wrf_physics.get_wrf_fitness">
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">get_wrf_fitness</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em>, <em class="sig-param">start_date='Jan 15 2011'</em>, <em class="sig-param">end_date='Jan 16 2011'</em>, <em class="sig-param">bc_data='ERA'</em>, <em class="sig-param">n_domains=1</em>, <em class="sig-param">correction_factor=0.00033806364898425066</em>, <em class="sig-param">setup_yaml='dirpath.yml'</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.get_wrf_fitness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Using the input physics parameters, date, boundary condition, and domain data,
+this function runs the WRF model and computes the error between WRF and ERA5.</p>
+<dl class="simple">
+<dt>param_ids<span class="classifier">list of integers</span></dt><dd><p>Numeric values corresponding to each WRF physics parameterization.</p>
+</dd>
+<dt>start_date<span class="classifier">string</span></dt><dd><p>lorem ipsum</p>
+</dd>
+<dt>end_date<span class="classifier">string</span></dt><dd><p>lorem ipsum</p>
+</dd>
+<dt>bc_data<span class="classifier">string</span></dt><dd><p>lorem ipsum</p>
+</dd>
+<dt>n_domains<span class="classifier">integer</span></dt><dd><p>lorem ipsum</p>
+</dd>
+<dt>setup_yaml<span class="classifier">string</span></dt><dd><p>lorem ipsum</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>fitness<span class="classifier">float</span></dt><dd><p>Fitness value denoting how well the WRF model run performed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.optimize_wrf_physics.insert_sim">
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">insert_sim</code><span class="sig-paren">(</span><em class="sig-param">individual</em>, <em class="sig-param">conn</em>, <em class="sig-param">c</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.insert_sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts a simulation into the SQL database held in memory or written to a file.</p>
+<dl class="simple">
+<dt>individual<span class="classifier">simplega.Chromosome instance</span></dt><dd><p>The simulation that you would like to add to the simulation database.</p>
+</dd>
+<dt>conn :</dt><dd><p>lorem ipsum</p>
+</dd>
+<dt>c :</dt><dd><p>lorem ipsum</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.optimize_wrf_physics.run_simplega">
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">run_simplega</code><span class="sig-paren">(</span><em class="sig-param">pop_size</em>, <em class="sig-param">n_generations</em>, <em class="sig-param">testing=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.run_simplega" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the simple genetic algorithm specified in simplega either
+to optimize the WRF model physics or with a test fitness function
+that randomly selects a fitness value for each individual Chromosome.</p>
+<p>I’m not sure if it would be better to make this a Class…</p>
+<dl class="simple">
+<dt>pop_size<span class="classifier">int</span></dt><dd><p>Desired population size for the genetic algorithm</p>
+</dd>
+<dt>n_generations<span class="classifier">int</span></dt><dd><p>Total number of generations after which the genetic algorithm will time out.</p>
+</dd>
+<dt>testing<span class="classifier">boolean</span></dt><dd><p>Flag that uses a random number generator as the fitness function when True.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>WRFga_winner<span class="classifier">simplega.Chromosome instance</span></dt><dd><p>The simulation preforming the best in the genetic algorithm.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-optwrf.runwrf">
+<span id="optwrf-runwrf-module"></span><h2>optwrf.runwrf module<a class="headerlink" href="#module-optwrf.runwrf" title="Permalink to this headline">¶</a></h2>
+<p>Class and supporting functions to run WRF within other scripts
+and process WRF output data.
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Known Issues/Wishlist:
+- I’m unhappy with the output to screen from rda_download(). Perhaps edit that and
+check_file_status() as well.
+- I want to figure out a better way to set the command aliai.</p>
+<dl class="class">
+<dt id="optwrf.runwrf.WRFModel">
+<em class="property">class </em><code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">WRFModel</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em>, <em class="sig-param">start_date</em>, <em class="sig-param">end_date</em>, <em class="sig-param">bc_data='ERA'</em>, <em class="sig-param">n_domains=1</em>, <em class="sig-param">setup_yaml='dirpath.yml'</em>, <em class="sig-param">verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class provides a framework for running the WRF model</p>
+<dl class="method">
+<dt id="optwrf.runwrf.WRFModel.get_bc_data">
+<code class="sig-name descname">get_bc_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.get_bc_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads boundary condition data from the RDA
+if it does not already exist in the expected data directory (self.DIR_DATA).
+Then, it creates a temporary data directory (self.DIR_DATA_TMP) and copies
+data from the central data directory to the temporary data directory.</p>
+<p>The justificaion for this approach is that the link_grib.csh script doesn’t
+contain a good way of picking files out of many. Therefore, it is much
+easier to link all the files in the temporary data directory than to link
+indidivdual files out of the central data directory.</p>
+<dl class="simple">
+<dt>vtable_sfx<span class="classifier">string</span></dt><dd><p>WPS variable table suffix – tells subsequent methods which boundary condidtion data is being used
+so that ungrib can successfully unpack data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="optwrf.runwrf.WRFModel.prepare_namelists">
+<code class="sig-name descname">prepare_namelists</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.prepare_namelists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes dates, the geographical data path, number of domains, runtime duration,
+and physics options to the WPS and/or WRF namelist files.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="optwrf.runwrf.WRFModel.process_era5_data">
+<code class="sig-name descname">process_era5_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.process_era5_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads ERA5 data from the Research Data Archive if it doesn’t already exist in ERA5_ROOT,
+and processes the data – reduces the size of the ERA5 files using ncks and
+calculates the wind power density at 100m and the GHI – and writes
+these variables to a montly ERA5 NetCDF data file named ERA5_EastUS_WPD-GHI_YYYY-MM.nc.</p>
+<p>Unfortunately, the ERA5 surface solar radiation downward (ssrd) data is provided in incredibly
+inconvenient temporal windows, so to build a montly file, we must download three ssrd files
+and two wind files (U and V wind components). For example, the following filelist would be
+built for January 2011:</p>
+<dl class="simple">
+<dt>filelist = [‘e5.oper.an.sfc/201101/e5.oper.an.sfc.228_246_100u.ll025sc.2011010100_2011013123.nc’,</dt><dd><p>‘e5.oper.an.sfc/201101/e5.oper.an.sfc.228_247_100v.ll025sc.2011010100_2011013123.nc’,
+‘e5.oper.fc.sfc.accumu/201012/e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2010121606_2011010106.nc’,
+‘e5.oper.fc.sfc.accumu/201101/e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2011010106_2011011606.nc’,
+‘e5.oper.fc.sfc.accumu/201101/e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2011011606_2011020106.nc’]</p>
+</dd>
+</dl>
+<p>which means there are three separate directories on RDA that files must be downloaded from.</p>
+<p><a href="#id1"><span class="problematic" id="id2">**</span></a><a href="#id3"><span class="problematic" id="id4">*</span></a>Note that this method currently only supports simulations within a single month
+i.e., YYYY-MM-01 00:00:00 - YYYY-MM-&lt;end day&gt; 23:00:00. Otherwise, wrf_era5_diff()
+will fail. Times are in UTC.</p>
+<p><a href="#id5"><span class="problematic" id="id6">**</span></a><a href="#id7"><span class="problematic" id="id8">*</span></a>This method does not currently support running on Cheyenne; it’s about halfway there…</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="optwrf.runwrf.WRFModel.process_wrfout_data">
+<code class="sig-name descname">process_wrfout_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.process_wrfout_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes the wrfout file – calculates GHI and wind power denity (WPD) and writes these variables
+to wrfout_processed_d01.nc data file to be used by the regridding script (wrf2era_error.ncl) in
+wrf_era5_diff().</p>
+<p>NEEDS BETTER DOCUMENTATION!!!</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="optwrf.runwrf.WRFModel.run_real">
+<code class="sig-name descname">run_real</code><span class="sig-paren">(</span><em class="sig-param">disable_timeout=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.run_real" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs real.exe and checks to see that if it was successful.</p>
+<dl class="simple">
+<dt>True/False<span class="classifier">boolean</span></dt><dd><p>If runwrf_finish_check for real returns ‘complete’ (‘failed’),
+this function returns True (False).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="optwrf.runwrf.WRFModel.run_wps">
+<code class="sig-name descname">run_wps</code><span class="sig-paren">(</span><em class="sig-param">disable_timeout=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.run_wps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the WRF preprocessing executables and confirms thier success.</p>
+<dl class="simple">
+<dt>True/False<span class="classifier">boolean</span></dt><dd><p>If runwrf_finish_check for geogrid and metgrid
+returns ‘complete’ (‘failed’), this function returns True (False).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="optwrf.runwrf.WRFModel.run_wrf">
+<code class="sig-name descname">run_wrf</code><span class="sig-paren">(</span><em class="sig-param">disable_timeout=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.run_wrf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs wrf.exe and checks to see if it was successful.</p>
+<dl class="simple">
+<dt>True/False<span class="classifier">boolean</span></dt><dd><p>If runwrf_finish_check for wrf returns ‘complete’ (‘failed’),
+this function returns True (False).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="optwrf.runwrf.WRFModel.runwrf_finish_check">
+<code class="sig-name descname">runwrf_finish_check</code><span class="sig-paren">(</span><em class="sig-param">program</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.runwrf_finish_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a specified WRF subprogram has finished running.</p>
+<dl class="simple">
+<dt>program<span class="classifier">string</span></dt><dd><p>WRF or WPS subprogram name whose status is to be checked.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>‘running’ or ‘complete’ or ‘failed’<span class="classifier">string</span></dt><dd><p>Run status of the program parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="optwrf.runwrf.WRFModel.wrf_era5_diff">
+<code class="sig-name descname">wrf_era5_diff</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.wrf_era5_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the difference between the wrf simulation and ERA5
+by calling the wrf2era_error.ncl script from the command line.
+NCL (short for NCAR Command Language) will be deprecated at
+some point in the future, and will be replaced by wrf-python,
+but the regridding functionality has not been ported to this
+package currently. Therefore, this function is a somewhat clumsy
+workaround.</p>
+<p>wrf2era_error.ncl reads the previously-processed ERA and wrfout files,
+regrids the wrfout global horizontal irradiance (GHI) and wind
+power density (WPD) to match that of the ERA data, and then computes
+the difference across the entire d01 WRF domain for every time period.</p>
+<p>This method waits while the regridding and error calculation is being
+completed by NCL, which can take some seconds to complete.</p>
+<p><a href="#id9"><span class="problematic" id="id10">*</span></a>I don’t need to copy the wrf2era_error.ncl script into each WRFOUT
+directory, but that’s how I currently get the error file for each
+simulation to be written into the correct dirctory.</p>
+<dl class="simple">
+<dt>total_error<span class="classifier">list</span></dt><dd><p>Sum of the mean absolute error accumulated for each grid cell
+during each time period in the WRF simulation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="optwrf.runwrf.WRFModel.wrfdir_setup">
+<code class="sig-name descname">wrfdir_setup</code><span class="sig-paren">(</span><em class="sig-param">vtable_sfx</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.wrfdir_setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets up the WRF run directory by copying scripts, data files, and executables.</p>
+<p>vtable_sfx : string</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.runwrf.check_file_status">
+<code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">check_file_status</code><span class="sig-paren">(</span><em class="sig-param">filepath</em>, <em class="sig-param">filesize</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.check_file_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks the file status during a download from the internet.</p>
+<p>This is currently not implemented because I don’t
+like the way it prints information to the command line.</p>
+<dl class="simple">
+<dt>filepath<span class="classifier">string</span></dt><dd><p>Path to remote data file</p>
+</dd>
+<dt>filesize<span class="classifier">int</span></dt><dd><p>Size of the file as found by req.headers[‘Content-length’]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.runwrf.determine_computer">
+<code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">determine_computer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.determine_computer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines which computer you are currently working on.</p>
+<dl class="simple">
+<dt>on_aws<span class="classifier">boolean</span></dt><dd><p>True if working on the mzhang AWS account where the group name is ‘ec2-user’</p>
+</dd>
+<dt>on_cheyenne<span class="classifier">boolean</span></dt><dd><p>True if working on the NCAR Cheyenne super computer where the group name is ‘ncar’</p>
+</dd>
+<dt>on_magma<span class="classifier">boolean</span></dt><dd><p>True if working on Jeff Sward’s account on the Cornell Magma cluster where the group name is ‘pug-jas983’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.runwrf.format_date">
+<code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">format_date</code><span class="sig-paren">(</span><em class="sig-param">in_date</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.format_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats an input date so that it can be correctly written to the namelist.</p>
+<dl class="simple">
+<dt>in_date<span class="classifier">string</span></dt><dd><p>string specifying the date</p>
+</dd>
+</dl>
+<p>datetime64 array specifying the date</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.runwrf.print_last_3lines">
+<code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">print_last_3lines</code><span class="sig-paren">(</span><em class="sig-param">file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.print_last_3lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints the last three lines of a file.</p>
+<dl class="simple">
+<dt>file_name<span class="classifier">string</span></dt><dd><p>Complete path of the file that you would like print.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.runwrf.rda_download">
+<code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">rda_download</code><span class="sig-paren">(</span><em class="sig-param">filelist</em>, <em class="sig-param">dspath</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.rda_download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs into the NCAR research data archive (RDA)
+and downloads specified files.</p>
+<p>My username/password are currently hard-coded into this function.</p>
+<dl class="simple">
+<dt>filelist<span class="classifier">list of strings</span></dt><dd><p>List of all the files that you would like downloaded from the RDA.</p>
+</dd>
+<dt>dspath<span class="classifier">string</span></dt><dd><p>Full path to file on the RDA. You can obtain this from</p>
+</dd>
+</dl>
+<p>A boolean success flag.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.runwrf.read_2nd2_last_line">
+<code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">read_2nd2_last_line</code><span class="sig-paren">(</span><em class="sig-param">file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.read_2nd2_last_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the second to last line of a file.</p>
+<dl class="simple">
+<dt>file_name<span class="classifier">string</span></dt><dd><p>Complete path of the file that you would like read.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>second2_last_line<span class="classifier">string</span></dt><dd><p>Second to last line of the input file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.runwrf.read_last_3lines">
+<code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">read_last_3lines</code><span class="sig-paren">(</span><em class="sig-param">file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.read_last_3lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the last three lines of a file.</p>
+<dl class="simple">
+<dt>file_name<span class="classifier">string</span></dt><dd><p>Complete path of the file that you would like print.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>last_3lines<span class="classifier">string</span></dt><dd><p>Last three lines of the input file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.runwrf.read_last_line">
+<code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">read_last_line</code><span class="sig-paren">(</span><em class="sig-param">file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.read_last_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the last line of a file.</p>
+<dl class="simple">
+<dt>file_name<span class="classifier">string</span></dt><dd><p>Complete path of the file that you would like read.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>last_line<span class="classifier">string</span></dt><dd><p>Last line of the input file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-optwrf.simplega">
+<span id="optwrf-simplega-module"></span><h2>optwrf.simplega module<a class="headerlink" href="#module-optwrf.simplega" title="Permalink to this headline">¶</a></h2>
+<p>A simple genetic algorithm for optimizing the WRF model physics.
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Known Issues/Wishlist:</p>
+<dl class="class">
+<dt id="optwrf.simplega.Chromosome">
+<em class="property">class </em><code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">Chromosome</code><span class="sig-paren">(</span><em class="sig-param">genes</em>, <em class="sig-param">fitness=None</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.Chromosome" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.simplega.crossover">
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">crossover</code><span class="sig-paren">(</span><em class="sig-param">mating_population</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.crossover" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="optwrf.simplega.display">
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">display</code><span class="sig-paren">(</span><em class="sig-param">individual</em>, <em class="sig-param">start_time</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.display" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="optwrf.simplega.display_pop">
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">display_pop</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">fn_display</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.display_pop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="optwrf.simplega.find_elites">
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">find_elites</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">n_elites</em>, <em class="sig-param">fn_display_pop</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.find_elites" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="optwrf.simplega.generate_genes">
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">generate_genes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.generate_genes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="optwrf.simplega.generate_population">
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">generate_population</code><span class="sig-paren">(</span><em class="sig-param">pop_size</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.generate_population" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="optwrf.simplega.get_best">
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">get_best</code><span class="sig-paren">(</span><em class="sig-param">population</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.get_best" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="optwrf.simplega.mutate">
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">mutate</code><span class="sig-paren">(</span><em class="sig-param">offspring_population</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.mutate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="optwrf.simplega.selection">
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">selection</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">pop_size</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.selection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-optwrf.wrfparams">
+<span id="optwrf-wrfparams-module"></span><h2>optwrf.wrfparams module<a class="headerlink" href="#module-optwrf.wrfparams" title="Permalink to this headline">¶</a></h2>
+<p>Generates sets of WRF physics parameters, finds corresponding numeric identifies,
+and writes the numeric paramter options to a CSV.
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Known Issues/Wishlist:
+- It would be better if I could read in the parameters from the in_yaml
+file only once, but I’m not sure how variables across different
+functions in the same module work.</p>
+<dl class="function">
+<dt id="optwrf.wrfparams.apply_dependencies">
+<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">apply_dependencies</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.apply_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies depependencies among parameters discovered during runtime</p>
+<dl class="simple">
+<dt>param_ids: list</dt><dd><p>List of WRF physics parameters</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>param_ids: list</dt><dd><p>List of WRF physics parameters after known dependencies have been applied</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.wrfparams.combine">
+<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">combine</code><span class="sig-paren">(</span><em class="sig-param">lst1</em>, <em class="sig-param">lst2</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.combine" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="optwrf.wrfparams.filldefault">
+<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">filldefault</code><span class="sig-paren">(</span><em class="sig-param">in_yaml</em>, <em class="sig-param">in_param_ids</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.filldefault" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="optwrf.wrfparams.flexible_generate">
+<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">flexible_generate</code><span class="sig-paren">(</span><em class="sig-param">generate_params=True</em>, <em class="sig-param">mp=None</em>, <em class="sig-param">lw=None</em>, <em class="sig-param">sw=None</em>, <em class="sig-param">lsm=None</em>, <em class="sig-param">pbl=None</em>, <em class="sig-param">cu=None</em>, <em class="sig-param">in_yaml='params.yml'</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.flexible_generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a parameter combination of the 6 core parameters if the user has specified this option.
+Otherwise, use specified input parameters and use defaults for the remaining paramters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.wrfparams.generate">
+<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">generate</code><span class="sig-paren">(</span><em class="sig-param">in_yaml='params.yml'</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a random set of parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.wrfparams.ids2str">
+<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">ids2str</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.ids2str" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="optwrf.wrfparams.name2num">
+<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">name2num</code><span class="sig-paren">(</span><em class="sig-param">in_yaml='params.yml'</em>, <em class="sig-param">use_defaults=True</em>, <em class="sig-param">mp_in='morrison2mom'</em>, <em class="sig-param">lw_in='rrtm'</em>, <em class="sig-param">sw_in='dudia'</em>, <em class="sig-param">lsm_in='noah'</em>, <em class="sig-param">pbl_in='myj'</em>, <em class="sig-param">clo_in='grell-freitas'</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.name2num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maps the name of the parameterization,
+which is defined generally by the name of the individual or
+institution that designed the scheme, to the namelist.input value.
+The default value of these parameterization schemes is set by those that
+were originally used by ICF in the study over NYC.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.wrfparams.pbl2sfclay">
+<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">pbl2sfclay</code><span class="sig-paren">(</span><em class="sig-param">id_pbl</em>, <em class="sig-param">rnd=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.pbl2sfclay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assigns the surface layer scheme based on the
+specified or randomly selected PBL scheme. If multiple surface layer
+schemes are available, one may be selected at random by setting rnd = True.
+Otherwise, sf_sfclay defaults to option 1 (the revised MM5 scheme).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.wrfparams.write_param_csv">
+<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">write_param_csv</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em>, <em class="sig-param">fitness</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.write_param_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is deprecated.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-optwrf">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-optwrf" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">optwrf package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-optwrf.linuxhelper">optwrf.linuxhelper module</a></li>
+<li><a class="reference internal" href="#module-optwrf.optimize_wrf_physics">optwrf.optimize_wrf_physics module</a></li>
+<li><a class="reference internal" href="#module-optwrf.runwrf">optwrf.runwrf module</a></li>
+<li><a class="reference internal" href="#module-optwrf.simplega">optwrf.simplega module</a></li>
+<li><a class="reference internal" href="#module-optwrf.wrfparams">optwrf.wrfparams module</a></li>
+<li><a class="reference internal" href="#module-optwrf">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="previous chapter">optwrf</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="optwrf.data.html"
+                        title="next chapter">optwrf.data package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/optwrf.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="optwrf.data.html" title="optwrf.data package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="optwrf"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">optwrf 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >optwrf</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeffrey A Sward.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+    </div>
+  </body>
+</html>
