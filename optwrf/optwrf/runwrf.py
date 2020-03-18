@@ -107,12 +107,17 @@ class WRFModel:
 
     def runwrf_finish_check(self, program, nprocs=8):
         """
-        Check if a specified WRF subprogram has finished running.
+        Check if a specified WRF subprogram has finished running. Does this specifically by
+        checking the first and the last rsl.out.* file created by each processor running
+        either wrf.exe or real.exe via OpenMPI.
 
         Parameters:
         ----------
         program : string
             WRF or WPS subprogram name whose status is to be checked.
+
+        nprocs : integer
+            Number of processors that you are using to run real.exe and wrf.exe.
 
         Returns:
         ----------
@@ -1021,6 +1026,7 @@ class WRFModel:
         os.system(CMD_REGRID)
 
         # Extract the total error after the script has run
+        startTimeInt = int(time.time())
         error_file = self.DIR_WRFOUT + 'mae_wrfyera_' + self.paramstr + '.csv'
         while not os.path.exists(error_file):
             log_message = read_last_3lines('log.regrid')
@@ -1028,6 +1034,10 @@ class WRFModel:
                 print('NCL has failed with the following message:')
                 print_last_3lines('log.regrid')
                 raise RuntimeError
+            elif (int(time.time()) - startTimeInt) < 600:
+                print('TimeoutError in wrf2era_error.ncl: took more than 10min to run... returning large error values.')
+                mae = [0, 6.022*10**23, 6.022*10**23]
+                return mae
             else:
                 time.sleep(1)
         mae = read_last_line(error_file)
