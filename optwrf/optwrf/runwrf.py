@@ -105,7 +105,7 @@ class WRFModel:
             self.CMD_REAL = 'sbatch ' + self.DIR_WRFOUT + 'template_runreal.csh ' + self.DIR_WRFOUT
             self.CMD_WRF = 'sbatch ' + self.DIR_WRFOUT + 'template_runwrf.csh ' + self.DIR_WRFOUT
 
-    def runwrf_finish_check(self, program):
+    def runwrf_finish_check(self, program, nprocs=8):
         """
         Check if a specified WRF subprogram has finished running.
 
@@ -135,10 +135,16 @@ class WRFModel:
             msg = read_last_line(self.DIR_WRFOUT + 'rsl.out.0000')
             complete = 'SUCCESS COMPLETE REAL' in msg
             failed = '-------------------------------------------' in msg
+            if not complete and not failed:
+                msg = read_last_line(self.DIR_WRFOUT + 'rsl.out.00' + str(nprocs - 1).zfill(2))
+                failed = '-------------------------------------------' in msg
         elif program == 'wrf':
             msg = read_last_line(self.DIR_WRFOUT + 'rsl.out.0000')
             complete = 'SUCCESS COMPLETE WRF' in msg
             failed = '-------------------------------------------' in msg
+            if not complete and not failed:
+                msg = read_last_line(self.DIR_WRFOUT + 'rsl.out.00' + str(nprocs - 1).zfill(2))
+                failed = '-------------------------------------------' in msg
         else:
             complete = False
             failed = False
