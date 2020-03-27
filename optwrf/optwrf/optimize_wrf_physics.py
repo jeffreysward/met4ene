@@ -5,7 +5,6 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 Known Issues/Wishlist:
 - This whole things needs to change...
     - I want the thread pool executor to operate within a Class or a function.
-    - It would be cool if PyCharm recognized the SQL syntax.
 
 """
 
@@ -152,7 +151,7 @@ def get_individual_by_genes(individual, db_conn):
                'sf_sfclay_physics': individual.Genes[6]})
     sim_data = c.fetchone()
     if sim_data is not None:
-        past_sim = Chromosome(list(sim_data[0:-1]), sim_data[-1])
+        past_sim = Chromosome(list(sim_data[1:-1]), sim_data[-1], sim_data[0])
     else:
         return None
     return past_sim

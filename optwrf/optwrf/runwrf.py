@@ -677,7 +677,7 @@ class WRFModel:
                 wrf_sim = self.runwrf_finish_check('wrf')
             else:
                 print(f'TimeoutError in run_wrf at {datetime.datetime.now()}: '
-                      f'WRF took more than {wrf_runtime/3600} hrs to run... exiting.')
+                      f'WRF took more than {wrf_runtime / 3600} hrs to run... exiting.')
                 return False
         if self.verbose:
             print('WRF finished running at: ' + str(datetime.datetime.now()))
@@ -1036,7 +1036,7 @@ class WRFModel:
                 raise RuntimeError
             elif (int(time.time()) - startTimeInt) < 600:
                 print('TimeoutError in wrf2era_error.ncl: took more than 10min to run... returning large error values.')
-                mae = [0, 6.022*10**23, 6.022*10**23]
+                mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
                 return mae
             else:
                 time.sleep(1)
