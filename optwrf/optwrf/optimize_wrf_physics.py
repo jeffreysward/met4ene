@@ -1,5 +1,6 @@
 """
 A framework to run the simple genetic algorithm for optimizing the WRF model physics.
+All simulation parameters and fitness values are saved in an SQL database.
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 Known Issues/Wishlist:
 - This whole things needs to change...
@@ -12,49 +13,119 @@ import concurrent.futures
 import datetime
 import random
 import sqlite3
+import csv
 import time
 
 from optwrf.runwrf import WRFModel
 import optwrf.simplega as simplega
 from optwrf.simplega import Chromosome
-from optwrf.wrfparams import write_param_csv
 
 
-def insert_sim(individual, conn, c):
+# class Fitness:
+#     def __init__(self, total_error):
+#         self.TotalError = total_error
+#
+#     def __gt__(self, other):
+#         self.TotalError < other.TotalError
+
+
+def conn_to_db(db_name='optwrf.db'):
     """
-    Inserts a simulation into the SQL database held in memory or written to a file.
+        Opens the connection to a SQL database.
+
+        Parameters:
+        ----------
+        db_name : SQL database name
+            Can be ':memory:' if you only want the database to be held in memory
+
+        Returns:
+        --------
+        db_conn : database connection object
+
+    """
+    db_conn = sqlite3.connect(db_name)
+    c = db_conn.cursor()
+    with db_conn:
+        c.execute("""CREATE TABLE IF NOT EXISTS simulations (
+                        start_date DATE,
+                        mp_physics INTEGER, 
+                        ra_lw_physics INTEGER,
+                        ra_sw_physics INTEGER,
+                        sf_surface_physics INTEGER,
+                        bl_pbl_physics INTEGER,
+                        cu_physics INTEGER,
+                        sf_sfclay_physics INTEGER,
+                        fitness FLOAT 
+                        )""")
+    return db_conn
+
+
+def insert_sim(individual, db_conn):
+    """
+    Inserts a simulation into the SQL database held in memory or written to a .db file.
 
     Parameters:
     ----------
     individual : simplega.Chromosome instance
         The simulation that you would like to add to the simulation database.
-    conn :
-        lorem ipsum
-    c :
+    db_conn :
         lorem ipsum
 
     """
 
     print(f'...Adding {individual.Genes} to the simulation database...')
-    with conn:
+    c = db_conn.cursor()
+    with db_conn:
         c.execute("""INSERT INTO simulations VALUES (
-                    :mp_physics, :ra_lw_physics, :ra_sw_physics, :sf_surface_physics, 
+                    :start_date, :mp_physics, :ra_lw_physics, :ra_sw_physics, :sf_surface_physics, 
                     :bl_pbl_physics, :cu_physics, :sf_sfclay_physics, :fitness)""",
-            {'mp_physics': individual.Genes[0], 'ra_lw_physics': individual.Genes[1],
-             'ra_sw_physics': individual.Genes[2], 'sf_surface_physics': individual.Genes[3],
-             'bl_pbl_physics': individual.Genes[4], 'cu_physics': individual.Genes[5],
-             'sf_sfclay_physics': individual.Genes[6], 'fitness': individual.Fitness})
+                  {'start_date': individual.Start_date, 'mp_physics': individual.Genes[0],
+                   'ra_lw_physics': individual.Genes[1],
+                   'ra_sw_physics': individual.Genes[2], 'sf_surface_physics': individual.Genes[3],
+                   'bl_pbl_physics': individual.Genes[4], 'cu_physics': individual.Genes[5],
+                   'sf_sfclay_physics': individual.Genes[6], 'fitness': individual.Fitness})
 
 
-def get_individual_by_genes(geneset, c):
+def update_sim(individual, db_conn):
+    """
+    Inserts a simulation into the SQL database held in memory or written to a .db file.
+
+    Parameters:
+    ----------
+    individual : simplega.Chromosome instance
+        The simulation that you would like to add to the simulation database.
+    db_conn :
+        lorem ipsum
+
+    """
+
+    print(f'...Updating {individual.Genes} in the simulation database...')
+    c = db_conn.cursor()
+    with db_conn:
+        c.execute("""UPDATE simulations 
+                    SET start_date = :start_date, 
+                    fitness = :fitness 
+                    WHERE mp_physics = :mp_physics
+                    AND ra_lw_physics = :ra_lw_physics
+                    AND ra_sw_physics = :ra_sw_physics
+                    AND sf_surface_physics = :sf_surface_physics
+                    AND bl_pbl_physics = :bl_pbl_physics
+                    AND cu_physics = :cu_physics
+                    AND sf_sfclay_physics = :sf_sfclay_physics""",
+                    {'start_date': individual.Start_date, 'fitness': individual.Fitness,
+                    'mp_physics': individual.Genes[0], 'ra_lw_physics': individual.Genes[1],
+                    'ra_sw_physics': individual.Genes[2], 'sf_surface_physics': individual.Genes[3],
+                    'bl_pbl_physics': individual.Genes[4], 'cu_physics': individual.Genes[5],
+                    'sf_sfclay_physics': individual.Genes[6]})
+
+
+def get_individual_by_genes(individual, db_conn):
     """
     Looks for an indivual set of genes in an SQLite database.
 
     Parameters:
     ----------
-    geneset :
-        lorem ipsum
-    c :
+    individual : Chromosome Class instance
         lorem ipsum
 
     Returns:
@@ -64,18 +135,21 @@ def get_individual_by_genes(geneset, c):
 
     """
 
+    c = db_conn.cursor()
     c.execute("""SELECT * FROM simulations 
-                WHERE mp_physics = :mp_physics
+                WHERE start_date = :start_date
+                AND mp_physics = :mp_physics
                 AND ra_lw_physics = :ra_lw_physics
                 AND ra_sw_physics = :ra_sw_physics
                 AND sf_surface_physics = :sf_surface_physics
                 AND bl_pbl_physics = :bl_pbl_physics
                 AND cu_physics = :cu_physics
                 AND sf_sfclay_physics = :sf_sfclay_physics""",
-              {'mp_physics': geneset[0], 'ra_lw_physics': geneset[1],
-               'ra_sw_physics': geneset[2], 'sf_surface_physics': geneset[3],
-               'bl_pbl_physics': geneset[4], 'cu_physics': geneset[5],
-               'sf_sfclay_physics': geneset[6]})
+              {'start_date': individual.Start_date, 'mp_physics': individual.Genes[0],
+               'ra_lw_physics': individual.Genes[1],
+               'ra_sw_physics': individual.Genes[2], 'sf_surface_physics': individual.Genes[3],
+               'bl_pbl_physics': individual.Genes[4], 'cu_physics': individual.Genes[5],
+               'sf_sfclay_physics': individual.Genes[6]})
     sim_data = c.fetchone()
     if sim_data is not None:
         past_sim = Chromosome(list(sim_data[0:-1]), sim_data[-1])
@@ -84,12 +158,62 @@ def get_individual_by_genes(geneset, c):
     return past_sim
 
 
-# class Fitness:
-#     def __init__(self, total_error):
-#         self.TotalError = total_error
-#
-#     def __gt__(self, other):
-#         self.TotalError < other.TotalError
+def print_database(db_conn):
+    """
+        Prints the entire SQLite simulation database.
+
+        Parameters:
+        ----------
+        db_conn :
+            lorem ipsum
+
+    """
+
+    c = db_conn.cursor()
+    c.execute("""SELECT * FROM simulations""")
+    print('----------------------------SIMULATIONS----------------------------')
+    # Extract the table headers.
+    headers = [i[0] for i in c.description]
+    print(headers)
+    for entry in c.fetchall():
+        print(entry)
+
+
+def sql_to_csv(csv_file_path, db_conn):
+    """
+    Writes the contents of a SQL database to a CSV file. The SQL database must
+    be in the directory that you are running this function from.
+
+    Parameters:
+    ----------
+    csv_file_path : string
+        Exact path to where you would like to csv to be saved ending with the file name.
+        e.g., csv_file_path = '/home/jas983/data/test.csv'
+    db_conn : database connection object
+
+    """
+
+    c = db_conn.cursor()
+    c.execute("""SELECT * FROM simulations""")
+    header = [i[0] for i in c.description]
+    csv_writer = csv.writer(open(csv_file_path, "w"))
+    csv_data = c.fetchall()
+    csv_writer.writerow(header)
+    csv_writer.writerows(csv_data)
+
+
+def close_conn_to_db(db_conn):
+    """
+        Closes the connection to a SQL database.
+
+        Parameters:
+        ----------
+        db_conn : SQL database name
+            Can be ':memory:' if you only want the database to be held in memory
+
+    """
+
+    db_conn.close()
 
 
 def get_fitness(param_ids):
@@ -189,7 +313,7 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         wpd_mean_error = mae[2]
         fitness = ghi_mean_error + correction_factor * wpd_mean_error
     else:
-        fitness = 6.022*10**23
+        fitness = 6.022 * 10 ** 23
 
     # The following comment is deprecated code ... I now use an SQLite database to hold simulaiton information.
     # Write parameter combinations to CSV
@@ -221,22 +345,11 @@ def run_simplega(pop_size, n_generations, testing=False):
         The simulation preforming the best in the genetic algorithm.
 
     """
-    db_name = f'optwrf_n{pop_size}_g{n_generations}.db'
-    conn = sqlite3.connect(db_name)
-    c = conn.cursor()
-    c.execute("""CREATE TABLE simulations (
-                mp_physics INTEGER, 
-                ra_lw_physics INTEGER,
-                ra_sw_physics INTEGER,
-                sf_surface_physics INTEGER,
-                bl_pbl_physics INTEGER,
-                cu_physics INTEGER,
-                sf_sfclay_physics INTEGER,
-                fitness FLOAT 
-                )""")
+
+    db_conn = conn_to_db()
 
     start_time = datetime.datetime.now()
-    n_elites = int(0.34*pop_size) if int(0.34*pop_size) > 0 else 1
+    n_elites = int(0.34 * pop_size) if int(0.34 * pop_size) > 0 else 1
     print('The number of elites is {}'.format(n_elites))
 
     def fn_display(individual):
@@ -269,7 +382,7 @@ def run_simplega(pop_size, n_generations, testing=False):
             for individual in pop:
                 if individual.Fitness is None:
                     # Check to see if this individual already exists in the simulation database
-                    past_individual = get_individual_by_genes(individual.Genes, c)
+                    past_individual = get_individual_by_genes(individual, db_conn)
                     # If not, execute a new thread to calculate the fitness
                     if past_individual is None:
                         if not testing:
@@ -294,7 +407,7 @@ def run_simplega(pop_size, n_generations, testing=False):
             for individual in pop:
                 if individual.Fitness is None:
                     individual.Fitness = fitness_matrix[ii]
-                    insert_sim(individual, conn, c)
+                    insert_sim(individual, db_conn)
                 ii += 1
         fn_display_pop(pop)
 
@@ -346,7 +459,8 @@ def run_simplega(pop_size, n_generations, testing=False):
 
     WRFga_winner = simplega.get_best(population)
     print(f'\nWRFga finished running in {datetime.datetime.now() - start_time}')
-    print(f'{WRFga_winner.Genes} is the best parameter combination')
+    print(f'{WRFga_winner.Genes} is the best parameter combination; all simulations are below')
+    print_database(db_conn)
+    close_conn_to_db(db_conn)
 
-    conn.close()
     return WRFga_winner

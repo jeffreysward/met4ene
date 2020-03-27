@@ -13,10 +13,10 @@ import optwrf.wrfparams as wrfparams
 
 # Define a Chromosome class the provides information about each unique individual
 class Chromosome:
-    def __init__(self, genes, fitness=None):
+    def __init__(self, genes, fitness=None, start_date=None):
         self.Genes = genes
         self.Fitness = fitness
-        self.Age = 0
+        self.Start_date = start_date
 
 
 def display(individual, start_time):

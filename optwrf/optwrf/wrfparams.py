@@ -16,20 +16,17 @@ import yaml
 
 import sys
 
-# Add the data directory to the python path
-# yaml_file = os.path.join(os.path.dirname(__file__), '/data/params.yml')
-# print(yaml_file)
 
 def generate(in_yaml='params.yml'):
     """
     Generates a random set of parameters.
 
     Parameters:
-    ----------
+    -----------
 
 
     Returns:
-    ----------
+    --------
 
     """
 
@@ -67,11 +64,11 @@ def name2num(in_yaml='params.yml', use_defaults=True, mp_in="morrison2mom", lw_i
     were originally used by ICF in the study over NYC.
 
     Parameters:
-    ----------
+    -----------
 
 
     Returns:
-    ----------
+    --------
 
     """
 
@@ -125,11 +122,11 @@ def combine(lst1, lst2):
 
 
     Parameters:
-    ----------
+    -----------
 
 
     Returns:
-    ----------
+    --------
 
     """
 
@@ -149,11 +146,11 @@ def filldefault(in_yaml, in_param_ids):
 
 
     Parameters:
-    ----------
+    -----------
 
 
     Returns:
-    ----------
+    --------
 
     """
 
@@ -175,11 +172,11 @@ def pbl2sfclay(id_pbl, rnd=False):
     Otherwise, sf_sfclay defaults to option 1 (the revised MM5 scheme).
 
     Parameters:
-    ----------
+    -----------
 
 
     Returns:
-    ----------
+    --------
 
     """
 
@@ -236,11 +233,11 @@ def flexible_generate(generate_params=True, mp=None, lw=None, sw=None,
     Otherwise, use specified input parameters and use defaults for the remaining paramters.
 
     Parameters:
-    ----------
+    -----------
 
 
     Returns:
-    ----------
+    --------
 
     """
 
@@ -291,13 +288,13 @@ def apply_dependencies(param_ids):
     Applies depependencies among parameters discovered during runtime
 
     Parameters:
-    ----------
+    -----------
     param_ids: list
         List of WRF physics parameters
 
 
     Returns:
-    -------
+    --------
     param_ids: list
         List of WRF physics parameters after known dependencies have been applied
 
@@ -318,11 +315,11 @@ def ids2str(param_ids):
 
 
     Parameters:
-    ----------
+    -----------
 
 
     Returns:
-    ----------
+    --------
 
     """
 
@@ -330,31 +327,3 @@ def ids2str(param_ids):
                (param_ids[0], param_ids[1], param_ids[2],
                 param_ids[3], param_ids[4], param_ids[5])
     return paramstr
-
-
-def write_param_csv(param_ids, fitness):
-    """
-
-
-    This function is deprecated.
-
-    Parameters:
-    ----------
-
-
-    Returns:
-    ----------
-
-    """
-
-    runwrfcsv = 'paramfeed_runwrf.csv'
-    if not os.path.exists(runwrfcsv):
-        csvData = [['ra_lw_physics', 'ra_sw_physics', 'sf_surface_physics',
-                    'bl_pbl_physics', 'cu_physics', 'sf_sfclay_physics', 'FITNESS'], [param_ids, fitness]]
-        with open(runwrfcsv, 'w') as csvFile:
-            writer = csv.writer(csvFile)
-            writer.writerows(csvData)
-    else:
-        with open(runwrfcsv, 'a') as csvFile:
-            writer = csv.writer(csvFile)
-            writer.writerow(param_ids)
