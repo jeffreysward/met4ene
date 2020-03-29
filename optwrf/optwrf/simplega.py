@@ -160,7 +160,10 @@ def crossover(mating_population):
         child2_genes = parent2_genes
         gene_idx = random.randint(0, len(parent1_genes) - 1)
         child1_genes[gene_idx], child2_genes[gene_idx] = parent2_genes[gene_idx], parent1_genes[gene_idx]
-        offspring = [Chromosome(child1_genes), Chromosome(child2_genes)]
+        child1_start_date, child1_end_date = generate_random_dates()
+        child2_start_date, child2_end_date = generate_random_dates()
+        offspring = [Chromosome(child1_genes, child1_start_date, child1_end_date),
+                     Chromosome(child2_genes, child2_start_date, child2_end_date)]
     else:
         offspring = None
     return offspring

@@ -12,7 +12,7 @@ using runwrf_fromCL.py for this purpose.
 import os
 
 from optwrf.runwrf import WRFModel
-from optwrf.runwrf import determine_computer, format_date, generate_random_dates
+from optwrf.runwrf import determine_computer, format_date
 
 param_ids = [10, 1, 1, 2, 2, 3, 2]
 start_date = 'Dec 31, 2011 00'
@@ -31,14 +31,6 @@ def test_format_date():
     date = format_date(start_date)
     print(f'Starting forecast at {date}')
     assert date is not None
-
-
-def test_generate_random_dates():
-    random_start_date, random_end_date = generate_random_dates()
-    print(f'Starting forecast at {random_start_date}')
-    print(f'Ending forecast at {random_end_date}')
-    assert random_start_date is not None
-    assert random_end_date is not None
 
 
 def test_WRFModel():

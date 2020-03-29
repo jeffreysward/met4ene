@@ -215,7 +215,7 @@ def close_conn_to_db(db_conn):
     db_conn.close()
 
 
-def get_fitness(param_ids):
+def get_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011'):
     """
     This function produces a random fitness value between 0 - 100
 
@@ -388,7 +388,8 @@ def run_simplega(pop_size, n_generations, testing=False):
                             fitness_threads.append(executor.submit(get_wrf_fitness, individual.Genes,
                                                                    individual.Start_date, individual.End_date))
                         else:
-                            fitness_threads.append(executor.submit(get_fitness, individual.Genes))
+                            fitness_threads.append(executor.submit(get_fitness, individual.Genes,
+                                                                   individual.Start_date, individual.End_date))
                     else:
                         individual.Fitness = past_individual.Fitness
                         fitness_threads.append(None)

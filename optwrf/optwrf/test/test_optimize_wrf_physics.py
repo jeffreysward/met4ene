@@ -18,6 +18,14 @@ end_date = 'Jan 1 2012'
 on_aws, on_cheyenne, on_magma = determine_computer()
 
 
+def test_generate_random_dates():
+    random_start_date, random_end_date = sga.generate_random_dates()
+    print(f'Starting forecast at {random_start_date}')
+    print(f'Ending forecast at {random_end_date}')
+    assert random_start_date is not None
+    assert random_end_date is not None
+
+
 def test_get_wrf_fitness():
     if [on_aws, on_cheyenne, on_magma].count(True) is 0:
         print('\n!!!Not running test_wrf_era5_diff -- switch to Magma, Cheyenne, or AWS!!!')
@@ -27,7 +35,7 @@ def test_get_wrf_fitness():
 
 
 def test_run_simplega():
-    WRFga_winner = run_simplega(pop_size=10, n_generations=4, testing=True)
+    WRFga_winner = run_simplega(pop_size=4, n_generations=2, testing=True)
     assert WRFga_winner.Fitness >= 0
 
 
