@@ -385,7 +385,8 @@ def run_simplega(pop_size, n_generations, testing=False):
                     # If not, execute a new thread to calculate the fitness
                     if past_individual is None:
                         if not testing:
-                            fitness_threads.append(executor.submit(get_wrf_fitness, individual.Genes))
+                            fitness_threads.append(executor.submit(get_wrf_fitness, individual.Genes,
+                                                                   individual.Start_date, individual.End_date))
                         else:
                             fitness_threads.append(executor.submit(get_fitness, individual.Genes))
                     else:
@@ -409,12 +410,6 @@ def run_simplega(pop_size, n_generations, testing=False):
                     insert_sim(individual, db_conn)
                 ii += 1
         fn_display_pop(pop)
-
-        # # The following block is legacy code to run in serial
-        # for individual in pop:
-        #     if individual.Fitness is None:
-        #         individual.Fitness = get_fitness(individual.Genes)
-        # fn_display_pop(pop)
 
     # Create an initial population
     population = simplega.generate_population(pop_size)
