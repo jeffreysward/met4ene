@@ -9,21 +9,20 @@ check_file_status() as well.
 
 """
 
-import sys
-import os
-
 import calendar
-import dateutil
-import requests
-import time
 import datetime
-import yaml
-
-import numpy as np
-import pandas as pd
-import xarray as xr
+import dateutil
 import netCDF4
+import numpy as np
+import os
+import pandas as pd
+import random
+import requests
+import sys
+import time
 import wrf
+import xarray as xr
+import yaml
 
 from pvlib.wrfcast import WRF
 import optwrf.linuxhelper as lh
@@ -1310,7 +1309,7 @@ def format_date(in_date):
         ----------
         datetime64 array specifying the date
 
-        """
+    """
 
     for fmt in ('%b %d %Y', '%B %d %Y', '%b %d, %Y', '%B %d, %Y',
                 '%m-%d-%Y', '%m.%d.%Y', '%m/%d/%Y',
@@ -1321,3 +1320,41 @@ def format_date(in_date):
         except ValueError:
             pass
     raise ValueError('No valid date format found; please use a common US format (e.g., Jan 01, 2011 00)')
+
+
+def generate_random_dates(year=2011, n_days=1):
+    """
+        Generates a random start date and end date for running the WRF model.
+        Start and end dates are offset by the parameter n_days, which is set to 1 as default
+
+        Parameters:
+        ----------
+        year : integer or None
+            Specifies the year within which you want random days to be selected.
+            If this is specified as None, random dates between Jan 1, 2000 and today can be selected.
+        n_days : integer
+            Specifies the nuber of days between the start and the end dates of the simulation.
+            The default is set to 1 day.
+
+        Returns:
+        ----------
+        random_start_date : datetime64
+            datetime64 array specifying the simulation start date
+        random_end_date : datetime64
+            datetime64 array specifying the simulation start date
+
+    """
+    if year is None:
+        start_date = datetime.date(2000, 1, 1)
+        end_date = datetime.date.today()
+    else:
+        start_date = datetime.date(year, 1, 1)
+        end_date = datetime.date(year, 12, 31)
+
+    time_between_dates = end_date - start_date
+    days_between_dates = time_between_dates.days
+    random_number_of_days = random.randrange(days_between_dates)
+    random_start_date = start_date + datetime.timedelta(days=random_number_of_days)
+    random_end_date = random_start_date + datetime.timedelta(days=n_days)
+
+    return random_start_date, random_end_date

@@ -47,8 +47,8 @@ def test_update_sim():
     owp.insert_sim(individual, db_conn)
     print_database(db_conn)
     # Generate the same individual again
-    new_params = wp.flexible_generate()
-    individual = sga.Chromosome(new_params, fitness=50, start_date='Jan 1 2011')
+    # new_params = wp.flexible_generate()
+    individual = sga.Chromosome(param_ids, fitness=50, start_date='Jan 1 2011')
     # Update the database
     owp.update_sim(individual, db_conn)
     print_database(db_conn)
