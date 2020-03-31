@@ -195,18 +195,39 @@ Known Issues/Wishlist:</p>
 <div class="section" id="module-optwrf.optimize_wrf_physics">
 <span id="optwrf-optimize-wrf-physics"></span><h2>optwrf.optimize_wrf_physics<a class="headerlink" href="#module-optwrf.optimize_wrf_physics" title="Permalink to this headline">¶</a></h2>
 <p>A framework to run the simple genetic algorithm for optimizing the WRF model physics.
+All simulation parameters and fitness values are saved in an SQL database.
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 Known Issues/Wishlist:
 - This whole things needs to change…</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>I want the thread pool executor to operate within a Class or a function.</p></li>
-<li><p>It would be cool if PyCharm recognized the SQL syntax.</p></li>
 </ul>
 </div></blockquote>
 <dl class="function">
+<dt id="optwrf.optimize_wrf_physics.close_conn_to_db">
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">close_conn_to_db</code><span class="sig-paren">(</span><em class="sig-param">db_conn</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.close_conn_to_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the connection to a SQL database.</p>
+<dl class="simple">
+<dt>db_conn<span class="classifier">SQL database name</span></dt><dd><p>Can be ‘:memory:’ if you only want the database to be held in memory</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.optimize_wrf_physics.conn_to_db">
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">conn_to_db</code><span class="sig-paren">(</span><em class="sig-param">db_name='optwrf.db'</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.conn_to_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens the connection to a SQL database.</p>
+<dl class="simple">
+<dt>db_name<span class="classifier">SQL database name</span></dt><dd><p>Can be ‘:memory:’ if you only want the database to be held in memory</p>
+</dd>
+</dl>
+<p>db_conn : database connection object</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="optwrf.optimize_wrf_physics.get_fitness">
-<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">get_fitness</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.get_fitness" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">get_fitness</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em>, <em class="sig-param">start_date='Jan 15 2011'</em>, <em class="sig-param">end_date='Jan 16 2011'</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.get_fitness" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function produces a random fitness value between 0 - 100</p>
 <dl class="simple">
 <dt>param_ids<span class="classifier">list of integers</span></dt><dd><p>Numeric values corresponding to each WRF physics parameterization.</p>
@@ -220,12 +241,10 @@ Known Issues/Wishlist:
 
 <dl class="function">
 <dt id="optwrf.optimize_wrf_physics.get_individual_by_genes">
-<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">get_individual_by_genes</code><span class="sig-paren">(</span><em class="sig-param">geneset</em>, <em class="sig-param">c</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.get_individual_by_genes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">get_individual_by_genes</code><span class="sig-paren">(</span><em class="sig-param">individual</em>, <em class="sig-param">db_conn</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.get_individual_by_genes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Looks for an indivual set of genes in an SQLite database.</p>
 <dl class="simple">
-<dt>geneset :</dt><dd><p>lorem ipsum</p>
-</dd>
-<dt>c :</dt><dd><p>lorem ipsum</p>
+<dt>individual<span class="classifier">Chromosome Class instance</span></dt><dd><p>lorem ipsum</p>
 </dd>
 </dl>
 <dl class="simple">
@@ -261,14 +280,22 @@ this function runs the WRF model and computes the error between WRF and ERA5.</p
 
 <dl class="function">
 <dt id="optwrf.optimize_wrf_physics.insert_sim">
-<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">insert_sim</code><span class="sig-paren">(</span><em class="sig-param">individual</em>, <em class="sig-param">conn</em>, <em class="sig-param">c</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.insert_sim" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inserts a simulation into the SQL database held in memory or written to a file.</p>
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">insert_sim</code><span class="sig-paren">(</span><em class="sig-param">individual</em>, <em class="sig-param">db_conn</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.insert_sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts a simulation into the SQL database held in memory or written to a .db file.</p>
 <dl class="simple">
 <dt>individual<span class="classifier">simplega.Chromosome instance</span></dt><dd><p>The simulation that you would like to add to the simulation database.</p>
 </dd>
-<dt>conn :</dt><dd><p>lorem ipsum</p>
+<dt>db_conn :</dt><dd><p>lorem ipsum</p>
 </dd>
-<dt>c :</dt><dd><p>lorem ipsum</p>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.optimize_wrf_physics.print_database">
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">print_database</code><span class="sig-paren">(</span><em class="sig-param">db_conn</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.print_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints the entire SQLite simulation database.</p>
+<dl class="simple">
+<dt>db_conn :</dt><dd><p>lorem ipsum</p>
 </dd>
 </dl>
 </dd></dl>
@@ -290,6 +317,31 @@ that randomly selects a fitness value for each individual Chromosome.</p>
 </dl>
 <dl class="simple">
 <dt>WRFga_winner<span class="classifier">simplega.Chromosome instance</span></dt><dd><p>The simulation preforming the best in the genetic algorithm.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.optimize_wrf_physics.sql_to_csv">
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">sql_to_csv</code><span class="sig-paren">(</span><em class="sig-param">csv_file_path</em>, <em class="sig-param">db_conn</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.sql_to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the contents of a SQL database to a CSV file. The SQL database must
+be in the directory that you are running this function from.</p>
+<dl class="simple">
+<dt>csv_file_path<span class="classifier">string</span></dt><dd><p>Exact path to where you would like to csv to be saved ending with the file name.
+e.g., csv_file_path = ‘/home/jas983/data/test.csv’</p>
+</dd>
+</dl>
+<p>db_conn : database connection object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.optimize_wrf_physics.update_sim">
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">update_sim</code><span class="sig-paren">(</span><em class="sig-param">individual</em>, <em class="sig-param">db_conn</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.update_sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts a simulation into the SQL database held in memory or written to a .db file.</p>
+<dl class="simple">
+<dt>individual<span class="classifier">simplega.Chromosome instance</span></dt><dd><p>The simulation that you would like to add to the simulation database.</p>
+</dd>
+<dt>db_conn :</dt><dd><p>lorem ipsum</p>
 </dd>
 </dl>
 </dd></dl>
@@ -403,10 +455,14 @@ this function returns True (False).</p>
 
 <dl class="method">
 <dt id="optwrf.runwrf.WRFModel.runwrf_finish_check">
-<code class="sig-name descname">runwrf_finish_check</code><span class="sig-paren">(</span><em class="sig-param">program</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.runwrf_finish_check" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if a specified WRF subprogram has finished running.</p>
+<code class="sig-name descname">runwrf_finish_check</code><span class="sig-paren">(</span><em class="sig-param">program</em>, <em class="sig-param">nprocs=8</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.runwrf_finish_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a specified WRF subprogram has finished running. Does this specifically by
+checking the first and the last rsl.out.* file created by each processor running
+either wrf.exe or real.exe via OpenMPI.</p>
 <dl class="simple">
 <dt>program<span class="classifier">string</span></dt><dd><p>WRF or WPS subprogram name whose status is to be checked.</p>
+</dd>
+<dt>nprocs<span class="classifier">integer</span></dt><dd><p>Number of processors that you are using to run real.exe and wrf.exe.</p>
 </dd>
 </dl>
 <dl class="simple">
@@ -564,54 +620,168 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 Known Issues/Wishlist:</p>
 <dl class="class">
 <dt id="optwrf.simplega.Chromosome">
-<em class="property">class </em><code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">Chromosome</code><span class="sig-paren">(</span><em class="sig-param">genes</em>, <em class="sig-param">fitness=None</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.Chromosome" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">Chromosome</code><span class="sig-paren">(</span><em class="sig-param">genes</em>, <em class="sig-param">start_date</em>, <em class="sig-param">end_date</em>, <em class="sig-param">fitness=None</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.Chromosome" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 </dd></dl>
 
 <dl class="function">
 <dt id="optwrf.simplega.crossover">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">crossover</code><span class="sig-paren">(</span><em class="sig-param">mating_population</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.crossover" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The crossover operator takes in the genes of two parent individuals
+and randomly exchanges one gene between the two producing two offspring.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mating_population</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.simplega.display">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">display</code><span class="sig-paren">(</span><em class="sig-param">individual</em>, <em class="sig-param">start_time</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.display" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Aids in display of an individual Chromosome instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>individual</strong> – Chromosome instance</p></li>
+<li><p><strong>start_time</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.simplega.display_pop">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">display_pop</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">fn_display</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.display_pop" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Aids in display of an entire population.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>population</strong> – </p></li>
+<li><p><strong>fn_display</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.simplega.find_elites">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">find_elites</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">n_elites</em>, <em class="sig-param">fn_display_pop</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.find_elites" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Finds elites within the population</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>population</strong> – </p></li>
+<li><p><strong>n_elites</strong> – </p></li>
+<li><p><strong>fn_display_pop</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.simplega.generate_genes">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">generate_genes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.generate_genes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generates genes for a new individual to be placed within a population.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>new individual<span class="classifier">list</span></dt><dd><p>list of WRF model physics parameters</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.simplega.generate_population">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">generate_population</code><span class="sig-paren">(</span><em class="sig-param">pop_size</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.generate_population" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This method provides a way to randomly generate an initial population for the GA.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pop_size</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.simplega.generate_random_dates">
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">generate_random_dates</code><span class="sig-paren">(</span><em class="sig-param">year=2011</em>, <em class="sig-param">n_days=1</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.generate_random_dates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a random start date and end date for running the WRF model.
+Start and end dates are offset by the parameter n_days, which is set to 1 as default</p>
+<dl class="simple">
+<dt>year<span class="classifier">integer or None</span></dt><dd><p>Specifies the year within which you want random days to be selected.
+If this is specified as None, random dates between Jan 1, 2000 and today can be selected.</p>
+</dd>
+<dt>n_days<span class="classifier">integer</span></dt><dd><p>Specifies the nuber of days between the start and the end dates of the simulation.
+The default is set to 1 day.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>random_start_date<span class="classifier">datetime64</span></dt><dd><p>datetime64 array specifying the simulation start date</p>
+</dd>
+<dt>random_end_date<span class="classifier">datetime64</span></dt><dd><p>datetime64 array specifying the simulation start date</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.simplega.get_best">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">get_best</code><span class="sig-paren">(</span><em class="sig-param">population</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.get_best" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Finds the location of the individual within the population with the best fitness</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>population</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.simplega.mutate">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">mutate</code><span class="sig-paren">(</span><em class="sig-param">offspring_population</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.mutate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The mutate operator takes in the genes of one offspring
+and randomly replaces one of the genes from the set of choices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>offspring_population</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.simplega.selection">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">selection</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">pop_size</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.selection" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The selection operator carries out a tournament selection,
+by selecting the fittest individual among a group of randomly selected individuals,
+to create the mating population.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>population</strong> – </p></li>
+<li><p><strong>pop_size</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 <div class="section" id="module-optwrf.wrfparams">
@@ -682,12 +852,6 @@ were originally used by ICF in the study over NYC.</p>
 specified or randomly selected PBL scheme. If multiple surface layer
 schemes are available, one may be selected at random by setting rnd = True.
 Otherwise, sf_sfclay defaults to option 1 (the revised MM5 scheme).</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="optwrf.wrfparams.write_param_csv">
-<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">write_param_csv</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em>, <em class="sig-param">fitness</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.write_param_csv" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function is deprecated.</p>
 </dd></dl>
 
 </div>

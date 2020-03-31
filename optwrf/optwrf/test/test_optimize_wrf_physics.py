@@ -20,8 +20,8 @@ on_aws, on_cheyenne, on_magma = determine_computer()
 
 def test_generate_random_dates():
     random_start_date, random_end_date = sga.generate_random_dates()
-    print(f'Starting forecast at {random_start_date}')
-    print(f'Ending forecast at {random_end_date}')
+    print(f'Starting forecast on {random_start_date}')
+    print(f'Ending forecast on {random_end_date}')
     assert random_start_date is not None
     assert random_end_date is not None
 

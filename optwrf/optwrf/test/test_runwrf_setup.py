@@ -21,7 +21,7 @@ on_aws, on_cheyenne, on_magma = determine_computer()
 
 
 # I can't really think of a good way to test determine_computer without having to call the function over and over again
-# in subsequesnt tests, so I'm just going to omit it for now.
+# in subsequent tests, so I'm just going to omit it for now.
 def test_determine_computer():
     on_aws, on_cheyenne, on_magma = determine_computer()
     print(f'On AWS???: {on_aws}\nOn Cheyenne???: {on_cheyenne}\nOn Magma???: {on_magma}')

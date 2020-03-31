@@ -74,10 +74,10 @@ def generate_random_dates(year=2011, n_days=1):
 
     Returns:
     ----------
-    random_start_date : datetime64
-        datetime64 array specifying the simulation start date
-    random_end_date : datetime64
-        datetime64 array specifying the simulation start date
+    random_start_date : string
+        specifys the simulation start date
+    random_end_date : string
+        specifys the simulation end date
 
     """
     if year is None:
@@ -92,6 +92,8 @@ def generate_random_dates(year=2011, n_days=1):
     random_number_of_days = random.randrange(days_between_dates)
     random_start_date = start_date + datetime.timedelta(days=random_number_of_days)
     random_end_date = random_start_date + datetime.timedelta(days=n_days)
+    random_start_date = random_start_date.strftime('%b %d %Y')
+    random_end_date = random_end_date.strftime('%b %d %Y')
 
     return random_start_date, random_end_date
 

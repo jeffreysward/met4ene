@@ -16,7 +16,6 @@ import netCDF4
 import numpy as np
 import os
 import pandas as pd
-import random
 import requests
 import sys
 import time
