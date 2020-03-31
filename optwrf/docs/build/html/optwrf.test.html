@@ -178,32 +178,39 @@
 <dl class="function">
 <dt id="optwrf.test.test_optimize_wrf_physics.test_generate_random_dates">
 <code class="sig-prename descclassname">optwrf.test.test_optimize_wrf_physics.</code><code class="sig-name descname">test_generate_random_dates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_optimize_wrf_physics.test_generate_random_dates" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Check if start and end dates can be randomly generated.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.test.test_optimize_wrf_physics.test_get_wrf_fitness">
 <code class="sig-prename descclassname">optwrf.test.test_optimize_wrf_physics.</code><code class="sig-name descname">test_get_wrf_fitness</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_optimize_wrf_physics.test_get_wrf_fitness" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Checks to see if the WRF fitness can be calculated for the default simulaiton.
+For this, you must be on Magma, Cheyenne, or AWS.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.test.test_optimize_wrf_physics.test_print_database">
 <code class="sig-prename descclassname">optwrf.test.test_optimize_wrf_physics.</code><code class="sig-name descname">test_print_database</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_optimize_wrf_physics.test_print_database" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Checks to see if the contnts of a database can be successfully printed to the screen.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.test.test_optimize_wrf_physics.test_run_simplega">
 <code class="sig-prename descclassname">optwrf.test.test_optimize_wrf_physics.</code><code class="sig-name descname">test_run_simplega</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_optimize_wrf_physics.test_run_simplega" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Tests the genetic algroithm framework without running WRF.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.test.test_optimize_wrf_physics.test_sql_to_csv">
 <code class="sig-prename descclassname">optwrf.test.test_optimize_wrf_physics.</code><code class="sig-name descname">test_sql_to_csv</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_optimize_wrf_physics.test_sql_to_csv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Checks the function that writes the SQL database to a CSV file.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.test.test_optimize_wrf_physics.test_update_sim">
 <code class="sig-prename descclassname">optwrf.test.test_optimize_wrf_physics.</code><code class="sig-name descname">test_update_sim</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_optimize_wrf_physics.test_update_sim" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Checks to make sure that entries in the database can be updated.</p>
+</dd></dl>
 
 </div>
 <div class="section" id="module-optwrf.test.test_runwrf_postwrf">
@@ -233,45 +240,59 @@ using runwrf_fromCL.py for this purpose.</p>
 <div class="section" id="module-optwrf.test.test_runwrf_setup">
 <span id="optwrf-test-test-runwrf-setup"></span><h2>optwrf.test.test_runwrf_setup<a class="headerlink" href="#module-optwrf.test.test_runwrf_setup" title="Permalink to this headline">¶</a></h2>
 <p>Tests the runwrf functions before WRF has been run</p>
-<p>There is no test for run_wps(), run_real(), or run_wrf() because these
-programs are all computationally expensive and I don’t want them in this
-test suite. To test if WPS, REAL, and WRF are running correctly,
+<p>There is no test for optwrf.runwrf.run_real() or optwrf.runwrf.run_wrf() because
+these programs are all computationally expensive, and I don’t want them in this
+test suite. To test if REAL and WRF are running correctly,
 I should probably make a separate test, but right now, I have been
 using runwrf_fromCL.py for this purpose.</p>
+<p>I can’t really think of a good way to test determine_computer without having
+to call the function over and over again in subsequent tests,
+so I’m just going to omit it for now.</p>
+<p>Some of the tests will only be useful if you’re on a machine with the WRF
+source code downloaded (i.e., Magma, Cheyenne, or AWS). Otherwise, the test
+will automatically pass.</p>
 <dl class="function">
 <dt id="optwrf.test.test_runwrf_setup.test_WRFModel">
 <code class="sig-prename descclassname">optwrf.test.test_runwrf_setup.</code><code class="sig-name descname">test_WRFModel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_runwrf_setup.test_WRFModel" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="optwrf.test.test_runwrf_setup.test_determine_computer">
-<code class="sig-prename descclassname">optwrf.test.test_runwrf_setup.</code><code class="sig-name descname">test_determine_computer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_runwrf_setup.test_determine_computer" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Checks that the WRFModel method works correctly. The assert statements assume
+that you are using dirpth.yml not one made for a local machine. Should probably
+change this at some point…</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.test.test_runwrf_setup.test_format_date">
 <code class="sig-prename descclassname">optwrf.test.test_runwrf_setup.</code><code class="sig-name descname">test_format_date</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_runwrf_setup.test_format_date" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Checks the function that ensures consistency in the input date format.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.test.test_runwrf_setup.test_get_bc_data">
-<code class="sig-prename descclassname">optwrf.test.test_runwrf_setup.</code><code class="sig-name descname">test_get_bc_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_runwrf_setup.test_get_bc_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-prename descclassname">optwrf.test.test_runwrf_setup.</code><code class="sig-name descname">test_get_bc_data</code><span class="sig-paren">(</span><em class="sig-param">setup_yaml='mac_dirpath.yml'</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_runwrf_setup.test_get_bc_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if WRF boundary condition data can be downloaded from the RDA.
+This definitely works best if done on Magma using setup_yaml=’dirpath.yml’,
+but if you do want to run it on your local machine make sure that you change
+setup_yaml=’local_dirpath.yml’, where local_dirpath.yml is a yaml file where
+you specify root directory paths.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.test.test_runwrf_setup.test_prepare_namelists">
 <code class="sig-prename descclassname">optwrf.test.test_runwrf_setup.</code><code class="sig-name descname">test_prepare_namelists</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_runwrf_setup.test_prepare_namelists" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>If on AWS, Cheyenne, or Magma, tests that the template namelists can be edited
+to reflect the desired configuration for the current WRF model run.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.test.test_runwrf_setup.test_run_wps">
 <code class="sig-prename descclassname">optwrf.test.test_runwrf_setup.</code><code class="sig-name descname">test_run_wps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_runwrf_setup.test_run_wps" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>If on AWS, Cheyenne, or Magma, tests that WPS runs successfully.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.test.test_runwrf_setup.test_wrfdir_setup">
 <code class="sig-prename descclassname">optwrf.test.test_runwrf_setup.</code><code class="sig-name descname">test_wrfdir_setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.test.test_runwrf_setup.test_wrfdir_setup" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>If on AWS, Cheyenne, or Magma, tests that the WRF directory can be setup correclty.</p>
+</dd></dl>
 
 </div>
 </div>
