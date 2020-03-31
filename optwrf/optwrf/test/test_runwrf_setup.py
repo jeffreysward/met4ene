@@ -1,11 +1,19 @@
 """
 Tests the runwrf functions before WRF has been run
 
-There is no test for run_wps(), run_real(), or run_wrf() because these
-programs are all computationally expensive and I don't want them in this
-test suite. To test if WPS, REAL, and WRF are running correctly,
+There is no test for optwrf.runwrf.run_real() or optwrf.runwrf.run_wrf() because
+these programs are all computationally expensive, and I don't want them in this
+test suite. To test if REAL and WRF are running correctly,
 I should probably make a separate test, but right now, I have been
 using runwrf_fromCL.py for this purpose.
+
+I can't really think of a good way to test determine_computer without having
+to call the function over and over again in subsequent tests,
+so I'm just going to omit it for now.
+
+Some of the tests will only be useful if you're on a machine with the WRF
+source code downloaded (i.e., Magma, Cheyenne, or AWS). Otherwise, the test
+will automatically pass.
 
 """
 
@@ -15,25 +23,22 @@ from optwrf.runwrf import WRFModel
 from optwrf.runwrf import determine_computer, format_date
 
 param_ids = [10, 1, 1, 2, 2, 3, 2]
-start_date = 'Dec 31, 2011 00'
-end_date = 'Dec 31, 2011 23'
+start_date = 'Dec 31, 2011'
+end_date = 'Jan 1, 2012'
 on_aws, on_cheyenne, on_magma = determine_computer()
 
 
-# I can't really think of a good way to test determine_computer without having to call the function over and over again
-# in subsequent tests, so I'm just going to omit it for now.
-def test_determine_computer():
-    on_aws, on_cheyenne, on_magma = determine_computer()
-    print(f'On AWS???: {on_aws}\nOn Cheyenne???: {on_cheyenne}\nOn Magma???: {on_magma}')
-
-
 def test_format_date():
+    """Checks the function that ensures consistency in the input date format."""
     date = format_date(start_date)
     print(f'Starting forecast at {date}')
     assert date is not None
 
 
 def test_WRFModel():
+    """Checks that the WRFModel method works correctly. The assert statements assume
+    that you are using dirpth.yml not one made for a local machine. Should probably
+    change this at some point..."""
     wrf_sim = WRFModel(param_ids, start_date, end_date)
     assert wrf_sim.DIR_WRF == '/home/jas983/models/wrf/WRF/'
     assert wrf_sim.DIR_WPS_GEOG == '/share/mzhang/jas983/wrf_data/WPS_GEOG/'
@@ -41,13 +46,18 @@ def test_WRFModel():
     assert wrf_sim.start_date == start_date
 
 
-def test_get_bc_data():
+def test_get_bc_data(setup_yaml='mac_dirpath.yml'):
+    """Checks if WRF boundary condition data can be downloaded from the RDA.
+    This definitely works best if done on Magma using setup_yaml='dirpath.yml',
+    but if you do want to run it on your local machine make sure that you change
+    setup_yaml='local_dirpath.yml', where local_dirpath.yml is a yaml file where
+    you specify root directory paths."""
     if on_magma:
         wrf_sim = WRFModel(param_ids, start_date, end_date)
     else:
-        # I use this first one when testing on my local machines.
-        print(f'WARNING: this test requires you to manually provide setup_yaml!')
-        wrf_sim = WRFModel(param_ids, start_date, end_date, setup_yaml='linux_dirpath.yml')
+        print(f'WARNING: this test requires you to manually provide setup_yaml!\n'
+              f'You have specified {setup_yaml}.')
+        wrf_sim = WRFModel(param_ids, start_date, end_date, setup_yaml=setup_yaml)
     vtable_sfx = wrf_sim.get_bc_data()
     print(f'The following data files are in {wrf_sim.DIR_DATA_TMP}:\n')
     [print(name) for name in os.listdir(wrf_sim.DIR_DATA_TMP)]
@@ -55,9 +65,8 @@ def test_get_bc_data():
     assert len([name for name in os.listdir(wrf_sim.DIR_DATA_TMP)]) > 0
 
 
-# The next set of tests will only be useful if you're on a machine with the WRF source code downloaded (i.e., Magma,
-# Cheyenne, or AWS). Otherwise, the test will automatically pass. 
 def test_wrfdir_setup():
+    """If on AWS, Cheyenne, or Magma, tests that the WRF directory can be setup correclty."""
     if [on_aws, on_cheyenne, on_magma].count(True) is 0:
         print('\n!!!Not running test_wrfdir_setup -- switch to Magma, Cheyenne, or AWS.')
         return
@@ -68,6 +77,8 @@ def test_wrfdir_setup():
 
 
 def test_prepare_namelists():
+    """If on AWS, Cheyenne, or Magma, tests that the template namelists can be edited
+    to reflect the desired configuration for the current WRF model run."""
     if [on_aws, on_cheyenne, on_magma].count(True) is 0:
         print('\n!!!Not running test_prepare_namelists -- switch to Magma, Cheyenne, or AWS.')
         return
@@ -79,6 +90,7 @@ def test_prepare_namelists():
 
 
 def test_run_wps():
+    """If on AWS, Cheyenne, or Magma, tests that WPS runs successfully."""
     if [on_aws, on_cheyenne, on_magma].count(True) is 0:
         print('\n!!!Not running test_run_wps -- switch to Magma, Cheyenne, or AWS.')
         return

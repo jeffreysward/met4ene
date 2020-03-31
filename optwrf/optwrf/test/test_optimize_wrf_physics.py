@@ -18,6 +18,7 @@ on_aws, on_cheyenne, on_magma = determine_computer()
 
 
 def test_generate_random_dates():
+    """Check if start and end dates can be randomly generated."""
     random_start_date, random_end_date = sga.generate_random_dates()
     print(f'Starting forecast on {random_start_date}')
     print(f'Ending forecast on {random_end_date}')
@@ -26,6 +27,8 @@ def test_generate_random_dates():
 
 
 def test_get_wrf_fitness():
+    """Checks to see if the WRF fitness can be calculated for the default simulaiton.
+    For this, you must be on Magma, Cheyenne, or AWS."""
     if [on_aws, on_cheyenne, on_magma].count(True) is 0:
         print('\n!!!Not running test_wrf_era5_diff -- switch to Magma, Cheyenne, or AWS!!!')
         return
@@ -34,17 +37,20 @@ def test_get_wrf_fitness():
 
 
 def test_run_simplega():
+    """Tests the genetic algroithm framework without running WRF."""
     WRFga_winner = run_simplega(pop_size=4, n_generations=2, testing=True)
     assert WRFga_winner.Fitness >= 0
 
 
 def test_print_database():
+    """Checks to see if the contnts of a database can be successfully printed to the screen."""
     db_conn = conn_to_db('optwrf.db')
     print_database(db_conn)
     close_conn_to_db(db_conn)
 
 
 def test_update_sim():
+    """Checks to make sure that entries in the database can be updated."""
     # Generate a random set of parameters, a random start date, and a Chromosome
     r_start_date, r_end_date = sga.generate_random_dates()
     r_param_ids = wp.flexible_generate()
@@ -62,6 +68,7 @@ def test_update_sim():
 
 
 def test_sql_to_csv():
+    """Checks the function that writes the SQL database to a CSV file."""
     csv_outfile = 'optwrf_database.csv'
     db_conn = conn_to_db('optwrf.db')
     sql_to_csv(csv_outfile, db_conn)
