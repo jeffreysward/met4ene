@@ -7,6 +7,7 @@ Known Issues/Wishlist:
 - I'm unhappy with the output to screen from rda_download(). Perhaps edit that and
 check_file_status() as well.
 - I want to figure out a better way to set the command aliai.
+- Better Documentation
 
 """
 
@@ -34,7 +35,6 @@ class WRFModel:
     This class provides a framework for running the WRF model
 
     """
-
     def __init__(self, param_ids, start_date, end_date, bc_data='ERA',
                  n_domains=1, setup_yaml='dirpath.yml', verbose=True):
         self.param_ids = param_ids
@@ -110,21 +110,14 @@ class WRFModel:
         checking the first and the last rsl.out.* file created by each processor running
         either wrf.exe or real.exe via OpenMPI.
 
-        Parameters:
-        ----------
-        program : string
+        :param program: string
             WRF or WPS subprogram name whose status is to be checked.
-
-        nprocs : integer
+        :param nprocs: integer
             Number of processors that you are using to run real.exe and wrf.exe.
-
-        Returns:
-        ----------
-        'running' or 'complete' or 'failed' : string
-            Run status of the program parameter
+        :return: 'running' or 'complete' or 'failed' string
+            Run status of the program.
 
         """
-
         if program == 'geogrid':
             msg = read_last_line(self.DIR_WRFOUT + 'geogrid.log')
             complete = 'Successful completion of program geogrid' in msg
@@ -172,15 +165,13 @@ class WRFModel:
         easier to link all the files in the temporary data directory than to link
         indidivdual files out of the central data directory.
 
-        Returns:
-        ----------
-        vtable_sfx : string
+        NOTE Currently, only ERA data (ds627.0) is supported!
+
+        :return vtable_sfx: string
             WPS variable table suffix -- tells subsequent methods which boundary condidtion data is being used
             so that ungrib can successfully unpack data.
 
         """
-
-        # Currently, only ERA data (ds627.0) is supported
         if self.bc_data == 'ERA':
             if self.on_cheyenne:
                 # The following variables define the path where ERA is located within the Cheyenne RDA
@@ -278,12 +269,11 @@ class WRFModel:
         """
         Sets up the WRF run directory by copying scripts, data files, and executables.
 
-        Parameters
-        ----------
-        vtable_sfx : string
+        :param vtable_sfx: string
+            variable table suffix specific to the boundary condition data;
+            required to run WPS.
 
         """
-
         # Clean potential old simulation dir and remake the dir
         lh.remove_dir(self.DIR_WRFOUT)
         os.makedirs(self.DIR_WRFOUT, 0o755)
@@ -353,19 +343,13 @@ class WRFModel:
         and physics options to the WPS and/or WRF namelist files.
 
         """
-
         def read_namelist(namelist_file):
             """
             Opens a namelist file within a context manager.
 
-            Parameters:
-            ----------
-            namelist_file : string
+            :param namelist_file: string
                 Path to the namelist file you wish to open.
-
-            Returns:
-            ----------
-            NAMELIST : file object
+            :return NAMELIST: file object
 
             """
             with open(self.DIR_WRFOUT + namelist_file, 'r') as namelist:
@@ -506,14 +490,11 @@ class WRFModel:
         """
         Runs the WRF preprocessing executables and confirms thier success.
 
-        Returns:
-        ----------
-        True/False : boolean
+        :return: boolean (True/False)
             If runwrf_finish_check for geogrid and metgrid
             returns 'complete' ('failed'), this function returns True (False).
 
         """
-
         # Run geogrid if necessary
         # Build the list of geogrid files
         geogridfiles = [f'geo_em.d{str(domain).zfill(2)}.nc' for domain in range(1, self.n_domains + 1)]
@@ -609,14 +590,11 @@ class WRFModel:
         """
         Runs real.exe and checks to see that if it was successful.
 
-        Returns:
-        ----------
-        True/False : boolean
+        :return: boolean (True/False)
             If runwrf_finish_check for real returns 'complete' ('failed'),
             this function returns True (False).
 
         """
-
         startTime = datetime.datetime.now()
         startTimeInt = int(time.time())
         if self.verbose:
@@ -646,14 +624,11 @@ class WRFModel:
         """
         Runs wrf.exe and checks to see if it was successful.
 
-        Returns:
-        ----------
-        True/False : boolean
+        :return: boolean (True/False)
             If runwrf_finish_check for wrf returns 'complete' ('failed'),
             this function returns True (False).
 
         """
-
         wrf_runtime = 3600 * 2
         startTime = datetime.datetime.now()
         startTimeInt = int(time.time())
@@ -754,7 +729,7 @@ class WRFModel:
         # met_data = xr.Dataset.set_coords(met_data, ['Times'])
         # met_data = xr.Dataset.reset_coords(met_data, ['Times'], drop=True)
 
-        # Process the data using the WRF forecast model methods
+        # Process the data using the WRF forecast model methods from pvlib package
         fm = WRF()
         # met_data = fm.process_data(met_data)
         wind_speed10 = fm.uv_to_speed(met_data)
@@ -810,22 +785,27 @@ class WRFModel:
         and two wind files (U and V wind components). For example, the following filelist would be
         built for January 2011:
 
-        filelist = ['e5.oper.an.sfc/201101/e5.oper.an.sfc.228_246_100u.ll025sc.2011010100_2011013123.nc',
-                    'e5.oper.an.sfc/201101/e5.oper.an.sfc.228_247_100v.ll025sc.2011010100_2011013123.nc',
-                    'e5.oper.fc.sfc.accumu/201012/e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2010121606_2011010106.nc',
-                    'e5.oper.fc.sfc.accumu/201101/e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2011010106_2011011606.nc',
-                    'e5.oper.fc.sfc.accumu/201101/e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2011011606_2011020106.nc']
+        filelist = ['e5.oper.an.sfc/201101/
+                        e5.oper.an.sfc.228_246_100u.ll025sc.2011010100_2011013123.nc',
+                    'e5.oper.an.sfc/201101/
+                        e5.oper.an.sfc.228_247_100v.ll025sc.2011010100_2011013123.nc',
+                    'e5.oper.fc.sfc.accumu/201012/
+                        e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2010121606_2011010106.nc',
+                    'e5.oper.fc.sfc.accumu/201101/
+                        e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2011010106_2011011606.nc',
+                    'e5.oper.fc.sfc.accumu/201101/
+                        e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2011011606_2011020106.nc']
 
         which means there are three separate directories on RDA that files must be downloaded from.
 
-        ***Note that this method currently only supports simulations within a single month
+        ***NOTE that this method currently only supports simulations within a single month
         i.e., YYYY-MM-01 00:00:00 - YYYY-MM-<end day> 23:00:00. Otherwise, wrf_era5_diff()
         will fail. Times are in UTC.
 
-        ***This method does not currently support running on Cheyenne; it's about halfway there...
+        ***NOTE that this method does not currently support running on Cheyenne;
+        it's about halfway there...
 
         """
-
         # Define some convenient file suffixes
         last_month = self.forecast_start + dateutil.relativedelta.relativedelta(months=-1)
         next_month = self.forecast_start + dateutil.relativedelta.relativedelta(months=+1)
@@ -1005,18 +985,15 @@ class WRFModel:
         This method waits while the regridding and error calculation is being
         completed by NCL, which can take some seconds to complete.
 
-        *I don't need to copy the wrf2era_error.ncl script into each WRFOUT
-        directory, but that's how I currently get the error file for each
-        simulation to be written into the correct dirctory.
+        ***NOTE: I don't need to copy the wrf2era_error.ncl script into each
+        WRFOUT directory, but that's how I currently get the error file for
+        each simulation to be written into the correct dirctory.
 
-        Returns:
-        ----------
-        total_error : list
+        :return total_error: list
             Sum of the mean absolute error accumulated for each grid cell
             during each time period in the WRF simulation.
 
         """
-
         # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
         CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'paramstr="%s"\' %swrf2era_error.ncl ' \
                      '|& tee log.regrid' % \
@@ -1066,17 +1043,14 @@ def determine_computer():
     """
     Determines which computer you are currently working on.
 
-    Returns:
-    ----------
-    on_aws : boolean
+    :return on_aws: boolean
         True if working on the mzhang AWS account where the group name is 'ec2-user'
-    on_cheyenne : boolean
+    :return on_cheyenne: boolean
         True if working on the NCAR Cheyenne super computer where the group name is 'ncar'
-    on_magma : boolean
+    :return on_magma: boolean
         True if working on Jeff Sward's account on the Cornell Magma cluster where the group name is 'pug-jas983'
 
     """
-
     if 'GROUP' in os.environ:
         # Determine if we are on Cheyenne
         if os.environ['GROUP'] == 'ncar':
@@ -1107,18 +1081,12 @@ def read_last_line(file_name):
     """
     Reads the last line of a file.
 
-    Parameters:
-    ----------
-    file_name : string
+    :param file_name: string
         Complete path of the file that you would like read.
-
-    Returns:
-    ----------
-    last_line : string
+    :return last_line: string
         Last line of the input file.
 
     """
-
     try:
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
@@ -1136,18 +1104,12 @@ def read_2nd2_last_line(file_name):
     """
     Reads the second to last line of a file.
 
-    Parameters:
-    ----------
-    file_name : string
+    :param file_name: string
         Complete path of the file that you would like read.
-
-    Returns:
-    ----------
-    second2_last_line : string
+    :return: second2_last_line: string
         Second to last line of the input file.
 
     """
-
     try:
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
@@ -1166,18 +1128,12 @@ def read_last_3lines(file_name):
     """
     Reads the last three lines of a file.
 
-    Parameters:
-    ----------
-    file_name : string
+    :param file_name: string
         Complete path of the file that you would like print.
-
-    Returns:
-    ----------
-    last_3lines : string
+    :return: last_3lines: string
         Last three lines of the input file.
 
     """
-
     try:
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
@@ -1197,13 +1153,10 @@ def print_last_3lines(file_name):
     """
     Prints the last three lines of a file.
 
-    Parameters:
-    ----------
-    file_name : string
+    :param file_name: string
         Complete path of the file that you would like print.
 
     """
-
     try:
         with open(file_name, mode='r') as infile:
             lines = infile.readlines()
@@ -1223,21 +1176,16 @@ def rda_download(filelist, dspath):
     Logs into the NCAR research data archive (RDA)
     and downloads specified files.
 
-    My username/password are currently hard-coded into this function.
+    NOTE: My username/password are currently hard-coded into this function.
+    I SHOULD CHAGE THIS!
 
-    Parameters:
-    ----------
-    filelist : list of strings
+    :param filelist: list of strings
         List of all the files that you would like downloaded from the RDA.
-    dspath : string
+    :param dspath : string
         Full path to file on the RDA. You can obtain this from
-
-    Returns:
-    ----------
-    A boolean success flag.
+    :return: a boolean (True/False) success flag.
 
     """
-
     # Specify login information and url for RDA
     pswd = 'mkjmJ17'
     url = 'https://rda.ucar.edu/cgi-bin/login'
@@ -1280,11 +1228,9 @@ def check_file_status(filepath, filesize):
     This is currently not implemented because I don't
     like the way it prints information to the command line.
 
-    Parameters:
-    ----------
-    filepath : string
+    :param filepath: string
         Path to remote data file
-    filesize : int
+    :param filesize : int
         Size of the file as found by req.headers['Content-length']
 
     """
@@ -1298,19 +1244,13 @@ def check_file_status(filepath, filesize):
 
 def format_date(in_date):
     """
-        Formats an input date so that it can be correctly written to the namelist.
+    Formats an input date so that it can be correctly written to the namelist.
 
-        Parameters:
-        ----------
-        in_date : string
-            string specifying the date
-
-        Returns:
-        ----------
-        datetime64 array specifying the date
+    :param in_date : string
+        string specifying the date
+    :return: datetime64 array specifying the date
 
     """
-
     for fmt in ('%b %d %Y', '%B %d %Y', '%b %d, %Y', '%B %d, %Y',
                 '%m-%d-%Y', '%m.%d.%Y', '%m/%d/%Y',
                 '%b %d %Y %H', '%B %d %Y %H', '%b %d, %Y %H', '%B %d, %Y %H',
