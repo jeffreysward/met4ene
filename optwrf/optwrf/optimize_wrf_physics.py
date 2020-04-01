@@ -321,7 +321,7 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     return fitness
 
 
-def run_simplega(pop_size, n_generations, testing=False):
+def run_simplega(pop_size, n_generations, testing=False, intial_pop=None):
     """
     Runs the simple genetic algorithm specified in simplega either
     to optimize the WRF model physics or with a test fitness function
@@ -413,7 +413,7 @@ def run_simplega(pop_size, n_generations, testing=False):
         fn_display_pop(pop)
 
     # Create an initial population
-    population = simplega.generate_population(pop_size)
+    population = simplega.generate_population(pop_size, intial_pop)
 
     # Calculate the fitness of the initial population
     print('--> Calculating the fitness of the initial population...')
