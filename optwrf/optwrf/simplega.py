@@ -1,6 +1,7 @@
 """
 A simple genetic algorithm for optimizing the WRF model physics.
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+
 Known Issues/Wishlist:
 
 """
@@ -11,21 +12,33 @@ import random
 import optwrf.wrfparams as wrfparams
 
 
-# Define a Chromosome class the provides information about each unique individual
 class Chromosome:
+    """
+    This class provides information about each unique individual to be placed within
+    populations used in the genetic algorithm (e.g., parent population, mating population,
+    or offspring population). Four pieces of information are associated with each individual:
+        1. A set of genes corresponding to six major physics parameters that be changed within
+        the WRF model (microphysics, longwave radiation, shortwave radiation, land surface,
+        planetary boundary layer, and cumulus).
+        2. A start date defining when the WRF forecast will begin running.
+        3. An end date defining when the WRF forecast will finish running.
+        4. A fitness value that will be used to determine how well each instance preforms.
+    """
     def __init__(self, genes, start_date, end_date, fitness=None):
         self.Genes = genes
-        self.Fitness = fitness
         self.Start_date = start_date
         self.End_date = end_date
+        self.Fitness = fitness
 
 
 def display(individual, start_time):
     """
-    Aids in display of an individual Chromosome instance.
+    Aids in display of an individual Chromosome instanceby printing useful information
+    to the screen.
 
     :param individual: Chromosome instance
-    :param start_time:
+    :param start_time: datetime object
+        defining when the simiulation began running.
 
     """
     time_diff = datetime.datetime.now() - start_time
@@ -35,10 +48,12 @@ def display(individual, start_time):
 
 def display_pop(population, fn_display):
     """
-    Aids in display of an entire population.
+    Aids in display of an entire population by printing useful information
+    to the screen.
 
-    :param population:
-    :param fn_display:
+    :param population: list of Chromosome instances
+    :param fn_display: function
+        defining how to display eah individual in the population.
 
     """
     for i in range(0, len(population)):
@@ -50,7 +65,7 @@ def generate_genes():
     Generates genes for a new individual to be placed within a population.
 
     :return:
-    new individual : list
+    new individual: list
         list of WRF model physics parameters
 
     """
@@ -63,20 +78,17 @@ def generate_random_dates(year=2011, n_days=1):
     Generates a random start date and end date for running the WRF model.
     Start and end dates are offset by the parameter n_days, which is set to 1 as default
 
-    Parameters:
-    ----------
-    year : integer or None
-        Specifies the year within which you want random days to be selected.
+    :param year: integer or None
+        specifying the year within which you want random days to be selected.
         If this is specified as None, random dates between Jan 1, 2000 and today can be selected.
-    n_days : integer
-        Specifies the nuber of days between the start and the end dates of the simulation.
+    :param n_days: integer
+        specifying the nuber of days between the start and the end dates of the simulation.
         The default is set to 1 day.
 
-    Returns:
-    ----------
-    random_start_date : string
+    :return:
+    random_start_date: string
         specifys the simulation start date
-    random_end_date : string
+    random_end_date: string
         specifys the simulation end date
 
     """
@@ -98,15 +110,22 @@ def generate_random_dates(year=2011, n_days=1):
     return random_start_date, random_end_date
 
 
-def generate_population(pop_size):
+def generate_population(pop_size, initial_population=None):
     """
     This method provides a way to randomly generate an initial population for the GA.
 
-    :param pop_size:
-    :return:
+    :param pop_size: integer
+        specifies the number of individuals in the population to be generated.
+    :param initial_population: list of Chromosome instances
+        allows users to seed the population with individuals of desired
+        parameter combinations and start/end dates.
+    :return: population: list of Chromosome instances
 
     """
-    population = []
+    if initial_population is None:
+        population = []
+    else:
+        population = initial_population
     while len(population) < pop_size:
         new_genes = generate_genes()
         start_date, end_date = generate_random_dates()
@@ -121,12 +140,15 @@ def selection(population, pop_size):
     by selecting the fittest individual among a group of randomly selected individuals,
     to create the mating population.
 
-    :param population:
-    :param pop_size:
-    :return:
+    :param population: list of Chromosome instances
+        specifies the population that the selection operator will select from.
+    :param pop_size: integer
+        number of individuals within the population
+    :return: mating population: list of Chromosome instances
+        population of individuals that have been deemed fit enough by the selection operator
+        and will be sent to the crossover operator.
 
     """
-
     if 1 < pop_size < 30:
         mating_pop_size = int(0.5 * pop_size)
         tournament_size = int(0.5 * pop_size)
@@ -150,8 +172,10 @@ def crossover(mating_population):
     The crossover operator takes in the genes of two parent individuals
     and randomly exchanges one gene between the two producing two offspring.
 
-    :param mating_population:
-    :return:
+    :param mating_population: list of Chromosome instances
+        population of individuals that have been deemed fit enough by the selection operator.
+    :return: offspring_population: list of Chromosome instances
+        population of individuals created from the genes of mating population.
 
     """
     parent_idxs = random.sample(range(0, len(mating_population)), 2)
@@ -164,11 +188,11 @@ def crossover(mating_population):
         child1_genes[gene_idx], child2_genes[gene_idx] = parent2_genes[gene_idx], parent1_genes[gene_idx]
         child1_start_date, child1_end_date = generate_random_dates()
         child2_start_date, child2_end_date = generate_random_dates()
-        offspring = [Chromosome(child1_genes, child1_start_date, child1_end_date),
-                     Chromosome(child2_genes, child2_start_date, child2_end_date)]
+        offspring_population = [Chromosome(child1_genes, child1_start_date, child1_end_date),
+                                Chromosome(child2_genes, child2_start_date, child2_end_date)]
     else:
-        offspring = None
-    return offspring
+        offspring_population = None
+    return offspring_population
 
 
 def mutate(offspring_population):
@@ -176,8 +200,10 @@ def mutate(offspring_population):
     The mutate operator takes in the genes of one offspring
     and randomly replaces one of the genes from the set of choices.
 
-    :param offspring_population:
-    :return:
+    :param offspring_population: list of Chromosome instances
+        population of individuals created from the genes of mating population.
+    :return: offspring_population: list of Chromosome instances
+        mutated offspring population.
 
     """
     for child in offspring_population:
@@ -191,10 +217,11 @@ def mutate(offspring_population):
 
 def get_best(population):
     """
-    Finds the location of the individual within the population with the best fitness
+    Finds the location of the individual within the population with the best (lowest) fitness.
 
-    :param population:
-    :return:
+    :param population: list of Chromosome instances
+    :return: best_individual: single Chromosome instance
+        individual within a population with the lowest fitness.
 
     """
     fitness = [population[i].Fitness for i in range(0, len(population))]
@@ -207,12 +234,18 @@ def get_best(population):
 
 def find_elites(population, n_elites, fn_display_pop):
     """
-    Finds elites within the population
+    Finds elites within the population by sorting the members of the population from
+    best (numerically lowest) to worst (numerically highest) fitness value,
+    and returns a list (with the nuber of individuals specified by the user)
+    containing the individuals with the best fitness.
 
-    :param population:
-    :param n_elites:
-    :param fn_display_pop:
-    :return:
+    :param population: list of Chromosome instances
+    :param n_elites: integer
+        specifying the number of individuals you want to keep from the population.
+    :param fn_display_pop: function
+        for printing information about the population to the screen.
+    :return: elites: list of Chromosome instances
+        specifying the elite individuals extracted from the population.
 
     """
     order = sorted(population, key=lambda x: x.Fitness)
