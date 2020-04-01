@@ -18,6 +18,7 @@ import time
 from optwrf.runwrf import WRFModel
 import optwrf.simplega as simplega
 from optwrf.simplega import Chromosome
+import optwrf.wrfparams as wrfparams
 
 
 # class Fitness:
@@ -213,6 +214,53 @@ def close_conn_to_db(db_conn):
     """
 
     db_conn.close()
+
+
+def seed_initial_population(input_csv):
+    """
+    Reads the input csv file, which contains the dates and/or parameter combinations
+    that you would like to see in the initial population. The CSV file should be
+    formatted as follows:
+
+    Line 1: start_date, mp_physics, ra_lw_physics, ra_sw_physics, sf_surface_physics,
+            bl_pbl_physics, cu_physics
+
+    Line 2: Feb 28 2011,  1, 24, 99,  4, 11,  2
+
+    Line 3: Aug 31 2011, 28,  4,  5,  2, 10, 93
+
+    Line 4: Dec 10 2011,  7, 24,  3,  4,  9,  4
+
+    Line 5: Jul 22 2011, 11, 24,  2,  1,  4, 10
+
+    Line 6: May 23 2011,  1,  4,  5,  2, 10, 93
+
+    Line 7: Mar 31 2011, 28, 24, 99,  4, 11,  2
+
+    .
+
+    .
+
+    .
+
+    :param input_csv: string
+        defines the file name from which dates/parameters will be read.
+    :return intial population: list of Chromosome instances
+        made from the information specified in the input file.
+
+    """
+    initial_population = []
+    with open(input_csv, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            start_date = row['start_date']
+            param_ids = wrfparams.flexible_generate(generate_params=False,
+                                                    mp=int(row['mp_physics']), lw=int(row['ra_lw_physics']),
+                                                    sw=int(row['ra_sw_physics']), lsm=int(row['sf_surface_physics']),
+                                                    pbl=int(row['bl_pbl_physics']), cu=int(row['cu_physics']))
+            start_date, end_date = simplega.generate_random_dates(input_start_date=start_date)
+            initial_population.append(Chromosome(param_ids, start_date, end_date))
+    return initial_population
 
 
 def get_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011'):

@@ -26,6 +26,13 @@ def test_generate_random_dates():
     assert random_end_date is not None
 
 
+def test_seed_initial_population():
+    """Check that individuals specified via an input CSV file
+    can be used to create an initial population."""
+    i_population = owp.seed_initial_population('desired_simulations.csv')
+    assert type(i_population) is list
+
+
 def test_get_wrf_fitness():
     """Checks to see if the WRF fitness can be calculated for the default simulaiton.
     For this, you must be on Magma, Cheyenne, or AWS."""

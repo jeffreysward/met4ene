@@ -10,6 +10,7 @@ import datetime
 import random
 
 import optwrf.wrfparams as wrfparams
+import optwrf.runwrf as runwrf
 
 
 class Chromosome:
@@ -73,7 +74,7 @@ def generate_genes():
     return new_individual
 
 
-def generate_random_dates(year=2011, n_days=1):
+def generate_random_dates(year=2011, n_days=1, input_start_date=None):
     """
     Generates a random start date and end date for running the WRF model.
     Start and end dates are offset by the parameter n_days, which is set to 1 as default
@@ -84,26 +85,30 @@ def generate_random_dates(year=2011, n_days=1):
     :param n_days: integer
         specifying the nuber of days between the start and the end dates of the simulation.
         The default is set to 1 day.
-
-    :return:
-    random_start_date: string
-        specifys the simulation start date
-    random_end_date: string
-        specifys the simulation end date
+    :param input_start_date: string
+        specifying a desired start date.
+    :return random_start_date: string
+        specifying the simulation start date.
+    :return random_end_date: string
+        specifying the simulation end date.
 
     """
-    if year is None:
-        start_date = datetime.date(2000, 1, 1)
-        end_date = datetime.date.today()
-    else:
-        start_date = datetime.date(year, 1, 1)
-        end_date = datetime.date(year, 12, 31)
+    if input_start_date is None:
+        if year is None:
+            start_date = datetime.date(2000, 1, 1)
+            end_date = datetime.date.today()
+        else:
+            start_date = datetime.date(year, 1, 1)
+            end_date = datetime.date(year, 12, 31)
 
-    time_between_dates = end_date - start_date
-    days_between_dates = time_between_dates.days
-    random_number_of_days = random.randrange(days_between_dates)
-    random_start_date = start_date + datetime.timedelta(days=random_number_of_days)
+        time_between_dates = end_date - start_date
+        days_between_dates = time_between_dates.days
+        random_number_of_days = random.randrange(days_between_dates)
+        random_start_date = start_date + datetime.timedelta(days=random_number_of_days)
+    else:
+        random_start_date = runwrf.format_date(input_start_date)
     random_end_date = random_start_date + datetime.timedelta(days=n_days)
+    # Change from datetime object to string
     random_start_date = random_start_date.strftime('%b %d %Y')
     random_end_date = random_end_date.strftime('%b %d %Y')
 

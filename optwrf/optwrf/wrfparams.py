@@ -1,11 +1,13 @@
 """
 Generates sets of WRF physics parameters, finds corresponding numeric identifies,
 and writes the numeric paramter options to a CSV.
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+
 Known Issues/Wishlist:
 - It would be better if I could read in the parameters from the in_yaml
 file only once, but I'm not sure how variables across different
 functions in the same module work.
+- NEEDS BETTER DOCUMENTATION!
 
 """
 
@@ -21,15 +23,13 @@ def generate(in_yaml='params.yml'):
     """
     Generates a random set of parameters.
 
-    Parameters:
-    -----------
-
-
-    Returns:
-    --------
+    :param in_yaml: string
+        specifying the name of the yaml file containing parameter name integer pairs
+        in sections by parameterization option.
+    :return param_list: list
+        specifying the integer assoicated with each parameter option.
 
     """
-
     with open(in_yaml, 'r') as params_file:
         try:
             params = yaml.safe_load(params_file)
@@ -63,15 +63,17 @@ def name2num(in_yaml='params.yml', use_defaults=True, mp_in="morrison2mom", lw_i
     The default value of these parameterization schemes is set by those that
     were originally used by ICF in the study over NYC.
 
-    Parameters:
-    -----------
-
-
-    Returns:
-    --------
+    :param in_yaml:
+    :param use_defaults:
+    :param mp_in:
+    :param lw_in:
+    :param sw_in:
+    :param lsm_in:
+    :param pbl_in:
+    :param clo_in:
+    :return param_ids:
 
     """
-
     with open(in_yaml, 'r') as params_file:
         try:
             params = yaml.safe_load(params_file)
@@ -120,16 +122,11 @@ def name2num(in_yaml='params.yml', use_defaults=True, mp_in="morrison2mom", lw_i
 def combine(lst1, lst2):
     """
 
-
-    Parameters:
-    -----------
-
-
-    Returns:
-    --------
+    :param lst1:
+    :param lst2:
+    :return out_list:
 
     """
-
     out_list = []
     for i in range(0, len(lst1)):
         if lst1[i] is None and lst2[i] is None:
@@ -144,16 +141,11 @@ def combine(lst1, lst2):
 def filldefault(in_yaml, in_param_ids):
     """
 
-
-    Parameters:
-    -----------
-
-
-    Returns:
-    --------
+    :param in_yaml:
+    :param in_param_ids:
+    :return param_ids:
 
     """
-
     default_params = name2num(in_yaml)
     param_ids = []
     for i in range(0, len(in_param_ids)):
@@ -171,15 +163,11 @@ def pbl2sfclay(id_pbl, rnd=False):
     schemes are available, one may be selected at random by setting rnd = True.
     Otherwise, sf_sfclay defaults to option 1 (the revised MM5 scheme).
 
-    Parameters:
-    -----------
-
-
-    Returns:
-    --------
+    :param id_pbl:
+    :param rnd:
+    :return id_sfclay:
 
     """
-
     if id_pbl == 0:
         id_sfclay = 0
     elif id_pbl == 1:
@@ -232,15 +220,17 @@ def flexible_generate(generate_params=True, mp=None, lw=None, sw=None,
     Generate a parameter combination of the 6 core parameters if the user has specified this option.
     Otherwise, use specified input parameters and use defaults for the remaining paramters.
 
-    Parameters:
-    -----------
-
-
-    Returns:
-    --------
+    :param generate_params:
+    :param mp:
+    :param lw:
+    :param sw:
+    :param lsm:
+    :param pbl:
+    :param cu:
+    :param in_yaml:
+    :return param_ids:
 
     """
-
     if generate_params:
         rand_params = generate(in_yaml)
         param_ids = name2num(in_yaml, mp_in=rand_params[0], lw_in=rand_params[1],
@@ -249,28 +239,64 @@ def flexible_generate(generate_params=True, mp=None, lw=None, sw=None,
     else:
         param_ids = [None, None, None, None, None, None]
         if mp is not None:
-            param_ids1 = name2num(in_yaml, use_defaults=False, mp_in=mp, lw_in="None",
-                                  sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+            if type(mp) is str:
+                param_ids1 = name2num(in_yaml, use_defaults=False, mp_in=mp, lw_in="None",
+                                      sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+            elif type(mp) is int:
+                param_ids1 = [mp, None, None, None, None, None]
+            else:
+                print(f'Variable mp = {mp} has an incorrect type.')
+                raise TypeError
             param_ids = combine(param_ids, param_ids1)
         if lw is not None:
-            param_ids2 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in=lw,
-                                  sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+            if type(lw) is str:
+                param_ids2 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in=lw,
+                                      sw_in="None", lsm_in="None", pbl_in="None", clo_in="None")
+            elif type(lw) is int:
+                param_ids2 = [None, lw, None, None, None, None]
+            else:
+                print(f'Variable lw = {lw} has an incorrect type.')
+                raise TypeError
             param_ids = combine(param_ids, param_ids2)
         if sw is not None:
-            param_ids3 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
-                                  sw_in=sw, lsm_in="None", pbl_in="None", clo_in="None")
+            if type(sw) is str:
+                param_ids3 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
+                                      sw_in=sw, lsm_in="None", pbl_in="None", clo_in="None")
+            elif type(sw) is int:
+                param_ids3 = [None, None, sw, None, None, None]
+            else:
+                print(f'Variable sw = {sw} has an incorrect type.')
+                raise TypeError
             param_ids = combine(param_ids, param_ids3)
         if lsm is not None:
-            param_ids4 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
-                                  sw_in="None", lsm_in=lsm, pbl_in="None", clo_in="None")
+            if type(lsm) is str:
+                param_ids4 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
+                                      sw_in="None", lsm_in=lsm, pbl_in="None", clo_in="None")
+            elif type(lsm) is int:
+                param_ids4 = [None, None, None, lsm, None, None]
+            else:
+                print(f'Variable lsm = {lsm} has an incorrect type.')
+                raise TypeError
             param_ids = combine(param_ids, param_ids4)
         if pbl is not None:
-            param_ids5 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
-                                  sw_in="None", lsm_in="None", pbl_in=pbl, clo_in="None")
+            if type(pbl) is str:
+                param_ids5 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
+                                      sw_in="None", lsm_in="None", pbl_in=pbl, clo_in="None")
+            elif type(pbl) is int:
+                param_ids5 = [None, None, None, None, pbl, None]
+            else:
+                print(f'Variable pbl = {pbl} has an incorrect type.')
+                raise TypeError
             param_ids = combine(param_ids, param_ids5)
         if cu is not None:
-            param_ids6 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
-                                  sw_in="None", lsm_in="None", pbl_in="None", clo_in=cu)
+            if type(cu) is str:
+                param_ids6 = name2num(in_yaml, use_defaults=False, mp_in="None", lw_in="None",
+                                      sw_in="None", lsm_in="None", pbl_in="None", clo_in=cu)
+            elif type(cu) is int:
+                param_ids6 = [None, None, None, None, None, cu]
+            else:
+                print(f'Variable cu = {cu} has an incorrect type.')
+                raise TypeError
             param_ids = combine(param_ids, param_ids6)
         param_ids = filldefault(in_yaml, param_ids)
 
@@ -285,18 +311,14 @@ def flexible_generate(generate_params=True, mp=None, lw=None, sw=None,
 
 def apply_dependencies(param_ids):
     """
-    Applies depependencies among parameters discovered during runtime
+    Applies depependencies among parameters. Generally,
+    these were discovered by attempting to run an incompatible combination
+    of parameters or from the WRF User's Guide.
 
-    Parameters:
-    -----------
-    param_ids: list
-        List of WRF physics parameters
-
-
-    Returns:
-    --------
-    param_ids: list
-        List of WRF physics parameters after known dependencies have been applied
+    :param param_ids: list
+        of WRF physics parameters
+    :return param_ids: list
+        of WRF physics parameters after known dependencies have been applied
 
     """
     # The following exception takes care of the error:
@@ -313,16 +335,10 @@ def apply_dependencies(param_ids):
 def ids2str(param_ids):
     """
 
-
-    Parameters:
-    -----------
-
-
-    Returns:
-    --------
+    :param param_ids:
+    :return:
 
     """
-
     paramstr = '%dmp%dlw%dsw%dlsm%dpbl%dcu' % \
                (param_ids[0], param_ids[1], param_ids[2],
                 param_ids[3], param_ids[4], param_ids[5])

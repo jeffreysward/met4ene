@@ -302,7 +302,7 @@ this function runs the WRF model and computes the error between WRF and ERA5.</p
 
 <dl class="function">
 <dt id="optwrf.optimize_wrf_physics.run_simplega">
-<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">run_simplega</code><span class="sig-paren">(</span><em class="sig-param">pop_size</em>, <em class="sig-param">n_generations</em>, <em class="sig-param">testing=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.run_simplega" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">run_simplega</code><span class="sig-paren">(</span><em class="sig-param">pop_size</em>, <em class="sig-param">n_generations</em>, <em class="sig-param">testing=False</em>, <em class="sig-param">intial_pop=None</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.run_simplega" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs the simple genetic algorithm specified in simplega either
 to optimize the WRF model physics or with a test fitness function
 that randomly selects a fitness value for each individual Chromosome.</p>
@@ -317,6 +317,37 @@ that randomly selects a fitness value for each individual Chromosome.</p>
 </dl>
 <dl class="simple">
 <dt>WRFga_winner<span class="classifier">simplega.Chromosome instance</span></dt><dd><p>The simulation preforming the best in the genetic algorithm.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.optimize_wrf_physics.seed_initial_population">
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">seed_initial_population</code><span class="sig-paren">(</span><em class="sig-param">input_csv</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.seed_initial_population" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the input csv file, which contains the dates and/or parameter combinations
+that you would like to see in the initial population. The CSV file should be
+formatted as follows:</p>
+<dl class="simple">
+<dt>Line 1: start_date, mp_physics, ra_lw_physics, ra_sw_physics, sf_surface_physics,</dt><dd><p>bl_pbl_physics, cu_physics, sf_sfclay_physics</p>
+</dd>
+</dl>
+<p>Line 2: Feb 28 2011,  1, 24, 99,  4, 11,  2,  1
+Line 3: Aug 31 2011, 28,  4,  5,  2, 10, 93, 10
+Line 4: Dec 10 2011,  7, 24,  3,  4,  9,  4,  1
+Line 5: Jul 22 2011, 11, 24,  2,  1,  4, 10,  4
+Line 6: May 23 2011,  1,  4,  5,  2, 10, 93, 10
+Line 7: Mar 31 2011, 28, 24, 99,  4, 11,  2,  1
+.
+.
+.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>input_csv</strong> – string
+defines the file name from which dates/parameters will be read.</p>
+</dd>
+<dt class="field-even">Return intial population</dt>
+<dd class="field-even"><p>list of Chromosome instances
+made from the information specified in the input file.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -350,12 +381,12 @@ e.g., csv_file_path = ‘/home/jas983/data/test.csv’</p>
 <div class="section" id="module-optwrf.runwrf">
 <span id="optwrf-runwrf"></span><h2>optwrf.runwrf<a class="headerlink" href="#module-optwrf.runwrf" title="Permalink to this headline">¶</a></h2>
 <p>Class and supporting functions to run WRF within other scripts
-and process WRF output data.
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-Known Issues/Wishlist:
+and process WRF output data.</p>
+<p>Known Issues/Wishlist:
 - I’m unhappy with the output to screen from rda_download(). Perhaps edit that and
 check_file_status() as well.
-- I want to figure out a better way to set the command aliai.</p>
+- I want to figure out a better way to set the command aliai.
+- Better Documentation</p>
 <dl class="class">
 <dt id="optwrf.runwrf.WRFModel">
 <em class="property">class </em><code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">WRFModel</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em>, <em class="sig-param">start_date</em>, <em class="sig-param">end_date</em>, <em class="sig-param">bc_data='ERA'</em>, <em class="sig-param">n_domains=1</em>, <em class="sig-param">setup_yaml='dirpath.yml'</em>, <em class="sig-param">verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel" title="Permalink to this definition">¶</a></dt>
@@ -372,8 +403,11 @@ data from the central data directory to the temporary data directory.</p>
 contain a good way of picking files out of many. Therefore, it is much
 easier to link all the files in the temporary data directory than to link
 indidivdual files out of the central data directory.</p>
-<dl class="simple">
-<dt>vtable_sfx<span class="classifier">string</span></dt><dd><p>WPS variable table suffix – tells subsequent methods which boundary condidtion data is being used
+<p>NOTE Currently, only ERA data (ds627.0) is supported!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return vtable_sfx</dt>
+<dd class="field-odd"><p>string
+WPS variable table suffix – tells subsequent methods which boundary condidtion data is being used
 so that ungrib can successfully unpack data.</p>
 </dd>
 </dl>
@@ -397,18 +431,28 @@ these variables to a montly ERA5 NetCDF data file named ERA5_EastUS_WPD-GHI_YYYY
 inconvenient temporal windows, so to build a montly file, we must download three ssrd files
 and two wind files (U and V wind components). For example, the following filelist would be
 built for January 2011:</p>
+<dl>
+<dt>filelist = [‘e5.oper.an.sfc/201101/</dt><dd><blockquote>
+<div><p>e5.oper.an.sfc.228_246_100u.ll025sc.2011010100_2011013123.nc’,</p>
+</div></blockquote>
 <dl class="simple">
-<dt>filelist = [‘e5.oper.an.sfc/201101/e5.oper.an.sfc.228_246_100u.ll025sc.2011010100_2011013123.nc’,</dt><dd><p>‘e5.oper.an.sfc/201101/e5.oper.an.sfc.228_247_100v.ll025sc.2011010100_2011013123.nc’,
-‘e5.oper.fc.sfc.accumu/201012/e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2010121606_2011010106.nc’,
-‘e5.oper.fc.sfc.accumu/201101/e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2011010106_2011011606.nc’,
-‘e5.oper.fc.sfc.accumu/201101/e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2011011606_2011020106.nc’]</p>
+<dt>‘e5.oper.an.sfc/201101/</dt><dd><p>e5.oper.an.sfc.228_247_100v.ll025sc.2011010100_2011013123.nc’,</p>
+</dd>
+<dt>‘e5.oper.fc.sfc.accumu/201012/</dt><dd><p>e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2010121606_2011010106.nc’,</p>
+</dd>
+<dt>‘e5.oper.fc.sfc.accumu/201101/</dt><dd><p>e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2011010106_2011011606.nc’,</p>
+</dd>
+<dt>‘e5.oper.fc.sfc.accumu/201101/</dt><dd><p>e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.2011011606_2011020106.nc’]</p>
+</dd>
+</dl>
 </dd>
 </dl>
 <p>which means there are three separate directories on RDA that files must be downloaded from.</p>
-<p><a href="#id1"><span class="problematic" id="id2">**</span></a><a href="#id3"><span class="problematic" id="id4">*</span></a>Note that this method currently only supports simulations within a single month
+<p><a href="#id1"><span class="problematic" id="id2">**</span></a><a href="#id3"><span class="problematic" id="id4">*</span></a>NOTE that this method currently only supports simulations within a single month
 i.e., YYYY-MM-01 00:00:00 - YYYY-MM-&lt;end day&gt; 23:00:00. Otherwise, wrf_era5_diff()
 will fail. Times are in UTC.</p>
-<p><a href="#id5"><span class="problematic" id="id6">**</span></a><a href="#id7"><span class="problematic" id="id8">*</span></a>This method does not currently support running on Cheyenne; it’s about halfway there…</p>
+<p><a href="#id5"><span class="problematic" id="id6">**</span></a><a href="#id7"><span class="problematic" id="id8">*</span></a>NOTE that this method does not currently support running on Cheyenne;
+it’s about halfway there…</p>
 </dd></dl>
 
 <dl class="method">
@@ -424,8 +468,10 @@ wrf_era5_diff().</p>
 <dt id="optwrf.runwrf.WRFModel.run_real">
 <code class="sig-name descname">run_real</code><span class="sig-paren">(</span><em class="sig-param">disable_timeout=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.run_real" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs real.exe and checks to see that if it was successful.</p>
-<dl class="simple">
-<dt>True/False<span class="classifier">boolean</span></dt><dd><p>If runwrf_finish_check for real returns ‘complete’ (‘failed’),
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>boolean (True/False)
+If runwrf_finish_check for real returns ‘complete’ (‘failed’),
 this function returns True (False).</p>
 </dd>
 </dl>
@@ -435,8 +481,10 @@ this function returns True (False).</p>
 <dt id="optwrf.runwrf.WRFModel.run_wps">
 <code class="sig-name descname">run_wps</code><span class="sig-paren">(</span><em class="sig-param">disable_timeout=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.run_wps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs the WRF preprocessing executables and confirms thier success.</p>
-<dl class="simple">
-<dt>True/False<span class="classifier">boolean</span></dt><dd><p>If runwrf_finish_check for geogrid and metgrid
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>boolean (True/False)
+If runwrf_finish_check for geogrid and metgrid
 returns ‘complete’ (‘failed’), this function returns True (False).</p>
 </dd>
 </dl>
@@ -446,8 +494,10 @@ returns ‘complete’ (‘failed’), this function returns True (False).</p>
 <dt id="optwrf.runwrf.WRFModel.run_wrf">
 <code class="sig-name descname">run_wrf</code><span class="sig-paren">(</span><em class="sig-param">disable_timeout=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.run_wrf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs wrf.exe and checks to see if it was successful.</p>
-<dl class="simple">
-<dt>True/False<span class="classifier">boolean</span></dt><dd><p>If runwrf_finish_check for wrf returns ‘complete’ (‘failed’),
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>boolean (True/False)
+If runwrf_finish_check for wrf returns ‘complete’ (‘failed’),
 this function returns True (False).</p>
 </dd>
 </dl>
@@ -459,14 +509,18 @@ this function returns True (False).</p>
 <dd><p>Check if a specified WRF subprogram has finished running. Does this specifically by
 checking the first and the last rsl.out.* file created by each processor running
 either wrf.exe or real.exe via OpenMPI.</p>
-<dl class="simple">
-<dt>program<span class="classifier">string</span></dt><dd><p>WRF or WPS subprogram name whose status is to be checked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>program</strong> – string
+WRF or WPS subprogram name whose status is to be checked.</p></li>
+<li><p><strong>nprocs</strong> – integer
+Number of processors that you are using to run real.exe and wrf.exe.</p></li>
+</ul>
 </dd>
-<dt>nprocs<span class="classifier">integer</span></dt><dd><p>Number of processors that you are using to run real.exe and wrf.exe.</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>‘running’ or ‘complete’ or ‘failed’<span class="classifier">string</span></dt><dd><p>Run status of the program parameter</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>‘running’ or ‘complete’ or ‘failed’ string
+Run status of the program.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -487,11 +541,13 @@ power density (WPD) to match that of the ERA data, and then computes
 the difference across the entire d01 WRF domain for every time period.</p>
 <p>This method waits while the regridding and error calculation is being
 completed by NCL, which can take some seconds to complete.</p>
-<p><a href="#id9"><span class="problematic" id="id10">*</span></a>I don’t need to copy the wrf2era_error.ncl script into each WRFOUT
-directory, but that’s how I currently get the error file for each
-simulation to be written into the correct dirctory.</p>
-<dl class="simple">
-<dt>total_error<span class="classifier">list</span></dt><dd><p>Sum of the mean absolute error accumulated for each grid cell
+<p><a href="#id9"><span class="problematic" id="id10">**</span></a><a href="#id11"><span class="problematic" id="id12">*</span></a>NOTE: I don’t need to copy the wrf2era_error.ncl script into each
+WRFOUT directory, but that’s how I currently get the error file for
+each simulation to be written into the correct dirctory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return total_error</dt>
+<dd class="field-odd"><p>list
+Sum of the mean absolute error accumulated for each grid cell
 during each time period in the WRF simulation.</p>
 </dd>
 </dl>
@@ -501,7 +557,13 @@ during each time period in the WRF simulation.</p>
 <dt id="optwrf.runwrf.WRFModel.wrfdir_setup">
 <code class="sig-name descname">wrfdir_setup</code><span class="sig-paren">(</span><em class="sig-param">vtable_sfx</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.wrfdir_setup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets up the WRF run directory by copying scripts, data files, and executables.</p>
-<p>vtable_sfx : string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>vtable_sfx</strong> – string
+variable table suffix specific to the boundary condition data;
+required to run WPS.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -512,10 +574,14 @@ during each time period in the WRF simulation.</p>
 <dd><p>Checks the file status during a download from the internet.</p>
 <p>This is currently not implemented because I don’t
 like the way it prints information to the command line.</p>
-<dl class="simple">
-<dt>filepath<span class="classifier">string</span></dt><dd><p>Path to remote data file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> – string
+Path to remote data file</p>
 </dd>
-<dt>filesize<span class="classifier">int</span></dt><dd><p>Size of the file as found by req.headers[‘Content-length’]</p>
+</dl>
+<dl class="simple">
+<dt>:param filesize<span class="classifier">int</span></dt><dd><p>Size of the file as found by req.headers[‘Content-length’]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -524,12 +590,18 @@ like the way it prints information to the command line.</p>
 <dt id="optwrf.runwrf.determine_computer">
 <code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">determine_computer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.determine_computer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determines which computer you are currently working on.</p>
-<dl class="simple">
-<dt>on_aws<span class="classifier">boolean</span></dt><dd><p>True if working on the mzhang AWS account where the group name is ‘ec2-user’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return on_aws</dt>
+<dd class="field-odd"><p>boolean
+True if working on the mzhang AWS account where the group name is ‘ec2-user’</p>
 </dd>
-<dt>on_cheyenne<span class="classifier">boolean</span></dt><dd><p>True if working on the NCAR Cheyenne super computer where the group name is ‘ncar’</p>
+<dt class="field-even">Return on_cheyenne</dt>
+<dd class="field-even"><p>boolean
+True if working on the NCAR Cheyenne super computer where the group name is ‘ncar’</p>
 </dd>
-<dt>on_magma<span class="classifier">boolean</span></dt><dd><p>True if working on Jeff Sward’s account on the Cornell Magma cluster where the group name is ‘pug-jas983’</p>
+<dt class="field-odd">Return on_magma</dt>
+<dd class="field-odd"><p>boolean
+True if working on Jeff Sward’s account on the Cornell Magma cluster where the group name is ‘pug-jas983’</p>
 </dd>
 </dl>
 </dd></dl>
@@ -539,18 +611,24 @@ like the way it prints information to the command line.</p>
 <code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">format_date</code><span class="sig-paren">(</span><em class="sig-param">in_date</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.format_date" title="Permalink to this definition">¶</a></dt>
 <dd><p>Formats an input date so that it can be correctly written to the namelist.</p>
 <dl class="simple">
-<dt>in_date<span class="classifier">string</span></dt><dd><p>string specifying the date</p>
+<dt>:param in_date<span class="classifier">string</span></dt><dd><p>string specifying the date</p>
 </dd>
 </dl>
-<p>datetime64 array specifying the date</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>datetime64 array specifying the date</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="optwrf.runwrf.print_last_3lines">
 <code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">print_last_3lines</code><span class="sig-paren">(</span><em class="sig-param">file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.print_last_3lines" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints the last three lines of a file.</p>
-<dl class="simple">
-<dt>file_name<span class="classifier">string</span></dt><dd><p>Complete path of the file that you would like print.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_name</strong> – string
+Complete path of the file that you would like print.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -560,26 +638,37 @@ like the way it prints information to the command line.</p>
 <code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">rda_download</code><span class="sig-paren">(</span><em class="sig-param">filelist</em>, <em class="sig-param">dspath</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.rda_download" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs into the NCAR research data archive (RDA)
 and downloads specified files.</p>
-<p>My username/password are currently hard-coded into this function.</p>
-<dl class="simple">
-<dt>filelist<span class="classifier">list of strings</span></dt><dd><p>List of all the files that you would like downloaded from the RDA.</p>
-</dd>
-<dt>dspath<span class="classifier">string</span></dt><dd><p>Full path to file on the RDA. You can obtain this from</p>
+<p>NOTE: My username/password are currently hard-coded into this function.
+I SHOULD CHAGE THIS!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filelist</strong> – list of strings
+List of all the files that you would like downloaded from the RDA.</p>
 </dd>
 </dl>
-<p>A boolean success flag.</p>
+<dl class="simple">
+<dt>:param dspath<span class="classifier">string</span></dt><dd><p>Full path to file on the RDA. You can obtain this from</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a boolean (True/False) success flag.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="optwrf.runwrf.read_2nd2_last_line">
 <code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">read_2nd2_last_line</code><span class="sig-paren">(</span><em class="sig-param">file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.read_2nd2_last_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads the second to last line of a file.</p>
-<dl class="simple">
-<dt>file_name<span class="classifier">string</span></dt><dd><p>Complete path of the file that you would like read.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_name</strong> – string
+Complete path of the file that you would like read.</p>
 </dd>
-</dl>
-<dl class="simple">
-<dt>second2_last_line<span class="classifier">string</span></dt><dd><p>Second to last line of the input file.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>second2_last_line: string
+Second to last line of the input file.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -588,12 +677,14 @@ and downloads specified files.</p>
 <dt id="optwrf.runwrf.read_last_3lines">
 <code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">read_last_3lines</code><span class="sig-paren">(</span><em class="sig-param">file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.read_last_3lines" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads the last three lines of a file.</p>
-<dl class="simple">
-<dt>file_name<span class="classifier">string</span></dt><dd><p>Complete path of the file that you would like print.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_name</strong> – string
+Complete path of the file that you would like print.</p>
 </dd>
-</dl>
-<dl class="simple">
-<dt>last_3lines<span class="classifier">string</span></dt><dd><p>Last three lines of the input file.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>last_3lines: string
+Last three lines of the input file.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -602,12 +693,14 @@ and downloads specified files.</p>
 <dt id="optwrf.runwrf.read_last_line">
 <code class="sig-prename descclassname">optwrf.runwrf.</code><code class="sig-name descname">read_last_line</code><span class="sig-paren">(</span><em class="sig-param">file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.read_last_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads the last line of a file.</p>
-<dl class="simple">
-<dt>file_name<span class="classifier">string</span></dt><dd><p>Complete path of the file that you would like read.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_name</strong> – string
+Complete path of the file that you would like read.</p>
 </dd>
-</dl>
-<dl class="simple">
-<dt>last_line<span class="classifier">string</span></dt><dd><p>Last line of the input file.</p>
+<dt class="field-even">Return last_line</dt>
+<dd class="field-even"><p>string
+Last line of the input file.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -615,13 +708,23 @@ and downloads specified files.</p>
 </div>
 <div class="section" id="module-optwrf.simplega">
 <span id="optwrf-simplega"></span><h2>optwrf.simplega<a class="headerlink" href="#module-optwrf.simplega" title="Permalink to this headline">¶</a></h2>
-<p>A simple genetic algorithm for optimizing the WRF model physics.
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-Known Issues/Wishlist:</p>
+<p>A simple genetic algorithm for optimizing the WRF model physics.</p>
+<p>Known Issues/Wishlist:</p>
 <dl class="class">
 <dt id="optwrf.simplega.Chromosome">
 <em class="property">class </em><code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">Chromosome</code><span class="sig-paren">(</span><em class="sig-param">genes</em>, <em class="sig-param">start_date</em>, <em class="sig-param">end_date</em>, <em class="sig-param">fitness=None</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.Chromosome" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class provides information about each unique individual to be placed within
+populations used in the genetic algorithm (e.g., parent population, mating population,
+or offspring population). Four pieces of information are associated with each individual:</p>
+<blockquote>
+<div><p>1. A set of genes corresponding to six major physics parameters that be changed within
+the WRF model (microphysics, longwave radiation, shortwave radiation, land surface,
+planetary boundary layer, and cumulus).
+2. A start date defining when the WRF forecast will begin running.
+3. An end date defining when the WRF forecast will finish running.
+4. A fitness value that will be used to determine how well each instance preforms.</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
@@ -631,10 +734,12 @@ Known Issues/Wishlist:</p>
 and randomly exchanges one gene between the two producing two offspring.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>mating_population</strong> – </p>
+<dd class="field-odd"><p><strong>mating_population</strong> – list of Chromosome instances
+population of individuals that have been deemed fit enough by the selection operator.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>offspring_population: list of Chromosome instances
+population of individuals created from the genes of mating population.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -642,12 +747,14 @@ and randomly exchanges one gene between the two producing two offspring.</p>
 <dl class="function">
 <dt id="optwrf.simplega.display">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">display</code><span class="sig-paren">(</span><em class="sig-param">individual</em>, <em class="sig-param">start_time</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.display" title="Permalink to this definition">¶</a></dt>
-<dd><p>Aids in display of an individual Chromosome instance.</p>
+<dd><p>Aids in display of an individual Chromosome instanceby printing useful information
+to the screen.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>individual</strong> – Chromosome instance</p></li>
-<li><p><strong>start_time</strong> – </p></li>
+<li><p><strong>start_time</strong> – datetime object
+defining when the simiulation began running.</p></li>
 </ul>
 </dd>
 </dl>
@@ -656,12 +763,14 @@ and randomly exchanges one gene between the two producing two offspring.</p>
 <dl class="function">
 <dt id="optwrf.simplega.display_pop">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">display_pop</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">fn_display</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.display_pop" title="Permalink to this definition">¶</a></dt>
-<dd><p>Aids in display of an entire population.</p>
+<dd><p>Aids in display of an entire population by printing useful information
+to the screen.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>population</strong> – </p></li>
-<li><p><strong>fn_display</strong> – </p></li>
+<li><p><strong>population</strong> – list of Chromosome instances</p></li>
+<li><p><strong>fn_display</strong> – function
+defining how to display eah individual in the population.</p></li>
 </ul>
 </dd>
 </dl>
@@ -670,17 +779,23 @@ and randomly exchanges one gene between the two producing two offspring.</p>
 <dl class="function">
 <dt id="optwrf.simplega.find_elites">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">find_elites</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">n_elites</em>, <em class="sig-param">fn_display_pop</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.find_elites" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds elites within the population</p>
+<dd><p>Finds elites within the population by sorting the members of the population from
+best (numerically lowest) to worst (numerically highest) fitness value,
+and returns a list (with the nuber of individuals specified by the user)
+containing the individuals with the best fitness.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>population</strong> – </p></li>
-<li><p><strong>n_elites</strong> – </p></li>
-<li><p><strong>fn_display_pop</strong> – </p></li>
+<li><p><strong>population</strong> – list of Chromosome instances</p></li>
+<li><p><strong>n_elites</strong> – integer
+specifying the number of individuals you want to keep from the population.</p></li>
+<li><p><strong>fn_display_pop</strong> – function
+for printing information about the population to the screen.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>elites: list of Chromosome instances
+specifying the elite individuals extracted from the population.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -695,21 +810,27 @@ and randomly exchanges one gene between the two producing two offspring.</p>
 </dd>
 </dl>
 <dl class="simple">
-<dt>new individual<span class="classifier">list</span></dt><dd><p>list of WRF model physics parameters</p>
+<dt>new individual: list</dt><dd><p>list of WRF model physics parameters</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="optwrf.simplega.generate_population">
-<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">generate_population</code><span class="sig-paren">(</span><em class="sig-param">pop_size</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.generate_population" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">generate_population</code><span class="sig-paren">(</span><em class="sig-param">pop_size</em>, <em class="sig-param">initial_population=None</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.generate_population" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method provides a way to randomly generate an initial population for the GA.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>pop_size</strong> – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pop_size</strong> – integer
+specifies the number of individuals in the population to be generated.</p></li>
+<li><p><strong>initial_population</strong> – list of Chromosome instances
+allows users to seed the population with individuals of desired
+parameter combinations and start/end dates.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>population: list of Chromosome instances</p>
 </dd>
 </dl>
 </dd></dl>
@@ -719,18 +840,25 @@ and randomly exchanges one gene between the two producing two offspring.</p>
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">generate_random_dates</code><span class="sig-paren">(</span><em class="sig-param">year=2011</em>, <em class="sig-param">n_days=1</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.generate_random_dates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a random start date and end date for running the WRF model.
 Start and end dates are offset by the parameter n_days, which is set to 1 as default</p>
-<dl class="simple">
-<dt>year<span class="classifier">integer or None</span></dt><dd><p>Specifies the year within which you want random days to be selected.
-If this is specified as None, random dates between Jan 1, 2000 and today can be selected.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>year</strong> – integer or None
+specifying the year within which you want random days to be selected.
+If this is specified as None, random dates between Jan 1, 2000 and today can be selected.</p></li>
+<li><p><strong>n_days</strong> – integer
+specifying the nuber of days between the start and the end dates of the simulation.
+The default is set to 1 day.</p></li>
+</ul>
 </dd>
-<dt>n_days<span class="classifier">integer</span></dt><dd><p>Specifies the nuber of days between the start and the end dates of the simulation.
-The default is set to 1 day.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
 </dd>
 </dl>
 <dl class="simple">
-<dt>random_start_date<span class="classifier">string</span></dt><dd><p>specifys the simulation start date</p>
+<dt>random_start_date: string</dt><dd><p>specifys the simulation start date</p>
 </dd>
-<dt>random_end_date<span class="classifier">string</span></dt><dd><p>specifys the simulation end date</p>
+<dt>random_end_date: string</dt><dd><p>specifys the simulation end date</p>
 </dd>
 </dl>
 </dd></dl>
@@ -738,13 +866,14 @@ The default is set to 1 day.</p>
 <dl class="function">
 <dt id="optwrf.simplega.get_best">
 <code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">get_best</code><span class="sig-paren">(</span><em class="sig-param">population</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.get_best" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds the location of the individual within the population with the best fitness</p>
+<dd><p>Finds the location of the individual within the population with the best (lowest) fitness.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>population</strong> – </p>
+<dd class="field-odd"><p><strong>population</strong> – list of Chromosome instances</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>best_individual: single Chromosome instance
+individual within a population with the lowest fitness.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -756,10 +885,12 @@ The default is set to 1 day.</p>
 and randomly replaces one of the genes from the set of choices.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>offspring_population</strong> – </p>
+<dd class="field-odd"><p><strong>offspring_population</strong> – list of Chromosome instances
+population of individuals created from the genes of mating population.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>offspring_population: list of Chromosome instances
+mutated offspring population.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -773,12 +904,16 @@ to create the mating population.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>population</strong> – </p></li>
-<li><p><strong>pop_size</strong> – </p></li>
+<li><p><strong>population</strong> – list of Chromosome instances
+specifies the population that the selection operator will select from.</p></li>
+<li><p><strong>pop_size</strong> – integer
+number of individuals within the population</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>mating population: list of Chromosome instances
+population of individuals that have been deemed fit enough by the selection operator
+and will be sent to the crossover operator.</p>
 </dd>
 </dl>
 </dd></dl>
