@@ -54,7 +54,8 @@ def conn_to_db(db_name='optwrf.db'):
                         bl_pbl_physics INTEGER,
                         cu_physics INTEGER,
                         sf_sfclay_physics INTEGER,
-                        fitness FLOAT 
+                        fitness FLOAT,
+                        runtime FLOAT 
                         )""")
     return db_conn
 
@@ -74,12 +75,13 @@ def insert_sim(individual, db_conn):
     with db_conn:
         c.execute("""INSERT INTO simulations VALUES (
                     :start_date, :mp_physics, :ra_lw_physics, :ra_sw_physics, :sf_surface_physics, 
-                    :bl_pbl_physics, :cu_physics, :sf_sfclay_physics, :fitness)""",
+                    :bl_pbl_physics, :cu_physics, :sf_sfclay_physics, :fitness, :runtime)""",
                   {'start_date': individual.Start_date, 'mp_physics': individual.Genes[0],
                    'ra_lw_physics': individual.Genes[1],
                    'ra_sw_physics': individual.Genes[2], 'sf_surface_physics': individual.Genes[3],
                    'bl_pbl_physics': individual.Genes[4], 'cu_physics': individual.Genes[5],
-                   'sf_sfclay_physics': individual.Genes[6], 'fitness': individual.Fitness})
+                   'sf_sfclay_physics': individual.Genes[6],
+                   'fitness': individual.Fitness, 'runtime': individual.Runtime})
 
 
 def update_sim(individual, db_conn):
@@ -97,7 +99,8 @@ def update_sim(individual, db_conn):
     with db_conn:
         c.execute("""UPDATE simulations 
                     SET start_date = :start_date, 
-                    fitness = :fitness 
+                    fitness = :fitness, 
+                    runtime = :runtime
                     WHERE mp_physics = :mp_physics
                     AND ra_lw_physics = :ra_lw_physics
                     AND ra_sw_physics = :ra_sw_physics
@@ -105,7 +108,7 @@ def update_sim(individual, db_conn):
                     AND bl_pbl_physics = :bl_pbl_physics
                     AND cu_physics = :cu_physics
                     AND sf_sfclay_physics = :sf_sfclay_physics""",
-                  {'start_date': individual.Start_date, 'fitness': individual.Fitness,
+                  {'start_date': individual.Start_date, 'fitness': individual.Fitness, 'runtime': individual.Runtime,
                    'mp_physics': individual.Genes[0], 'ra_lw_physics': individual.Genes[1],
                    'ra_sw_physics': individual.Genes[2], 'sf_surface_physics': individual.Genes[3],
                    'bl_pbl_physics': individual.Genes[4], 'cu_physics': individual.Genes[5],
@@ -115,6 +118,8 @@ def update_sim(individual, db_conn):
 def get_individual_by_genes(individual, db_conn):
     """
     Looks for an indivual set of genes in an SQLite database.
+
+    ***NOTE: I'm not sure if I want to remove the first where clause contianing the start date.
 
     :param individual: simplega.Chromosome instance
         describing the simulation that you would to extract from the SQL simulation database
@@ -142,7 +147,12 @@ def get_individual_by_genes(individual, db_conn):
                'sf_sfclay_physics': individual.Genes[6]})
     sim_data = c.fetchone()
     if sim_data is not None:
-        past_sim = Chromosome(list(sim_data[1:-1]), sim_data[-1], sim_data[0])
+        param_ids = list(sim_data[1:-2])
+        s_date = sim_data[0]
+        s_date, e_date = simplega.generate_random_dates(input_start_date=s_date)
+        fitness = sim_data[-2]
+        runtime = sim_data[-1]
+        past_sim = Chromosome(param_ids, s_date, e_date, fitness, runtime)
     else:
         return None
     return past_sim
