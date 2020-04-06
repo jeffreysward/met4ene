@@ -1,7 +1,8 @@
 """
 A framework to run the simple genetic algorithm for optimizing the WRF model physics.
 All simulation parameters and fitness values are saved in an SQL database.
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+
 Known Issues/Wishlist:
 - This whole things needs to change...
     - I want the thread pool executor to operate within a Class or a function.
@@ -33,14 +34,12 @@ def conn_to_db(db_name='optwrf.db'):
     """
         Opens the connection to a SQL database.
 
-        Parameters:
-        ----------
-        db_name : SQL database name
-            Can be ':memory:' if you only want the database to be held in memory
 
-        Returns:
-        --------
-        db_conn : database connection object
+        :param db_name: SQL database name (string).
+            Can be ':memory:' if you only want the database to be held in memory.
+            Otherwise, it will take the form <database_name>.db.
+        :returns db_conn: database connection object
+            that allows for additional interactions with the SQL database when referenced.
 
     """
     db_conn = sqlite3.connect(db_name)
@@ -64,15 +63,12 @@ def insert_sim(individual, db_conn):
     """
     Inserts a simulation into the SQL database held in memory or written to a .db file.
 
-    Parameters:
-    ----------
-    individual : simplega.Chromosome instance
-        The simulation that you would like to add to the simulation database.
-    db_conn :
-        lorem ipsum
+    :param individual: simplega.Chromosome instance
+        describing the simulation that you would like to add to the SQL simulation database.
+    db_conn: database connection object
+        created using the conn_to_db() function.
 
     """
-
     print(f'...Adding {individual.Genes} to the simulation database...')
     c = db_conn.cursor()
     with db_conn:
@@ -90,15 +86,12 @@ def update_sim(individual, db_conn):
     """
     Inserts a simulation into the SQL database held in memory or written to a .db file.
 
-    Parameters:
-    ----------
-    individual : simplega.Chromosome instance
-        The simulation that you would like to add to the simulation database.
-    db_conn :
-        lorem ipsum
+    :param individual: simplega.Chromosome instance
+        describing the simulation that you would like to update in the SQL simulation database.
+    :param db_conn: database connection object
+        created using the conn_to_db() function.
 
     """
-
     print(f'...Updating {individual.Genes} in the simulation database...')
     c = db_conn.cursor()
     with db_conn:
@@ -112,29 +105,26 @@ def update_sim(individual, db_conn):
                     AND bl_pbl_physics = :bl_pbl_physics
                     AND cu_physics = :cu_physics
                     AND sf_sfclay_physics = :sf_sfclay_physics""",
-                    {'start_date': individual.Start_date, 'fitness': individual.Fitness,
-                    'mp_physics': individual.Genes[0], 'ra_lw_physics': individual.Genes[1],
-                    'ra_sw_physics': individual.Genes[2], 'sf_surface_physics': individual.Genes[3],
-                    'bl_pbl_physics': individual.Genes[4], 'cu_physics': individual.Genes[5],
-                    'sf_sfclay_physics': individual.Genes[6]})
+                  {'start_date': individual.Start_date, 'fitness': individual.Fitness,
+                   'mp_physics': individual.Genes[0], 'ra_lw_physics': individual.Genes[1],
+                   'ra_sw_physics': individual.Genes[2], 'sf_surface_physics': individual.Genes[3],
+                   'bl_pbl_physics': individual.Genes[4], 'cu_physics': individual.Genes[5],
+                   'sf_sfclay_physics': individual.Genes[6]})
 
 
 def get_individual_by_genes(individual, db_conn):
     """
     Looks for an indivual set of genes in an SQLite database.
 
-    Parameters:
-    ----------
-    individual : Chromosome Class instance
-        lorem ipsum
+    :param individual: simplega.Chromosome instance
+        describing the simulation that you would to extract from the SQL simulation database
+        if it exists there.
 
-    Returns:
-    ----------
-    past_sim : simplega.Chromosome
-        Simulation that was run previously and stored in the SQLite database.
+    :return past_sim: simplega.Chromosome instance
+        describing the simulation that was run previously and stored in the SQL simulation database,
+        and corresponding to the input individual function parameter.
 
     """
-
     c = db_conn.cursor()
     c.execute("""SELECT * FROM simulations 
                 WHERE start_date = :start_date
@@ -160,12 +150,10 @@ def get_individual_by_genes(individual, db_conn):
 
 def print_database(db_conn):
     """
-        Prints the entire SQLite simulation database.
+    Prints the entire SQLite simulation database.
 
-        Parameters:
-        ----------
-        db_conn :
-            lorem ipsum
+    :param db_conn: database connection object
+        created using the conn_to_db() function.
 
     """
 
@@ -184,15 +172,13 @@ def sql_to_csv(csv_file_path, db_conn):
     Writes the contents of a SQL database to a CSV file. The SQL database must
     be in the directory that you are running this function from.
 
-    Parameters:
-    ----------
-    csv_file_path : string
+    :param csv_file_path: string
         Exact path to where you would like to csv to be saved ending with the file name.
         e.g., csv_file_path = '/home/jas983/data/test.csv'
-    db_conn : database connection object
+    :param db_conn: database connection object
+        created using the conn_to_db() function.
 
     """
-
     c = db_conn.cursor()
     c.execute("""SELECT * FROM simulations""")
     header = [i[0] for i in c.description]
@@ -204,15 +190,12 @@ def sql_to_csv(csv_file_path, db_conn):
 
 def close_conn_to_db(db_conn):
     """
-        Closes the connection to a SQL database.
+    Closes the connection to a SQL database.
 
-        Parameters:
-        ----------
-        db_conn : SQL database name
-            Can be ':memory:' if you only want the database to be held in memory
+    :param db_conn: database connection object
+        created using the conn_to_db() function.
 
     """
-
     db_conn.close()
 
 
@@ -220,7 +203,7 @@ def seed_initial_population(input_csv):
     """
     Reads the input csv file, which contains the dates and/or parameter combinations
     that you would like to see in the initial population. The CSV file should be
-    formatted as follows:
+    formatted as follows (i.e., this function looks for these column names):
 
     Line 1: start_date, mp_physics, ra_lw_physics, ra_sw_physics, sf_surface_physics,
             bl_pbl_physics, cu_physics
@@ -263,22 +246,16 @@ def seed_initial_population(input_csv):
     return initial_population
 
 
-def get_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011'):
+def get_fitness(param_ids):
     """
     This function produces a random fitness value between 0 - 100
 
-    Parameters:
-    ----------
-    param_ids : list of integers
-        Numeric values corresponding to each WRF physics parameterization.
-
-    Returns:
-    ----------
-    fitness : integer
-        A randomly generated integer between 1 and 100.
+    :param param_ids: list of ints
+        corresponding to each WRF physics parameterization.
+    :return fitness: int
+        randomly generated, and between 1 and 100.
 
     """
-
     print('Calculating fitness for: {}'.format(param_ids))
     time.sleep(2)
     fitness = random.randrange(0, 100)
@@ -292,28 +269,24 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     Using the input physics parameters, date, boundary condition, and domain data,
     this function runs the WRF model and computes the error between WRF and ERA5.
 
-    Parameters:
-    ----------
-    param_ids : list of integers
-        Numeric values corresponding to each WRF physics parameterization.
-    start_date : string
-        lorem ipsum
-    end_date : string
-        lorem ipsum
-    bc_data : string
-        lorem ipsum
-    n_domains : integer
-        lorem ipsum
-    setup_yaml : string
-        lorem ipsum
-
-    Returns:
-    ----------
-    fitness : float
-        Fitness value denoting how well the WRF model run performed.
+    :param param_ids: list of integers
+        corresponding to each WRF physics parameterization.
+    :param start_date: string
+        specifying a desired start date.
+    :param end_date: string
+        specifying a desired end date.
+    :param bc_data: string
+        specifying the boundary condition data to be used for the WRF forecast.
+        Currently, only ERA data (ds627.0) is supported.
+    :param n_domains: integer
+        specifing the number of WRF model domains. 1 - 3 domains are currently supported.
+    :param setup_yaml: string
+        defining the path to the yaml file where input directory paths are specified.
+    :return fitness: float
+        value denoting how well the WRF model run performed.
+        Fitness is a measure of accumlated error, so a lower value is better.
 
     """
-
     print('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -')
     print('\nCalculating fitness for: {}'.format(param_ids))
 
@@ -377,22 +350,16 @@ def run_simplega(pop_size, n_generations, testing=False, intial_pop=None):
 
     I'm not sure if it would be better to make this a Class...
 
-    Parameters:
-    ----------
-    pop_size : int
-        Desired population size for the genetic algorithm
-    n_generations : int
-        Total number of generations after which the genetic algorithm will time out.
-    testing : boolean
+    :param pop_size: int
+        describing population size for the genetic algorithm. Must be >= 1
+    :param n_generations : int
+        corresponding to the total number of generations after which the genetic algorithm will time out.
+    :param testing : boolean
         Flag that uses a random number generator as the fitness function when True.
-
-    Returns:
-    ----------
-    WRFga_winner : simplega.Chromosome instance
-        The simulation preforming the best in the genetic algorithm.
+    :return WRFga_winner : simplega.Chromosome instance
+        corresponding to the simulation preforming the best in the genetic algorithm.
 
     """
-
     db_conn = conn_to_db()
 
     start_time = datetime.datetime.now()
@@ -416,9 +383,7 @@ def run_simplega(pop_size, n_generations, testing=False, intial_pop=None):
         Calculates the fitness for each member of the population using multithreadding,
         and adds its information to the SQLite database.
 
-        Parameters
-        ----------
-        pop : list of simplega.Chromosome
+        :param pop: list of simplega.Chromosome
             A population made up of individual Chromosome instances.
             The fitness is added as an attribute to the individual instances.
 
@@ -436,8 +401,7 @@ def run_simplega(pop_size, n_generations, testing=False, intial_pop=None):
                             fitness_threads.append(executor.submit(get_wrf_fitness, individual.Genes,
                                                                    individual.Start_date, individual.End_date))
                         else:
-                            fitness_threads.append(executor.submit(get_fitness, individual.Genes,
-                                                                   individual.Start_date, individual.End_date))
+                            fitness_threads.append(executor.submit(get_fitness, individual.Genes))
                     else:
                         individual.Fitness = past_individual.Fitness
                         fitness_threads.append(None)

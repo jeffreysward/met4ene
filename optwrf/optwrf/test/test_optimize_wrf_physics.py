@@ -22,8 +22,13 @@ def test_generate_random_dates():
     random_start_date, random_end_date = sga.generate_random_dates()
     print(f'Starting forecast on {random_start_date}')
     print(f'Ending forecast on {random_end_date}')
+    r_start_date, r_end_date = sga.generate_random_dates(input_start_date=start_date)
+    print(f'Starting forecast on {r_start_date}')
+    print(f'Ending forecast on {r_end_date}')
     assert random_start_date is not None
     assert random_end_date is not None
+    assert r_start_date is not None
+    assert r_end_date is not None
 
 
 def test_seed_initial_population():
@@ -45,7 +50,7 @@ def test_get_wrf_fitness():
 
 def test_run_simplega():
     """Tests the genetic algroithm framework without running WRF."""
-    WRFga_winner = run_simplega(pop_size=4, n_generations=2, testing=True)
+    WRFga_winner = run_simplega(pop_size=1, n_generations=0, testing=True)
     assert WRFga_winner.Fitness >= 0
 
 

@@ -110,6 +110,9 @@ class WRFModel:
         checking the first and the last rsl.out.* file created by each processor running
         either wrf.exe or real.exe via OpenMPI.
 
+        ***NOTE: It's not currently possible for geogrid or metgrid to fail,
+        because I don't know what failure message to look for in the log.
+
         :param program: string
             WRF or WPS subprogram name whose status is to be checked.
         :param nprocs: integer
@@ -502,12 +505,16 @@ class WRFModel:
         geogridfilesexist = [os.path.exists(self.DIR_DATA_ROOT + 'data/domain/' + file) for file in geogridfiles]
         if geogridfilesexist.count(False) is not 0:
             # Run geogrid
+            os.system(self.CMD_GEOGRID)
+            # Sleep until the geogrid.log file exists
+            while not os.path.exists(self.DIR_WRFOUT + 'geogrid.log'):
+                time.sleep(1)
+            # Begin geogrid simulation clock
             startTime = datetime.datetime.now()
             startTimeInt = int(time.time())
             if self.verbose:
                 print('Starting Geogrid at: ' + str(startTime))
                 sys.stdout.flush()
-            os.system(self.CMD_GEOGRID)
             geogrid_sim = self.runwrf_finish_check('geogrid')
             while geogrid_sim is not 'complete':
                 if geogrid_sim is 'failed':
@@ -552,12 +559,16 @@ class WRFModel:
             # Run ungrib and metgrid; start by linking the grib files
             sys.stdout.flush()
             os.system(self.CMD_LINK_GRIB)
+            os.system(self.CMD_UNGMETG)
+            # Sleep until the metgrid.log file exists
+            while not os.path.exists(self.DIR_WRFOUT + 'metgrid.log'):
+                time.sleep(1)
+            # Begin geogrid simulation clock
             startTime = datetime.datetime.now()
             startTimeInt = int(time.time())
             if self.verbose:
                 print('Starting Ungrib and Metgrid at: ' + str(startTime))
                 sys.stdout.flush()
-            os.system(self.CMD_UNGMETG)
             metgrid_sim = self.runwrf_finish_check('metgrid')
             while metgrid_sim is not 'complete':
                 if metgrid_sim is 'failed':
@@ -588,19 +599,23 @@ class WRFModel:
 
     def run_real(self, disable_timeout=False):
         """
-        Runs real.exe and checks to see that if it was successful.
+        Runs real.exe and checks to see if it was successful.
 
         :return: boolean (True/False)
             If runwrf_finish_check for real returns 'complete' ('failed'),
             this function returns True (False).
 
         """
+        os.system(self.CMD_REAL)
+        # Sleep until rsl.out.0000 file exists
+        while not os.path.exists(self.DIR_WRFOUT + 'rsl.out.0000'):
+            time.sleep(1)
+        # Begin geogrid simulation clock
         startTime = datetime.datetime.now()
         startTimeInt = int(time.time())
         if self.verbose:
             print('Starting Real at: ' + str(startTime))
             sys.stdout.flush()
-        os.system(self.CMD_REAL)
         real_sim = self.runwrf_finish_check('real')
         while real_sim is not 'complete':
             if real_sim is 'failed':
@@ -618,26 +633,37 @@ class WRFModel:
         elapsed = datetime.datetime.now() - startTime
         if self.verbose:
             print('Real ran in: ' + str(elapsed) + ' seconds')
+        # Remove rsl.* files
+        os.system(self.CMD_RM % (self.DIR_WRFOUT + 'rsl.*'))
         return True
 
-    def run_wrf(self, disable_timeout=False):
+    def run_wrf(self, disable_timeout=False, timeout_hours=6):
         """
         Runs wrf.exe and checks to see if it was successful.
 
+        :param disable_timeout: boolean (True/False)
+            desribing if timeout of this function is allowed.
+            Note that this parameter only breaks you out of this
+            method - it does not kill WRF jobs that are already running.
+        :param timeout_hours: integer
+            defining the number of hours this method will wait before
+            returning a failure (False) flag.
         :return: boolean (True/False)
             If runwrf_finish_check for wrf returns 'complete' ('failed'),
             this function returns True (False).
 
         """
-        wrf_runtime = 3600 * 2
+        wrf_runtime = 3600 * timeout_hours
+        os.system(self.CMD_WRF)
+        # Sleep until rsl.out.0000 file exists
+        while not os.path.exists(self.DIR_WRFOUT + 'rsl.out.0000'):
+            time.sleep(5)
+        # Begin wrf simulation clock
         startTime = datetime.datetime.now()
         startTimeInt = int(time.time())
         if self.verbose:
             print('Starting WRF at: ' + str(startTime))
             sys.stdout.flush()
-        os.system(self.CMD_WRF)
-        # Make the script sleep for 5 minutes to allow for the rsl.out.0000 file to reset.
-        time.sleep(300)
         wrf_sim = self.runwrf_finish_check('wrf')
         while wrf_sim is not 'complete':
             if wrf_sim is 'failed':
@@ -651,7 +677,7 @@ class WRFModel:
                 wrf_sim = self.runwrf_finish_check('wrf')
             else:
                 print(f'TimeoutError in run_wrf at {datetime.datetime.now()}: '
-                      f'WRF took more than {wrf_runtime / 3600} hrs to run... exiting.')
+                      f'WRF took more than {timeout_hours} hrs to run... exiting.')
                 return False
         if self.verbose:
             print('WRF finished running at: ' + str(datetime.datetime.now()))
