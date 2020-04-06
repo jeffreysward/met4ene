@@ -651,6 +651,8 @@ class WRFModel:
         :return: boolean (True/False)
             If runwrf_finish_check for wrf returns 'complete' ('failed'),
             this function returns True (False).
+        :return elapsed: string
+            specifying the amount of time it took for the WRF simulation to run.
 
         """
         wrf_runtime = 3600 * timeout_hours
@@ -698,7 +700,7 @@ class WRFModel:
         # Move the met_em files to a permanent location
         os.system(self.CMD_MV % (self.DIR_WRFOUT + 'met_em.*', self.DIR_DATA + 'met_em/'))
 
-        return True
+        return True, str(elapsed)
 
     def process_wrfout_data(self):
         """
