@@ -131,5 +131,5 @@ if success:
 
 # RUN WRF
 if success:
-    success = wrf_sim.run_wrf(disable_timeout=True)
+    success, runtime = wrf_sim.run_wrf(disable_timeout=True)
     print(f'WRF ran successfully? {success}')
