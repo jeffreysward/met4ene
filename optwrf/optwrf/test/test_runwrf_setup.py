@@ -51,7 +51,7 @@ def test_get_bc_data(setup_yaml='mac_dirpath.yml'):
     This definitely works best if done on Magma using setup_yaml='dirpath.yml',
     but if you do want to run it on your local machine make sure that you change
     setup_yaml='local_dirpath.yml', where local_dirpath.yml is a yaml file where
-    you specify root directory paths."""
+    you specify root directory paths. Note: this test only works on linux."""
     if on_magma:
         wrf_sim = WRFModel(param_ids, start_date, end_date)
     else:

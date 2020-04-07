@@ -76,7 +76,7 @@ class WRFModel:
         self.DIR_DATA_TMP = f'{self.DIR_DATA_ROOT}data/{self.forecast_start.strftime("%Y-%m-%d")}_{self.paramstr}/'
         self.DIR_MET4ENE = dirpaths.get('DIR_MET4ENE')
         self.DIR_WRFOUT = self.DIR_MET4ENE + 'wrfout/ARW/%s_' % \
-                          (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+                         (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
         self.DIR_RUNWRF = self.DIR_MET4ENE + 'optwrf/optwrf/'
         self.DIR_TEMPLATES = dirpaths.get('DIR_TEMPLATES')
 
@@ -257,6 +257,7 @@ class WRFModel:
                 if not success:
                     print(f'{self.bc_data} data was not successfully downloaded from RDA.')
                     raise RuntimeError
+
                 # Move the data files to the data directory
                 for file in file_check:
                     os.system(self.CMD_MV % (file, self.DIR_DATA))
@@ -682,9 +683,9 @@ class WRFModel:
                       f'WRF took more than {timeout_hours} hrs to run... exiting.')
                 elapsed = datetime.datetime.now() - startTime
                 return False, str(elapsed)
+        elapsed = datetime.datetime.now() - startTime
         if self.verbose:
             print('WRF finished running at: ' + str(datetime.datetime.now()))
-            elapsed = datetime.datetime.now() - startTime
             print('WRF ran in: ' + str(elapsed))
 
         # Rename the wrfout files.
