@@ -680,7 +680,8 @@ class WRFModel:
             else:
                 print(f'TimeoutError in run_wrf at {datetime.datetime.now()}: '
                       f'WRF took more than {timeout_hours} hrs to run... exiting.')
-                return False
+                elapsed = datetime.datetime.now() - startTime
+                return False, str(elapsed)
         if self.verbose:
             print('WRF finished running at: ' + str(datetime.datetime.now()))
             elapsed = datetime.datetime.now() - startTime
