@@ -332,6 +332,8 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         success, runtime = wrf_sim.run_wrf()
         if verbose:
             print(f'WRF ran successfully? {success}')
+    else:
+        runtime = '00:00:00'
 
     # Postprocess wrfout file and ERA5 data
     if success:
