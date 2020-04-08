@@ -638,7 +638,7 @@ class WRFModel:
         os.system(self.CMD_RM % (self.DIR_WRFOUT + 'rsl.*'))
         return True
 
-    def run_wrf(self, disable_timeout=False, timeout_hours=0.1):
+    def run_wrf(self, disable_timeout=False, timeout_hours=4):
         """
         Runs wrf.exe and checks to see if it was successful.
 
@@ -682,7 +682,6 @@ class WRFModel:
                 print(f'TimeoutError in run_wrf at {datetime.datetime.now()}: '
                       f'WRF took more than {timeout_hours} hrs to run... exiting.')
                 elapsed = datetime.datetime.now() - startTime
-                print('WRF ran in: ' + str(elapsed))
                 return False, str(elapsed)
         elapsed = datetime.datetime.now() - startTime
         if self.verbose:
