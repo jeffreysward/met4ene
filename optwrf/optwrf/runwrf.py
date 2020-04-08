@@ -671,7 +671,8 @@ class WRFModel:
         while wrf_sim is not 'complete':
             if wrf_sim is 'failed':
                 print_last_3lines(self.DIR_WRFOUT + 'rsl.out.0000')
-                return False
+                elapsed = datetime.datetime.now() - startTime
+                return False, str(elapsed)
             elif (int(time.time()) - startTimeInt) < wrf_runtime:
                 time.sleep(10)
                 wrf_sim = self.runwrf_finish_check('wrf')
