@@ -26,7 +26,7 @@ import xarray as xr
 import yaml
 
 from pvlib.wrfcast import WRF
-import optwrf.linuxhelper as lh
+import optwrf.helper_functions as hf
 from optwrf.wrfparams import ids2str
 
 
@@ -209,7 +209,7 @@ class WRFModel:
         date_list = [(self.forecast_start + datetime.timedelta(days=x)) for x in range(forecast_duration.days + 1)]
 
         # Clean potential old temporary data directory (DIR_DATA_TMP) and remake the dir
-        lh.remove_dir(self.DIR_DATA_TMP)
+        hf.remove_dir(self.DIR_DATA_TMP)
         os.makedirs(self.DIR_DATA_TMP, 0o755)
 
         # Depending on what computer you are on...
@@ -279,7 +279,7 @@ class WRFModel:
 
         """
         # Clean potential old simulation dir and remake the dir
-        lh.remove_dir(self.DIR_WRFOUT)
+        hf.remove_dir(self.DIR_WRFOUT)
         os.makedirs(self.DIR_WRFOUT, 0o755)
 
         # Link WRF tables, data, and executables.
@@ -532,7 +532,7 @@ class WRFModel:
                     return False
             elapsed = datetime.datetime.now() - startTime
             if self.verbose:
-                print('Geogrid ran in: ' + str(elapsed))
+                print('Geogrid ran in: ' + hf.strfdelta(elapsed))
         else:
             # Link the existing met_em files to the runwrf directory
             if self.verbose:
@@ -586,7 +586,7 @@ class WRFModel:
                     return False
             elapsed = datetime.datetime.now() - startTime
             if self.verbose:
-                print('Ungrib and Metgrid ran in: ' + str(elapsed))
+                print('Ungrib and Metgrid ran in: ' + hf.strfdelta(elapsed))
         else:
             # Link the existing met_em files to the runwrf directory
             if self.verbose:
@@ -595,7 +595,7 @@ class WRFModel:
                 os.system(self.CMD_LN % (self.DIR_DATA + 'met_em/' + file, self.DIR_WRFOUT + '.'))
 
         # Remove the temporary data directory after WPS has run
-        lh.remove_dir(self.DIR_DATA_TMP)
+        hf.remove_dir(self.DIR_DATA_TMP)
         return True
 
     def run_real(self, disable_timeout=False):
@@ -633,7 +633,7 @@ class WRFModel:
                 return False
         elapsed = datetime.datetime.now() - startTime
         if self.verbose:
-            print('Real ran in: ' + str(elapsed) + ' seconds')
+            print('Real ran in: ' + hf.strfdelta(elapsed) + ' seconds')
         # Remove rsl.* files
         os.system(self.CMD_RM % (self.DIR_WRFOUT + 'rsl.*'))
         return True
@@ -672,7 +672,7 @@ class WRFModel:
             if wrf_sim is 'failed':
                 print_last_3lines(self.DIR_WRFOUT + 'rsl.out.0000')
                 elapsed = datetime.datetime.now() - startTime
-                return False, str(elapsed)
+                return False, hf.strfdelta(elapsed)
             elif (int(time.time()) - startTimeInt) < wrf_runtime:
                 time.sleep(10)
                 wrf_sim = self.runwrf_finish_check('wrf')
@@ -683,11 +683,11 @@ class WRFModel:
                 print(f'TimeoutError in run_wrf at {datetime.datetime.now()}: '
                       f'WRF took more than {timeout_hours} hrs to run... exiting.')
                 elapsed = datetime.datetime.now() - startTime
-                return False, str(elapsed)
+                return False, hf.strfdelta(elapsed)
         elapsed = datetime.datetime.now() - startTime
         if self.verbose:
             print('WRF finished running at: ' + str(datetime.datetime.now()))
-            print('WRF ran in: ' + str(elapsed))
+            print('WRF ran in: ' + hf.strfdelta(elapsed))
 
         # Rename the wrfout files.
         for n in range(1, self.n_domains + 1):
@@ -703,7 +703,7 @@ class WRFModel:
         # Move the met_em files to a permanent location
         os.system(self.CMD_MV % (self.DIR_WRFOUT + 'met_em.*', self.DIR_DATA + 'met_em/'))
 
-        return True, str(elapsed)
+        return True, hf.strfdelta(elapsed)
 
     def process_wrfout_data(self):
         """

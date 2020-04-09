@@ -10,12 +10,14 @@ Known Issues/Wishlist:
 """
 
 import concurrent.futures
+import csv
 import datetime
 import random
 import sqlite3
-import csv
+import sys
 import time
 
+import optwrf.helper_functions as hf
 from optwrf.runwrf import WRFModel
 import optwrf.simplega as simplega
 from optwrf.simplega import Chromosome
@@ -270,7 +272,7 @@ def get_fitness(param_ids):
     print('Calculating fitness for: {}'.format(param_ids))
     time.sleep(2)
     fitness = random.randrange(0, 100)
-    runtime = str(datetime.datetime.now() - start_time)
+    runtime = hf.strfdelta(datetime.datetime.now() - start_time)
     return fitness, runtime
 
 
@@ -444,6 +446,7 @@ def run_simplega(pop_size, n_generations, testing=False, intial_pop=None):
     # Calculate the fitness of the initial population
     print('--> Calculating the fitness of the initial population...')
     fn_get_pop_fitness(population)
+    sys.stdout.flush()
 
     # Until the specified generation number is reached,
     gen = 1
@@ -473,10 +476,12 @@ def run_simplega(pop_size, n_generations, testing=False, intial_pop=None):
             fn_display_pop(offspring_pop)
         # Calculate the fitness of the population
         print('Calculating the fitness of the generation {} population...'.format(gen))
+        sys.stdout.flush()
         fn_get_pop_fitness(offspring_pop)
         # Initialize the next generation
         population = offspring_pop
         gen += 1
+        sys.stdout.flush()
 
     WRFga_winner = simplega.get_best(population)
     print(f'\nWRFga finished running in {datetime.datetime.now() - start_time}')

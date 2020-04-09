@@ -9,6 +9,7 @@ Known Issues/Wishlist:
 import datetime
 import random
 
+import optwrf.helper_functions as hf
 import optwrf.wrfparams as wrfparams
 import optwrf.runwrf as runwrf
 
@@ -43,9 +44,9 @@ def display(individual, start_time):
         defining when the simiulation began running.
 
     """
-    time_diff = datetime.datetime.now() - start_time
-    print("Genes:{}\tFitness: {}\tElapsed Time: {}".format(
-        ''.join(str(individual.Genes)), individual.Fitness, time_diff))
+    time_diff = hf.strfdelta(datetime.datetime.now() - start_time, fmt='{D:02}d {H:02}h {M:02}m {S:02}s')
+    print(f'Genes:{str(individual.Genes)}\tFitness: {individual.Fitness}\t'
+          f'Sim Runtime: {str(individual.Runtime)}\tGA Time: {time_diff}')
 
 
 def display_pop(population, fn_display):

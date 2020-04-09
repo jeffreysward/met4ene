@@ -282,7 +282,7 @@ def get_bc_data(paramstr, bc_data, template_dir, forecast_start, delt):
     print('The corresponding Vtable is: {}\n'.format(vtable_sfx))
 
     # Make sure any existing data directory has been removed
-    # lh.remove_dir(DIR_DATA)
+    # hf.remove_dir(DIR_DATA)
 
     # If no data directory exists, create one
     if not os.path.exists(DIR_DATA):
@@ -604,7 +604,7 @@ def run_wps(paramstr, forecast_start, bc_data, template_dir):
     print('Ungrib and Metgrid ran in: ' + str(elapsed))
 
     # Remove the data directory after WPS has run
-    # lh.remove_dir(DIR_DATA)
+    # hf.remove_dir(DIR_DATA)
     return True
 
 
