@@ -1050,8 +1050,10 @@ class WRFModel:
         mae = read_last_line(error_file)
         mae = mae.split(',')
         mae[-1] = mae[-1].strip()
-        mae = [float(i) for i in mae]
-        # total_error = sum(mae)
+        try:
+            mae = [float(i) for i in mae]
+        except ValueError:
+            mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
         if self.verbose:
             print(f'!!! Parameters {self.paramstr} have a total error {sum(mae)} kW m-2')
 
