@@ -1038,9 +1038,10 @@ class WRFModel:
         while not os.path.exists(error_file):
             log_message = read_last_3lines('log.regrid')
             if 'fatal' in log_message:
-                print('NCL has failed with the following message:')
+                print('NCLError: NCL has failed with the following message:')
                 print_last_3lines('log.regrid')
-                raise RuntimeError
+                mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
+                return mae
             elif (int(time.time()) - startTimeInt) < 600:
                 print('TimeoutError in wrf2era_error.ncl: took more than 10min to run... returning large error values.')
                 mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
