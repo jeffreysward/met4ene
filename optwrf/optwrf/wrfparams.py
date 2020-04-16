@@ -215,7 +215,7 @@ def pbl2sfclay(id_pbl, rnd=False):
 
 
 def flexible_generate(generate_params=True, mp=None, lw=None, sw=None,
-                      lsm=None, pbl=None, cu=None, in_yaml='params.yml'):
+                      lsm=None, pbl=None, cu=None, in_yaml='params.yml', verbose=False):
     """
     Generate a parameter combination of the 6 core parameters if the user has specified this option.
     Otherwise, use specified input parameters and use defaults for the remaining paramters.
@@ -305,7 +305,8 @@ def flexible_generate(generate_params=True, mp=None, lw=None, sw=None,
     param_ids.append(id_sfclay)
     # Apply known parameter dependencies
     param_ids = apply_dependencies(param_ids)
-    print(f'The following parameters were generated: {param_ids}')
+    if verbose:
+        print(f'The following parameters were generated: {param_ids}')
     return param_ids
 
 

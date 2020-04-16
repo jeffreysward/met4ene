@@ -62,7 +62,7 @@ def conn_to_db(db_name='optwrf.db'):
     return db_conn
 
 
-def insert_sim(individual, db_conn):
+def insert_sim(individual, db_conn, verbose=False):
     """
     Inserts a simulation into the SQL database held in memory or written to a .db file.
 
@@ -72,7 +72,8 @@ def insert_sim(individual, db_conn):
         created using the conn_to_db() function.
 
     """
-    print(f'...Adding {individual.Genes} to the simulation database...')
+    if verbose:
+        print(f'...Adding {individual.Genes} to the simulation database...')
     c = db_conn.cursor()
     with db_conn:
         c.execute("""INSERT INTO simulations VALUES (
@@ -258,7 +259,7 @@ def seed_initial_population(input_csv):
     return initial_population
 
 
-def get_fitness(param_ids):
+def get_fitness(param_ids, verbose=False):
     """
     This function produces a random fitness value between 0 - 100
 
@@ -269,7 +270,8 @@ def get_fitness(param_ids):
 
     """
     start_time = datetime.datetime.now()
-    print('Calculating fitness for: {}'.format(param_ids))
+    if verbose:
+        print('Calculating fitness for: {}'.format(param_ids))
     time.sleep(2)
     fitness = random.randrange(0, 100)
     runtime = hf.strfdelta(datetime.datetime.now() - start_time)
@@ -301,8 +303,9 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         Fitness is a measure of accumlated error, so a lower value is better.
 
     """
-    print('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -')
-    print('\nCalculating fitness for: {}'.format(param_ids))
+    if verbose:
+        print('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -')
+        print('\nCalculating fitness for: {}'.format(param_ids))
 
     # Create a WRFModel instance
     wrf_sim = WRFModel(param_ids, start_date, end_date,
@@ -335,7 +338,7 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         if verbose:
             print(f'WRF ran successfully? {success}')
     else:
-        runtime = '00:00:00'
+        runtime = '00h 00m 00s'
 
     # Postprocess wrfout file and ERA5 data
     if success:
@@ -354,7 +357,7 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     return fitness, runtime
 
 
-def run_simplega(pop_size, n_generations, testing=False, intial_pop=None):
+def run_simplega(pop_size, n_generations, testing=False, intial_pop=None, verbose=False):
     """
     Runs the simple genetic algorithm specified in simplega either
     to optimize the WRF model physics or with a test fitness function
@@ -372,12 +375,6 @@ def run_simplega(pop_size, n_generations, testing=False, intial_pop=None):
         corresponding to the simulation preforming the best in the genetic algorithm.
 
     """
-    db_conn = conn_to_db()
-
-    start_time = datetime.datetime.now()
-    n_elites = int(0.34 * pop_size) if int(0.34 * pop_size) > 0 else 1
-    print('The number of elites is {}'.format(n_elites))
-
     def fn_display(individual):
         """
         Wrapper function for individual Chromosome display function.
@@ -440,6 +437,15 @@ def run_simplega(pop_size, n_generations, testing=False, intial_pop=None):
                 ii += 1
         fn_display_pop(pop)
 
+    # Connect to the simulation database
+    db_conn = conn_to_db()
+
+    # Record the start time, and calculate the number of elites
+    start_time = datetime.datetime.now()
+    n_elites = int(0.34 * pop_size) if int(0.34 * pop_size) > 0 else 1
+    if verbose:
+        print('The number of elites is {}'.format(n_elites))
+
     # Create an initial population
     population = simplega.generate_population(pop_size, intial_pop)
 
@@ -454,20 +460,23 @@ def run_simplega(pop_size, n_generations, testing=False, intial_pop=None):
         print('\n------ Starting generation {} ------'.format(gen))
         # Select the mating population
         mating_pop = simplega.selection(population, pop_size)
-        print('The mating population is:')
-        fn_display_pop(mating_pop)
+        if verbose:
+            print('The mating population is:')
+            fn_display_pop(mating_pop)
         # Carry out crossover
         offspring_pop = []
         while len(offspring_pop) < pop_size - n_elites:
             offspring = simplega.crossover(mating_pop)
             if offspring is not None:
                 offspring_pop.extend(offspring)
-        print('The offspring population is:')
-        fn_display_pop(offspring_pop)
+        if verbose:
+            print('The offspring population is:')
+            fn_display_pop(offspring_pop)
         # Give a chance for mutation on each member of the offspring population
         offspring_pop = simplega.mutate(offspring_pop)
-        print('The offspring population after mutation is:')
-        fn_display_pop(offspring_pop)
+        if verbose:
+            print('The offspring population after mutation is:')
+            fn_display_pop(offspring_pop)
         # Copy the elites into the offspring population
         elites = simplega.find_elites(population, n_elites, fn_display_pop)
         if elites is not None:

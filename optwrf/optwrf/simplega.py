@@ -202,7 +202,7 @@ def crossover(mating_population):
     return offspring_population
 
 
-def mutate(offspring_population):
+def mutate(offspring_population, verbose=False):
     """
     The mutate operator takes in the genes of one offspring
     and randomly replaces one of the genes from the set of choices.
@@ -217,12 +217,13 @@ def mutate(offspring_population):
         if random.randint(1, len(offspring_population)) is 1:
             new_child = generate_genes()
             gene_idx = random.randint(0, len(new_child) - 1)
-            print('--> Mutating gene in position {} in child {}.'.format(gene_idx, child.Genes))
+            if verbose:
+                print('--> Mutating gene in position {} in child {}.'.format(gene_idx, child.Genes))
             child.Genes[gene_idx] = new_child[gene_idx]
     return offspring_population
 
 
-def get_best(population):
+def get_best(population, verbose=False):
     """
     Finds the location of the individual within the population with the best (lowest) fitness.
 
@@ -232,14 +233,15 @@ def get_best(population):
 
     """
     fitness = [population[i].Fitness for i in range(0, len(population))]
-    print('The tournament fitness values are: {}'.format(fitness))
+    if verbose:
+        print('The tournament fitness values are: {}'.format(fitness))
     best_fitness = min(fitness)
     best_index = fitness.index(best_fitness)
     best_individual = population[best_index]
     return best_individual
 
 
-def find_elites(population, n_elites, fn_display_pop):
+def find_elites(population, n_elites, fn_display_pop, verbose=False):
     """
     Finds elites within the population by sorting the members of the population from
     best (numerically lowest) to worst (numerically highest) fitness value,
@@ -257,6 +259,7 @@ def find_elites(population, n_elites, fn_display_pop):
     """
     order = sorted(population, key=lambda x: x.Fitness)
     elites = order[0:n_elites]
-    print('The elites moving to the next generation are: ')
-    fn_display_pop(elites)
+    if verbose:
+        print('The elites moving to the next generation are: ')
+        fn_display_pop(elites)
     return elites

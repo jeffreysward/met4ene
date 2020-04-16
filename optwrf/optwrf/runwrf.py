@@ -638,7 +638,7 @@ class WRFModel:
         os.system(self.CMD_RM % (self.DIR_WRFOUT + 'rsl.*'))
         return True
 
-    def run_wrf(self, disable_timeout=False, timeout_hours=6):
+    def run_wrf(self, disable_timeout=False, timeout_hours=6, save_wps_files=False):
         """
         Runs wrf.exe and checks to see if it was successful.
 
@@ -697,11 +697,12 @@ class WRFModel:
                                      + self.forecast_start.strftime('%d') + '_00:00:00',
                                      self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '.nc'))
 
-        # Move the geo_em file(s) to a permanent location
-        os.system(self.CMD_MV % (self.DIR_WRFOUT + 'geo_em.*', self.DIR_DATA_ROOT + 'data/domain/'))
+        if save_wps_files:
+            # Move the geo_em file(s) to a permanent location
+            os.system(self.CMD_MV % (self.DIR_WRFOUT + 'geo_em.*', self.DIR_DATA_ROOT + 'data/domain/'))
 
-        # Move the met_em files to a permanent location
-        os.system(self.CMD_MV % (self.DIR_WRFOUT + 'met_em.*', self.DIR_DATA + 'met_em/'))
+            # Move the met_em files to a permanent location
+            os.system(self.CMD_MV % (self.DIR_WRFOUT + 'met_em.*', self.DIR_DATA + 'met_em/'))
 
         return True, hf.strfdelta(elapsed)
 

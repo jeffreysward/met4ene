@@ -10,7 +10,7 @@ from shutil import rmtree
 import string
 
 
-def remove_dir(directory):
+def remove_dir(directory, verbose=False):
     """
     This function utilized an exception clause to delete a directory.
 
@@ -24,7 +24,8 @@ def remove_dir(directory):
     try:
         rmtree(directory)
     except OSError as e:
-        print("OSError in remove_dir: %s - %s." % (e.filename, e.strerror))
+        if verbose:
+            print("OSError in remove_dir: %s - %s." % (e.filename, e.strerror))
 
 
 def strfdelta(tdelta, fmt='{H:02}h {M:02}m {S:02}s', inputtype='timedelta'):
