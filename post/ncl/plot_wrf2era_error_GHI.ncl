@@ -225,44 +225,46 @@ begin
         res@mpMinLonF             = min(wrf_lon)
         res@mpMaxLonF             = max(wrf_lon)
         
-	    d_res                     = res
+	d_res                     = res
         d_res@lbLabelBarOn        = True
 
         ;--Set contour spacing interval         Change (maybe)
-        mnmxint = nice_mnmxintvl(min(GHI(iwrf,:,:)), max(GHI(iwrf,:,:)), 18, False)
+        ;mnmxint = nice_mnmxintvl(min(GHI(iwrf,:,:)), max(GHI(iwrf,:,:)), 18, False)
+        mnmxint = nice_mnmxintvl(0, 0.65, 18, False)
         res@cnLevelSelectionMode  = "ManualLevels"
-        ;res@cnMinLevelValF        = mnmxint(0)
-        ;res@cnMinLevelValF        = mnmxint(0)
-        ;res@cnMaxLevelValF        = mnmxint(1)
-        res@cnMinLevelValF        = 0 
-        res@cnMaxLevelValF        = 0.65
-        res@cnLevelSpacingF       = 0.05
-	    print("The min GHI value is: " + mnmxint(0) + " " + GHI@units)
-	    print("The max GHI value is: " + mnmxint(1) + " " + GHI@units)
+        res@cnMinLevelValF        = mnmxint(0)
+        res@cnMaxLevelValF        = mnmxint(1)
+        res@cnLevelSpacingF       = mnmxint(2)
+        ;res@cnMinLevelValF        = 0 
+        ;res@cnMaxLevelValF        = 0.65
+        ;res@cnLevelSpacingF       = 0.05
+	print("The min GHI value is: " + mnmxint(0) + " " + GHI@units)
+	print("The max GHI value is: " + mnmxint(1) + " " + GHI@units)
         cmap_GHI = read_colormap_file("MPL_YlOrRd")      ;-- so we can subset later
         res@cnFillPalette          = cmap_GHI(:,:)        ;-- subset the color map
         res@pmLabelBarOrthogonalPosF = 0.15           ;-- move th color bar down
 
-        mnmxint = nice_mnmxintvl(min(GHI_diff), max(GHI_diff), 18, False)
+        ;mnmxint = nice_mnmxintvl(min(GHI_diff), max(GHI_diff), 18, False)
+        mnmxint = nice_mnmxintvl(0, 0.5, 18, False)
         d_res@cnLevelSelectionMode  = "ManualLevels"
-        ;d_res@cnMinLevelValF      = mnmxint(0)
-        ;d_res@cnMaxLevelValF      = mnmxint(1)
-        ;d_res@cnLevelSpacingF     = mnmxint(2)
-	    print("The min GHI_diff value is: " + min(GHI_diff) + " " + GHI@units)
-	    print("The max GHI_diff value is: " + max(GHI_diff) + " " + GHI@units)
-        d_res@cnMinLevelValF      = 0
-        d_res@cnMaxLevelValF      = 0.5
-        d_res@cnLevelSpacingF     = 0.05
+        d_res@cnMinLevelValF      = mnmxint(0)
+        d_res@cnMaxLevelValF      = mnmxint(1)
+        d_res@cnLevelSpacingF     = mnmxint(2)
+	print("The min GHI_diff value is: " + min(GHI_diff) + " " + GHI@units)
+	print("The max GHI_diff value is: " + max(GHI_diff) + " " + GHI@units)
+        ;d_res@cnMinLevelValF      = 0
+        ;d_res@cnMaxLevelValF      = 0.5
+        ;d_res@cnLevelSpacingF     = 0.05
 
         ;---Resources for plotting regridded data
         res@gsnAddCyclic  = False            ;;---Change (maybe)
-        res@tiMainString  = "Curvilinear grid (" + Opt@InterpMethod + ")"
+        res@tiMainString  = "ERA5 Grid (" + Opt@InterpMethod + " method)"
 
         plot_regrid = gsn_csm_contour_map(wks1,GHI_regrid(iwrf,:,:),res)
 
         ;---Resources for plotting original data
         res@gsnAddCyclic = False            ;;---Change (maybe)
-        res@tiMainString = "Original WRF grid"
+        res@tiMainString = "Original WRF Grid"
 
         plot_orig = gsn_csm_contour_map(wks1,GHI(iwrf,:,:),res)
 
@@ -287,9 +289,9 @@ begin
         ;---Plot the difference
         draw(plot_diff)
         frame(wks2)
-	    delete(res)
-	    delete(d_res)
-	    delete(pres)
+	delete(res)
+	delete(d_res)
+	delete(pres)
 
         n := n + 1
     end do        ; END OF TIME LOOP

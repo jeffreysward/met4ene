@@ -13,7 +13,7 @@
 ; which are written to a csv file named mae_wrf2era_<parmstr>.csv.
 ;
 ; Here is a syntax example of calling this script:
-; ncl in_yr=2011 in_mo=01 in_da=15 'WRFdir="/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-15_10mp1lw1sw2lsm2pbl3cu/"' 'paramstr="10mp1lw1sw2lsm2pbl3cu"' plot_wrf2era_error_WPD.ncl
+; ncl in_yr=2011 in_mo=12 in_da=13 'WRFdir="/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-12-13_1mp5lw1sw1lsm8pbl5cu/"' 'paramstr="1mp5lw1sw1lsm8pbl5cu"' plot_wrf2era_error_WPD.ncl 
 ;
 ;----------------------------------------------------------------------
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
@@ -156,10 +156,11 @@ begin
     n = 1
     GHI_MAE = 0
     WPD_MAE = 0
-    do iwrf = 0,ntimes-1,12                      ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
+    do iwrf = 0,ntimes-1,1                      ; TIME LOOP <-------- MAKE SURE TO RESET THIS LINE TO: 0,ntimes-1,1
         print("The wrf time is: " + wrf_datestr(iwrf))
         iera = str_match_ind(ERA_datestr, wrf_datestr(iwrf))
-        outfile = "./met_plots/WRF_ERA5diff_WPD."+sprinti("%0.3i", n)
+        outfile1 = "./met_plots/WRF_ERA5_WPD."+sprinti("%0.3i", n)
+        outfile2 = "./met_plots/WRF_ERA5_WPDdiff."+sprinti("%0.3i", n)
         ;---Compute absoulute difference between ERA5 variable and WRF variable(s)
         GHI_diff = abs(GHI_regrid(iwrf,:,:) - ERA_GHI(iera,:,:))
         GHI_diff!0 = "lat"
@@ -200,7 +201,8 @@ begin
         WPD@lat2d = wrf_lat     ; Needed for plotting. "t2_regrid"
         WPD@lon2d = wrf_lon     ; already has these attrs attached.
 
-        wks = gsn_open_wks("x11", outfile)
+        wks1 = gsn_open_wks("png", outfile1)
+        wks2 = gsn_open_wks("png", outfile2)
 
         res                       = True
         res@gsnMaximize           = True
@@ -218,52 +220,49 @@ begin
 
         res@lbLabelBarOn          = False    ; Turn on later in panel
         res@mpDataBaseVersion     = "MediumRes"
-        res@mpMinLatF             = min(ERA_lat)
-        res@mpMaxLatF             = max(ERA_lat)
-        res@mpMinLonF             = min(ERA_lon)
-        res@mpMaxLonF             = max(ERA_lon)
+        res@mpMinLatF             = min(wrf_lat)
+        res@mpMaxLatF             = max(wrf_lat)
+        res@mpMinLonF             = min(wrf_lon)
+        res@mpMaxLonF             = max(wrf_lon)
         d_res                     = res
         d_res@lbLabelBarOn        = True
 
         ;--Set contour spacing interval         Change (maybe)
-        mnmxint = nice_mnmxintvl(min(WPD(iwrf,:,:)), max(WPD(iwrf,:,:)), 18, False)
-        res@cnMinLevelValF        = mnmxint(0)
-        res@cnMinLevelValF        = mnmxint(0)
+        ;mnmxint = nice_mnmxintvl(min(WPD(iwrf,:,:)), max(WPD(iwrf,:,:)), 18, False)
+        mnmxint = nice_mnmxintvl(0, 2600, 18, False)
+        res@cnLevelSelectionMode  = "ManualLevels"
+	res@cnMinLevelValF        = mnmxint(0)
         res@cnMaxLevelValF        = mnmxint(1)
-        ;res@cnMinLevelValF        = 0 
-        ;res@cnMaxLevelValF        = 1
-        ;res@cnLevelSpacingF       = 0.1
-        print("The min WPD value is: " + mnmxint(0) + " " + WPD@units)
-        print("The max WPD value is: " + mnmxint(1) + " " + WPD@units)
+        res@cnLevelSpacingF       = mnmxint(2)
+        print("The min WPD value is: " + min(WPD(iwrf,:,:)) + " " + WPD@units)
+        print("The max WPD value is: " + max(WPD(iwrf,:,:)) + " " + WPD@units)
         ;---Set the colormap for WPD
         cmap_WPD = read_colormap_file("cmocean_deep")    ;-- so we can subset later
         res@cnFillPalette          = cmap_WPD(:,:)       ;-- subset the color map
         res@pmLabelBarOrthogonalPosF = 0.15              ;-- move th color bar down
 
-        mnmxint = nice_mnmxintvl(min(WPD_diff), max(WPD_diff), 18, False)
+        ;---Resources for plotting regridded data
+        res@gsnAddCyclic  = False            ;;---Change (maybe)
+        res@tiMainString  = "ERA5 Grid (" + Opt@InterpMethod + " method)"
+
+        plot_regrid = gsn_csm_contour_map(wks1,WPD_regrid(iwrf,:,:),res)
+
+        ;---Resources for plotting original data
+        res@gsnAddCyclic = False            ;;---Change (maybe)
+        res@tiMainString = "Original WRF Grid"
+
+        plot_orig = gsn_csm_contour_map(wks1,WPD(iwrf,:,:),res)
+
+        ;---Resources for plotting difference in WRF and ERA5 data
+        ;mnmxint = nice_mnmxintvl(min(WPD_diff), max(WPD_diff), 18, False)
+        mnmxint = nice_mnmxintvl(0, 1600, 18, False)
         d_res@cnLevelSelectionMode  = "ManualLevels"
         d_res@cnMinLevelValF      = mnmxint(0)
         d_res@cnMaxLevelValF      = mnmxint(1)
         d_res@cnLevelSpacingF     = mnmxint(2)
         print("The min WPD_diff value is: " + min(WPD_diff) + " " + WPD@units)
         print("The max WPD_diff value is: " + max(WPD_diff) + " " + WPD@units)
-        ;d_res@cnMinLevelValF      = 0
-        ;d_res@cnMaxLevelValF      = 1
-        ;d_res@cnLevelSpacingF     = 0.1
 
-        ;---Resources for plotting regridded data
-        res@gsnAddCyclic  = False            ;;---Change (maybe)
-        res@tiMainString  = "Curvilinear grid (" + Opt@InterpMethod + ")"
-
-        plot_regrid = gsn_csm_contour_map(wks,WPD_regrid(iwrf,:,:),res)
-
-        ;---Resources for plotting original data
-        res@gsnAddCyclic = False            ;;---Change (maybe)
-        res@tiMainString = "Original WRF grid"
-
-        plot_orig = gsn_csm_contour_map(wks,WPD(iwrf,:,:),res)
-
-        ;---Resources for plotting difference in WRF and ERA5 data
         d_res@gsnAddCyclic           = False            ;;---Change (maybe)
         d_res@tiMainString           = "WRF & ERA5 Difference"
         d_res@lbTitleString          = "Wind Power Density Difference (W/m -2)"
@@ -273,20 +272,20 @@ begin
         cmap = read_colormap_file("MPL_Purples")      ;-- so we can subset later
         d_res@cnFillPalette          = cmap(:,:)        ;-- subset the color map
         d_res@pmLabelBarOrthogonalPosF = 0.15           ;-- move th color bar down
-        plot_diff = gsn_csm_contour_map(wks,WPD_diff,d_res)
+        plot_diff = gsn_csm_contour_map(wks2,WPD_diff,d_res)
 
         ;---Compare the plots in a panel
         pres                   = True
         pres@gsnMaximize       = True
         pres@gsnPanelLabelBar  = True
-        gsn_panel(wks,(/plot_orig,plot_regrid/),(/2,1/),pres)
+        gsn_panel(wks1,(/plot_orig,plot_regrid/),(/2,1/),pres)
 
         ;---Plot the difference
         draw(plot_diff)
-        frame(wks)
-	    delete(res)
-	    delete(d_res)
-	    delete(pres)
+        frame(wks2)
+	delete(res)
+	delete(d_res)
+	delete(pres)
 
         n := n + 1
     end do        ; END OF TIME LOOP
