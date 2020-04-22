@@ -36,7 +36,6 @@ def conn_to_db(db_name='optwrf.db'):
     """
         Opens the connection to a SQL database.
 
-
         :param db_name: SQL database name (string).
             Can be ':memory:' if you only want the database to be held in memory.
             Otherwise, it will take the form <database_name>.db.
@@ -68,8 +67,10 @@ def insert_sim(individual, db_conn, verbose=False):
 
     :param individual: simplega.Chromosome instance
         describing the simulation that you would like to add to the SQL simulation database.
-    db_conn: database connection object
+    :param db_conn: database connection object
         created using the conn_to_db() function.
+    :param verbose: boolean (default = False)
+        instructing the program to print everything or just key information to the screen.
 
     """
     if verbose:
@@ -127,7 +128,8 @@ def get_individual_by_genes(individual, db_conn):
     :param individual: simplega.Chromosome instance
         describing the simulation that you would to extract from the SQL simulation database
         if it exists there.
-
+    :param db_conn: database connection object
+        created using the conn_to_db() function.
     :return past_sim: simplega.Chromosome instance
         describing the simulation that was run previously and stored in the SQL simulation database,
         and corresponding to the input individual function parameter.
@@ -169,7 +171,6 @@ def print_database(db_conn):
         created using the conn_to_db() function.
 
     """
-
     c = db_conn.cursor()
     c.execute("""SELECT * FROM simulations""")
     print('----------------------------SIMULATIONS----------------------------')
@@ -270,6 +271,8 @@ def get_fitness(param_ids, verbose=False):
 
     :param param_ids: list of ints
         corresponding to each WRF physics parameterization.
+    :param verbose: boolean (default = False)
+        instructing the program to print everything or just key information to the screen.
     :return fitness: int
         randomly generated, and between 1 and 100.
 
@@ -301,8 +304,13 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         Currently, only ERA data (ds627.0) is supported.
     :param n_domains: integer
         specifing the number of WRF model domains. 1 - 3 domains are currently supported.
+    :param correction_factor: float
+        capuring the relationship between GHI and wind power density (WPD) errors averaged
+        across an entrie year. Calculated using opwrf/examples/Fitness_correction_factor.py.
     :param setup_yaml: string
         defining the path to the yaml file where input directory paths are specified.
+    :param verbose: boolean (default = False)
+        instructing the program to print everything or just key information to the screen.
     :return fitness: float
         value denoting how well the WRF model run performed.
         Fitness is a measure of accumlated error, so a lower value is better.
@@ -368,15 +376,20 @@ def run_simplega(pop_size, n_generations, testing=False, initial_pop_file=None, 
     to optimize the WRF model physics or with a test fitness function
     that randomly selects a fitness value for each individual Chromosome.
 
-    I'm not sure if it would be better to make this a Class...
-
     :param pop_size: int
         describing population size for the genetic algorithm. Must be >= 1
-    :param n_generations : int
+    :param n_generations: int
         corresponding to the total number of generations after which the genetic algorithm will time out.
-    :param testing : boolean
-        Flag that uses a random number generator as the fitness function when True.
-    :return WRFga_winner : simplega.Chromosome instance
+    :param testing: boolean (default = False)
+        flag that uses a random number generator as the fitness function when True.
+    :param initial_pop_file: string (default = None)
+        of a csv file path containing the populaition you would like to begin the simulation with.
+    :param restart_file: boolean (default = True)
+        determining whether restart CSV files will be written before the fitness is calculated
+        for each generation.
+    :param verbose: boolean (default = False)
+        instructing the program to print everything or just key information to the screen.
+    :return WRFga_winner: simplega.Chromosome instance
         corresponding to the simulation preforming the best in the genetic algorithm.
 
     """
