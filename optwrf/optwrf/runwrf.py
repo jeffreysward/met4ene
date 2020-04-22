@@ -1027,7 +1027,7 @@ class WRFModel:
 
         """
         # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
-        CMD_REGRID = 'ncl in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'paramstr="%s"\' %swrf2era_error.ncl ' \
+        CMD_REGRID = 'ncl -Q in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'paramstr="%s"\' %swrf2era_error.ncl ' \
                      '|& tee log.regrid' % \
                      (self.forecast_start.strftime('%Y'), self.forecast_start.strftime('%m'),
                       self.forecast_start.strftime('%d'), self.DIR_WRFOUT, self.paramstr, self.DIR_WRFOUT)
