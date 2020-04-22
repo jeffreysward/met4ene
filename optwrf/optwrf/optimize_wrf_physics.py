@@ -246,16 +246,21 @@ def seed_initial_population(input_csv):
 
     """
     initial_population = []
-    with open(input_csv, newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            start_date = row['start_date']
-            param_ids = wrfparams.flexible_generate(generate_params=False,
-                                                    mp=int(row['mp_physics']), lw=int(row['ra_lw_physics']),
-                                                    sw=int(row['ra_sw_physics']), lsm=int(row['sf_surface_physics']),
-                                                    pbl=int(row['bl_pbl_physics']), cu=int(row['cu_physics']))
-            start_date, end_date = simplega.generate_random_dates(input_start_date=start_date)
-            initial_population.append(Chromosome(param_ids, start_date, end_date))
+    try:
+        with open(input_csv, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                start_date = row['start_date']
+                param_ids = wrfparams.flexible_generate(generate_params=False,
+                                                        mp=int(row['mp_physics']), lw=int(row['ra_lw_physics']),
+                                                        sw=int(row['ra_sw_physics']), lsm=int(row['sf_surface_physics']),
+                                                        pbl=int(row['bl_pbl_physics']), cu=int(row['cu_physics']))
+                start_date, end_date = simplega.generate_random_dates(input_start_date=start_date)
+                initial_population.append(Chromosome(param_ids, start_date, end_date))
+    except IOError:
+        print(f'IOEror in seed_initial_population: {input_csv} does not exist.')
+        return initial_population
+
     return initial_population
 
 
@@ -357,7 +362,7 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     return fitness, runtime
 
 
-def run_simplega(pop_size, n_generations, testing=False, intial_pop=None, verbose=False):
+def run_simplega(pop_size, n_generations, testing=False, initial_pop_file=None, restart_file=True, verbose=False):
     """
     Runs the simple genetic algorithm specified in simplega either
     to optimize the WRF model physics or with a test fitness function
@@ -437,6 +442,7 @@ def run_simplega(pop_size, n_generations, testing=False, intial_pop=None, verbos
                 ii += 1
         fn_display_pop(pop)
 
+    # ------> BEGINNING OF SIMPLEGA <------ #
     # Connect to the simulation database
     db_conn = conn_to_db()
 
@@ -447,7 +453,11 @@ def run_simplega(pop_size, n_generations, testing=False, intial_pop=None, verbos
         print('The number of elites is {}'.format(n_elites))
 
     # Create an initial population
-    population = simplega.generate_population(pop_size, intial_pop)
+    if initial_pop_file is not None:
+        initial_pop = seed_initial_population(initial_pop_file)
+    else:
+        initial_pop = None
+    population = simplega.generate_population(pop_size, initial_pop)
 
     # Calculate the fitness of the initial population
     print('--> Calculating the fitness of the initial population...')
@@ -483,6 +493,17 @@ def run_simplega(pop_size, n_generations, testing=False, intial_pop=None, verbos
             offspring_pop.extend(elites)
             print('The offspring population after adding the elites is:')
             fn_display_pop(offspring_pop)
+        # Write the populaiton to a csv file for restart purposes
+        if restart_file:
+            csv_name = f'optwrf_restart_g{str(gen).zfill(3)}.csv'
+            with open(csv_name, "w") as csvfile:
+                csv_writer = csv.writer(csvfile)
+                header = ['start_date', 'mp_physics', 'ra_lw_physics', 'ra_sw_physics',
+                          'sf_surface_physics', 'bl_pbl_physics', 'cu_physics', 'sfclay_physics']
+                csv_writer.writerow(header)
+                for individual in offspring_pop:
+                    csv_data = [individual.Start_date] + individual.Genes
+                    csv_writer.writerow(csv_data)
         # Calculate the fitness of the population
         print('Calculating the fitness of the generation {} population...'.format(gen))
         sys.stdout.flush()

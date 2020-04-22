@@ -125,14 +125,19 @@ def generate_population(pop_size, initial_population=None):
         specifies the number of individuals in the population to be generated.
     :param initial_population: list of Chromosome instances
         allows users to seed the population with individuals of desired
-        parameter combinations and start/end dates.
+        parameter combinations and start/end dates. If more inidividuals than
+        the population size are specified, the ones listed first will be placed
+        into the population.
     :return: population: list of Chromosome instances
 
     """
     if initial_population is None:
         population = []
     else:
-        population = initial_population
+        if len(initial_population) <= pop_size:
+            population = initial_population
+        else:
+            population = initial_population[0:pop_size - 1]
     while len(population) < pop_size:
         new_genes = generate_genes()
         start_date, end_date = generate_random_dates()

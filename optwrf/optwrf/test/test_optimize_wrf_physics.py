@@ -34,8 +34,13 @@ def test_generate_random_dates():
 def test_seed_initial_population():
     """Check that individuals specified via an input CSV file
     can be used to create an initial population."""
-    i_population = owp.seed_initial_population('desired_simulations.csv')
+    # Test if a initial population can be read in from CSV
+    i_population = owp.seed_initial_population('initial_populations.csv')
+    # Test if a new population can be generated with i_population as the base
+    pop_size = 30
+    population = sga.generate_population(pop_size, i_population)
     assert type(i_population) is list
+    assert len(population) == pop_size
 
 
 def test_get_wrf_fitness():
@@ -50,7 +55,7 @@ def test_get_wrf_fitness():
 
 def test_run_simplega():
     """Tests the genetic algroithm framework without running WRF."""
-    WRFga_winner = run_simplega(pop_size=4, n_generations=3, testing=True)
+    WRFga_winner = run_simplega(pop_size=4, n_generations=1, testing=True)
     assert WRFga_winner.Fitness >= 0
 
 
