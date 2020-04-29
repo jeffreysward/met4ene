@@ -210,7 +210,12 @@ class WRFModel:
 
         # Clean potential old temporary data directory (DIR_DATA_TMP) and remake the dir
         hf.remove_dir(self.DIR_DATA_TMP)
-        os.makedirs(self.DIR_DATA_TMP, 0o755)
+        try:
+            os.makedirs(self.DIR_DATA_TMP, 0o755)
+        except FileExistsError as e:
+            if self.verbose:
+                print(f'WARNING: the data directory you just deleted and attempted to remake '
+                      f'was likely remade by another thread: {e}')
 
         # Depending on what computer you are on...
         if self.on_cheyenne:
