@@ -63,7 +63,9 @@ def name2num(in_yaml='params.yml', use_defaults=True, mp_in="morrison2mom", lw_i
     The default value of these parameterization schemes is set by those that
     were originally used by ICF in the study over NYC.
 
-    :param in_yaml:
+    :param in_yaml: string
+        specifying the name of the yaml file containing parameter name integer pairs
+        in sections by parameterization option.
     :param use_defaults:
     :param mp_in:
     :param lw_in:
@@ -117,6 +119,38 @@ def name2num(in_yaml='params.yml', use_defaults=True, mp_in="morrison2mom", lw_i
             param_ids = []
 
     return param_ids
+
+
+def num2name(param_ids, physics_type, in_yaml='params.yml'):
+    """
+    Takes a list of param_ids and maps them to the physical parameterization name.
+    Note that this only works for one type of physics at a time (e.g., microphysics).
+
+    :param param_ids: list
+        lorem ipsum
+    :param physics_type: string
+        lorem ipsum
+    :param in_yaml: string
+        specifying the name of the yaml file containing parameter name integer pairs
+        in sections by parameterization option.
+    :return param_names: list
+        of the physical parameterization names
+
+    """
+    with open(in_yaml, 'r') as params_file:
+        try:
+            params = yaml.safe_load(params_file)
+            physics = params.get(physics_type)
+            # list out keys and values separately
+            key_list = list(physics.keys())
+            val_list = list(physics.values())
+            # get the param names using the list index method
+            param_names = [key_list[val_list.index(param)] for param in param_ids]
+        except yaml.YAMLError as exc:
+            print(exc)
+            param_names = []
+
+    return param_names
 
 
 def combine(lst1, lst2):
