@@ -99,10 +99,10 @@ class WRFModel:
             self.CMD_REAL = './template_runreal.csh'
             self.CMD_WRF = './template_runwrf.csh'
         else:
-            self.CMD_GEOGRID = 'sbatch –-requeue ' + self.DIR_WRFOUT + 'template_rungeogrid.csh ' + self.DIR_WRFOUT
-            self.CMD_UNGMETG = 'sbatch -–requeue ' + self.DIR_WRFOUT + 'template_runungmetg.csh ' + self.DIR_WRFOUT
-            self.CMD_REAL = 'sbatch -–requeue ' + self.DIR_WRFOUT + 'template_runreal.csh ' + self.DIR_WRFOUT
-            self.CMD_WRF = 'sbatch -–requeue ' + self.DIR_WRFOUT + 'template_runwrf.csh ' + self.DIR_WRFOUT
+            self.CMD_GEOGRID = 'sbatch --requeue ' + self.DIR_WRFOUT + 'template_rungeogrid.csh ' + self.DIR_WRFOUT
+            self.CMD_UNGMETG = 'sbatch --requeue ' + self.DIR_WRFOUT + 'template_runungmetg.csh ' + self.DIR_WRFOUT
+            self.CMD_REAL = 'sbatch --requeue ' + self.DIR_WRFOUT + 'template_runreal.csh ' + self.DIR_WRFOUT
+            self.CMD_WRF = 'sbatch --requeue ' + self.DIR_WRFOUT + 'template_runwrf.csh ' + self.DIR_WRFOUT
 
     def runwrf_finish_check(self, program, nprocs=8):
         """
