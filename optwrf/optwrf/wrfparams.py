@@ -59,16 +59,30 @@ def flexible_generate(generate_params=True, mp=None, lw=None, sw=None,
                       lsm=None, pbl=None, cu=None, in_yaml='params.yml', verbose=False):
     """
     Generate a parameter combination of the 6 core parameters if the user has specified this option.
-    Otherwise, use specified input parameters and use defaults for the remaining paramters.
+    Otherwise, use specified input parameters and use defaults (determined by the fill_default() method)
+    for the remaining paramters.
 
-    :param generate_params:
-    :param mp:
-    :param lw:
-    :param sw:
-    :param lsm:
-    :param pbl:
-    :param cu:
-    :param in_yaml:
+    :param generate_params: boolean (default=True)
+        specifying if parameters should be randomly generated or if some/all parameters
+        will be user-specified. In the event that generate_params=False and not all
+        parameters are specified, the remaining parameters will be filled with defaults.
+    :param mp: string or integer (default=None)
+        specifying the microphysics parameterization name or namelist.input value.
+    :param lw: string or integer (default=None)
+        specifying the longwave radiation parameterization name or namelist.input value.
+    :param sw: string or integer (default=None)
+        specifying the shortwave radiation parameterization name or namelist.input value.
+    :param lsm: string or integer (default=None)
+        specifying the land surface parameterization name or namelist.input value.
+    :param pbl: string or integer (default=None)
+        specifying the planetary boundary layer parameterization name or namelist.input value.
+    :param cu: string or integer (default=None)
+        specifying the cumulus parameterization name or namelist.input value.
+    :param in_yaml: string
+        specifying the name of the yaml file containing parameter name integer pairs
+        in sections by parameterization option.
+    :param verbose: boolean (default=False)
+        determining whether or not to print lots of model information to the screen.
     :return param_ids: list of integers
         corresponding to the namelist.input values of each input parameterization.
 

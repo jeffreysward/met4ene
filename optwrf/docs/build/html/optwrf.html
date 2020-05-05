@@ -89,7 +89,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">optwrf</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">optwrf package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="optwrf.test.html">optwrf.test</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-optwrf.linuxhelper">optwrf.linuxhelper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optwrf-linuxhelper">optwrf.linuxhelper</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-optwrf.optimize_wrf_physics">optwrf.optimize_wrf_physics</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-optwrf.runwrf">optwrf.runwrf</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-optwrf.simplega">optwrf.simplega</a></li>
@@ -176,40 +176,22 @@
 </li>
 </ul>
 </div>
-<div class="section" id="module-optwrf.linuxhelper">
-<span id="optwrf-linuxhelper"></span><h2>optwrf.linuxhelper<a class="headerlink" href="#module-optwrf.linuxhelper" title="Permalink to this headline">¶</a></h2>
-<p>Functions that simplify running in a linux environment.
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-Known Issues/Wishlist:</p>
-<dl class="function">
-<dt id="optwrf.linuxhelper.remove_dir">
-<code class="sig-prename descclassname">optwrf.linuxhelper.</code><code class="sig-name descname">remove_dir</code><span class="sig-paren">(</span><em class="sig-param">directory</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.linuxhelper.remove_dir" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function utilized an exception clause to delete a directory.</p>
-<dl class="simple">
-<dt>directory<span class="classifier">string</span></dt><dd><p>complete path to the directory to be removed.</p>
-</dd>
-</dl>
-</dd></dl>
-
+<div class="section" id="optwrf-linuxhelper">
+<h2>optwrf.linuxhelper<a class="headerlink" href="#optwrf-linuxhelper" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-optwrf.optimize_wrf_physics">
 <span id="optwrf-optimize-wrf-physics"></span><h2>optwrf.optimize_wrf_physics<a class="headerlink" href="#module-optwrf.optimize_wrf_physics" title="Permalink to this headline">¶</a></h2>
 <p>A framework to run the simple genetic algorithm for optimizing the WRF model physics.
-All simulation parameters and fitness values are saved in an SQL database.
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-Known Issues/Wishlist:
-- This whole things needs to change…</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>I want the thread pool executor to operate within a Class or a function.</p></li>
-</ul>
-</div></blockquote>
+All simulation parameters and fitness values are saved in an SQL database.</p>
+<p>Known Issues/Wishlist:</p>
 <dl class="function">
 <dt id="optwrf.optimize_wrf_physics.close_conn_to_db">
 <code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">close_conn_to_db</code><span class="sig-paren">(</span><em class="sig-param">db_conn</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.close_conn_to_db" title="Permalink to this definition">¶</a></dt>
 <dd><p>Closes the connection to a SQL database.</p>
-<dl class="simple">
-<dt>db_conn<span class="classifier">SQL database name</span></dt><dd><p>Can be ‘:memory:’ if you only want the database to be held in memory</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>db_conn</strong> – database connection object
+created using the conn_to_db() function.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -218,23 +200,35 @@ Known Issues/Wishlist:
 <dt id="optwrf.optimize_wrf_physics.conn_to_db">
 <code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">conn_to_db</code><span class="sig-paren">(</span><em class="sig-param">db_name='optwrf.db'</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.conn_to_db" title="Permalink to this definition">¶</a></dt>
 <dd><p>Opens the connection to a SQL database.</p>
-<dl class="simple">
-<dt>db_name<span class="classifier">SQL database name</span></dt><dd><p>Can be ‘:memory:’ if you only want the database to be held in memory</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>db_name</strong> – SQL database name (string).
+Can be ‘:memory:’ if you only want the database to be held in memory.
+Otherwise, it will take the form &lt;database_name&gt;.db.</p>
+</dd>
+<dt class="field-even">Returns db_conn</dt>
+<dd class="field-even"><p>database connection object
+that allows for additional interactions with the SQL database when referenced.</p>
 </dd>
 </dl>
-<p>db_conn : database connection object</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="optwrf.optimize_wrf_physics.get_fitness">
-<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">get_fitness</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em>, <em class="sig-param">start_date='Jan 15 2011'</em>, <em class="sig-param">end_date='Jan 16 2011'</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.get_fitness" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">get_fitness</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.get_fitness" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function produces a random fitness value between 0 - 100</p>
-<dl class="simple">
-<dt>param_ids<span class="classifier">list of integers</span></dt><dd><p>Numeric values corresponding to each WRF physics parameterization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_ids</strong> – list of ints
+corresponding to each WRF physics parameterization.</p></li>
+<li><p><strong>verbose</strong> – boolean (default = False)
+instructing the program to print everything or just key information to the screen.</p></li>
+</ul>
 </dd>
-</dl>
-<dl class="simple">
-<dt>fitness<span class="classifier">integer</span></dt><dd><p>A randomly generated integer between 1 and 100.</p>
+<dt class="field-even">Return fitness</dt>
+<dd class="field-even"><p>int
+randomly generated, and between 1 and 100.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -243,12 +237,21 @@ Known Issues/Wishlist:
 <dt id="optwrf.optimize_wrf_physics.get_individual_by_genes">
 <code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">get_individual_by_genes</code><span class="sig-paren">(</span><em class="sig-param">individual</em>, <em class="sig-param">db_conn</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.get_individual_by_genes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Looks for an indivual set of genes in an SQLite database.</p>
-<dl class="simple">
-<dt>individual<span class="classifier">Chromosome Class instance</span></dt><dd><p>lorem ipsum</p>
+<p><a href="#id1"><span class="problematic" id="id2">**</span></a><a href="#id3"><span class="problematic" id="id4">*</span></a>NOTE: I’m not sure if I want to remove the first where clause contianing the start date.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>individual</strong> – simplega.Chromosome instance
+describing the simulation that you would to extract from the SQL simulation database
+if it exists there.</p></li>
+<li><p><strong>db_conn</strong> – database connection object
+created using the conn_to_db() function.</p></li>
+</ul>
 </dd>
-</dl>
-<dl class="simple">
-<dt>past_sim<span class="classifier">simplega.Chromosome</span></dt><dd><p>Simulation that was run previously and stored in the SQLite database.</p>
+<dt class="field-even">Return past_sim</dt>
+<dd class="field-even"><p>simplega.Chromosome instance
+describing the simulation that was run previously and stored in the SQL simulation database,
+and corresponding to the input individual function parameter.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -258,34 +261,51 @@ Known Issues/Wishlist:
 <code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">get_wrf_fitness</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em>, <em class="sig-param">start_date='Jan 15 2011'</em>, <em class="sig-param">end_date='Jan 16 2011'</em>, <em class="sig-param">bc_data='ERA'</em>, <em class="sig-param">n_domains=1</em>, <em class="sig-param">correction_factor=0.00033806364898425066</em>, <em class="sig-param">setup_yaml='dirpath.yml'</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.get_wrf_fitness" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the input physics parameters, date, boundary condition, and domain data,
 this function runs the WRF model and computes the error between WRF and ERA5.</p>
-<dl class="simple">
-<dt>param_ids<span class="classifier">list of integers</span></dt><dd><p>Numeric values corresponding to each WRF physics parameterization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_ids</strong> – list of integers
+corresponding to each WRF physics parameterization.</p></li>
+<li><p><strong>start_date</strong> – string
+specifying a desired start date.</p></li>
+<li><p><strong>end_date</strong> – string
+specifying a desired end date.</p></li>
+<li><p><strong>bc_data</strong> – string
+specifying the boundary condition data to be used for the WRF forecast.
+Currently, only ERA data (ds627.0) is supported.</p></li>
+<li><p><strong>n_domains</strong> – integer
+specifing the number of WRF model domains. 1 - 3 domains are currently supported.</p></li>
+<li><p><strong>correction_factor</strong> – float
+capuring the relationship between GHI and wind power density (WPD) errors averaged
+across an entrie year. Calculated using opwrf/examples/Fitness_correction_factor.py.</p></li>
+<li><p><strong>setup_yaml</strong> – string
+defining the path to the yaml file where input directory paths are specified.</p></li>
+<li><p><strong>verbose</strong> – boolean (default = False)
+instructing the program to print everything or just key information to the screen.</p></li>
+</ul>
 </dd>
-<dt>start_date<span class="classifier">string</span></dt><dd><p>lorem ipsum</p>
-</dd>
-<dt>end_date<span class="classifier">string</span></dt><dd><p>lorem ipsum</p>
-</dd>
-<dt>bc_data<span class="classifier">string</span></dt><dd><p>lorem ipsum</p>
-</dd>
-<dt>n_domains<span class="classifier">integer</span></dt><dd><p>lorem ipsum</p>
-</dd>
-<dt>setup_yaml<span class="classifier">string</span></dt><dd><p>lorem ipsum</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>fitness<span class="classifier">float</span></dt><dd><p>Fitness value denoting how well the WRF model run performed.</p>
+<dt class="field-even">Return fitness</dt>
+<dd class="field-even"><p>float
+value denoting how well the WRF model run performed.
+Fitness is a measure of accumlated error, so a lower value is better.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="optwrf.optimize_wrf_physics.insert_sim">
-<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">insert_sim</code><span class="sig-paren">(</span><em class="sig-param">individual</em>, <em class="sig-param">db_conn</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.insert_sim" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">insert_sim</code><span class="sig-paren">(</span><em class="sig-param">individual</em>, <em class="sig-param">db_conn</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.insert_sim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inserts a simulation into the SQL database held in memory or written to a .db file.</p>
-<dl class="simple">
-<dt>individual<span class="classifier">simplega.Chromosome instance</span></dt><dd><p>The simulation that you would like to add to the simulation database.</p>
-</dd>
-<dt>db_conn :</dt><dd><p>lorem ipsum</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>individual</strong> – simplega.Chromosome instance
+describing the simulation that you would like to add to the SQL simulation database.</p></li>
+<li><p><strong>db_conn</strong> – database connection object
+created using the conn_to_db() function.</p></li>
+<li><p><strong>verbose</strong> – boolean (default = False)
+instructing the program to print everything or just key information to the screen.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -294,29 +314,41 @@ this function runs the WRF model and computes the error between WRF and ERA5.</p
 <dt id="optwrf.optimize_wrf_physics.print_database">
 <code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">print_database</code><span class="sig-paren">(</span><em class="sig-param">db_conn</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.print_database" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints the entire SQLite simulation database.</p>
-<dl class="simple">
-<dt>db_conn :</dt><dd><p>lorem ipsum</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>db_conn</strong> – database connection object
+created using the conn_to_db() function.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="optwrf.optimize_wrf_physics.run_simplega">
-<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">run_simplega</code><span class="sig-paren">(</span><em class="sig-param">pop_size</em>, <em class="sig-param">n_generations</em>, <em class="sig-param">testing=False</em>, <em class="sig-param">intial_pop=None</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.run_simplega" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">run_simplega</code><span class="sig-paren">(</span><em class="sig-param">pop_size</em>, <em class="sig-param">n_generations</em>, <em class="sig-param">testing=False</em>, <em class="sig-param">initial_pop_file=None</em>, <em class="sig-param">restart_file=True</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.run_simplega" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs the simple genetic algorithm specified in simplega either
 to optimize the WRF model physics or with a test fitness function
 that randomly selects a fitness value for each individual Chromosome.</p>
-<p>I’m not sure if it would be better to make this a Class…</p>
-<dl class="simple">
-<dt>pop_size<span class="classifier">int</span></dt><dd><p>Desired population size for the genetic algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pop_size</strong> – int
+describing population size for the genetic algorithm. Must be &gt;= 1</p></li>
+<li><p><strong>n_generations</strong> – int
+corresponding to the total number of generations after which the genetic algorithm will time out.</p></li>
+<li><p><strong>testing</strong> – boolean (default = False)
+flag that uses a random number generator as the fitness function when True.</p></li>
+<li><p><strong>initial_pop_file</strong> – string (default = None)
+of a csv file path containing the populaition you would like to begin the simulation with.</p></li>
+<li><p><strong>restart_file</strong> – boolean (default = True)
+determining whether restart CSV files will be written before the fitness is calculated
+for each generation.</p></li>
+<li><p><strong>verbose</strong> – boolean (default = False)
+instructing the program to print everything or just key information to the screen.</p></li>
+</ul>
 </dd>
-<dt>n_generations<span class="classifier">int</span></dt><dd><p>Total number of generations after which the genetic algorithm will time out.</p>
-</dd>
-<dt>testing<span class="classifier">boolean</span></dt><dd><p>Flag that uses a random number generator as the fitness function when True.</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>WRFga_winner<span class="classifier">simplega.Chromosome instance</span></dt><dd><p>The simulation preforming the best in the genetic algorithm.</p>
+<dt class="field-even">Return WRFga_winner</dt>
+<dd class="field-even"><p>simplega.Chromosome instance
+corresponding to the simulation preforming the best in the genetic algorithm.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -326,20 +358,20 @@ that randomly selects a fitness value for each individual Chromosome.</p>
 <code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">seed_initial_population</code><span class="sig-paren">(</span><em class="sig-param">input_csv</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.seed_initial_population" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads the input csv file, which contains the dates and/or parameter combinations
 that you would like to see in the initial population. The CSV file should be
-formatted as follows:</p>
+formatted as follows (i.e., this function looks for these column names):</p>
 <dl class="simple">
-<dt>Line 1: start_date, mp_physics, ra_lw_physics, ra_sw_physics, sf_surface_physics,</dt><dd><p>bl_pbl_physics, cu_physics, sf_sfclay_physics</p>
+<dt>Line 1: start_date, mp_physics, ra_lw_physics, ra_sw_physics, sf_surface_physics,</dt><dd><p>bl_pbl_physics, cu_physics</p>
 </dd>
 </dl>
-<p>Line 2: Feb 28 2011,  1, 24, 99,  4, 11,  2,  1
-Line 3: Aug 31 2011, 28,  4,  5,  2, 10, 93, 10
-Line 4: Dec 10 2011,  7, 24,  3,  4,  9,  4,  1
-Line 5: Jul 22 2011, 11, 24,  2,  1,  4, 10,  4
-Line 6: May 23 2011,  1,  4,  5,  2, 10, 93, 10
-Line 7: Mar 31 2011, 28, 24, 99,  4, 11,  2,  1
-.
-.
-.</p>
+<p>Line 2: Feb 28 2011,  1, 24, 99,  4, 11,  2</p>
+<p>Line 3: Aug 31 2011, 28,  4,  5,  2, 10, 93</p>
+<p>Line 4: Dec 10 2011,  7, 24,  3,  4,  9,  4</p>
+<p>Line 5: Jul 22 2011, 11, 24,  2,  1,  4, 10</p>
+<p>Line 6: May 23 2011,  1,  4,  5,  2, 10, 93</p>
+<p>Line 7: Mar 31 2011, 28, 24, 99,  4, 11,  2</p>
+<p>.</p>
+<p>.</p>
+<p>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>input_csv</strong> – string
@@ -357,22 +389,31 @@ made from the information specified in the input file.</p>
 <code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">sql_to_csv</code><span class="sig-paren">(</span><em class="sig-param">csv_file_path</em>, <em class="sig-param">db_conn</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.sql_to_csv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes the contents of a SQL database to a CSV file. The SQL database must
 be in the directory that you are running this function from.</p>
-<dl class="simple">
-<dt>csv_file_path<span class="classifier">string</span></dt><dd><p>Exact path to where you would like to csv to be saved ending with the file name.
-e.g., csv_file_path = ‘/home/jas983/data/test.csv’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>csv_file_path</strong> – string
+Exact path to where you would like to csv to be saved ending with the file name.
+e.g., csv_file_path = ‘/home/jas983/data/test.csv’</p></li>
+<li><p><strong>db_conn</strong> – database connection object
+created using the conn_to_db() function.</p></li>
+</ul>
 </dd>
 </dl>
-<p>db_conn : database connection object</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="optwrf.optimize_wrf_physics.update_sim">
 <code class="sig-prename descclassname">optwrf.optimize_wrf_physics.</code><code class="sig-name descname">update_sim</code><span class="sig-paren">(</span><em class="sig-param">individual</em>, <em class="sig-param">db_conn</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.optimize_wrf_physics.update_sim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inserts a simulation into the SQL database held in memory or written to a .db file.</p>
-<dl class="simple">
-<dt>individual<span class="classifier">simplega.Chromosome instance</span></dt><dd><p>The simulation that you would like to add to the simulation database.</p>
-</dd>
-<dt>db_conn :</dt><dd><p>lorem ipsum</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>individual</strong> – simplega.Chromosome instance
+describing the simulation that you would like to update in the SQL simulation database.</p></li>
+<li><p><strong>db_conn</strong> – database connection object
+created using the conn_to_db() function.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -383,9 +424,10 @@ e.g., csv_file_path = ‘/home/jas983/data/test.csv’</p>
 <p>Class and supporting functions to run WRF within other scripts
 and process WRF output data.</p>
 <p>Known Issues/Wishlist:
+- My username/password are currently hard-coded into this function. I SHOULD CHAGE THIS!
 - I’m unhappy with the output to screen from rda_download(). Perhaps edit that and
 check_file_status() as well.
-- I want to figure out a better way to set the command aliai.
+- A better way to set the command aliai would be nice.
 - Better Documentation</p>
 <dl class="class">
 <dt id="optwrf.runwrf.WRFModel">
@@ -448,10 +490,10 @@ built for January 2011:</p>
 </dd>
 </dl>
 <p>which means there are three separate directories on RDA that files must be downloaded from.</p>
-<p><a href="#id1"><span class="problematic" id="id2">**</span></a><a href="#id3"><span class="problematic" id="id4">*</span></a>NOTE that this method currently only supports simulations within a single month
+<p><a href="#id5"><span class="problematic" id="id6">**</span></a><a href="#id7"><span class="problematic" id="id8">*</span></a>NOTE that this method currently only supports simulations within a single month
 i.e., YYYY-MM-01 00:00:00 - YYYY-MM-&lt;end day&gt; 23:00:00. Otherwise, wrf_era5_diff()
 will fail. Times are in UTC.</p>
-<p><a href="#id5"><span class="problematic" id="id6">**</span></a><a href="#id7"><span class="problematic" id="id8">*</span></a>NOTE that this method does not currently support running on Cheyenne;
+<p><a href="#id9"><span class="problematic" id="id10">**</span></a><a href="#id11"><span class="problematic" id="id12">*</span></a>NOTE that this method does not currently support running on Cheyenne;
 it’s about halfway there…</p>
 </dd></dl>
 
@@ -461,13 +503,21 @@ it’s about halfway there…</p>
 <dd><p>Processes the wrfout file – calculates GHI and wind power denity (WPD) and writes these variables
 to wrfout_processed_d01.nc data file to be used by the regridding script (wrf2era_error.ncl) in
 wrf_era5_diff().</p>
-<p>NEEDS BETTER DOCUMENTATION!!!</p>
+<p>This method makes use of two different packages that are not endogeneous to optwrf. The first is
+pvlib.wrfcast, which is a module for processing WRF output data that I have customized based on the
+pvlib.forecast model. The purpose of this is to eventually be able to use this method to calculate
+PV output from systems installed at any arbitrary location within your WRF model domain (this
+is not yet implemented). I have use this wrfcast module to calculate the GHI from WRF output data
+The second package is the wrf module maintained by NCAR, which reproduces some of the funcionality
+of NCL in Python. I use this to interpolate the wind speed to 100m.</p>
+<p>With the help of these two packages, the remaineder of the methods claculates the WPD, formats the
+data to be easily compatible with other methods, and writes the data to a NetCDF file.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="optwrf.runwrf.WRFModel.run_real">
 <code class="sig-name descname">run_real</code><span class="sig-paren">(</span><em class="sig-param">disable_timeout=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.run_real" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs real.exe and checks to see that if it was successful.</p>
+<dd><p>Runs real.exe and checks to see if it was successful.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>boolean (True/False)
@@ -492,13 +542,28 @@ returns ‘complete’ (‘failed’), this function returns True (False).</p>
 
 <dl class="method">
 <dt id="optwrf.runwrf.WRFModel.run_wrf">
-<code class="sig-name descname">run_wrf</code><span class="sig-paren">(</span><em class="sig-param">disable_timeout=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.run_wrf" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run_wrf</code><span class="sig-paren">(</span><em class="sig-param">disable_timeout=False</em>, <em class="sig-param">timeout_hours=6</em>, <em class="sig-param">save_wps_files=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.runwrf.WRFModel.run_wrf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs wrf.exe and checks to see if it was successful.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>boolean (True/False)
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>disable_timeout</strong> – boolean (True/False)
+desribing if timeout of this function is allowed.
+Note that this parameter only breaks you out of this
+method - it does not kill WRF jobs that are already running.</p></li>
+<li><p><strong>timeout_hours</strong> – integer
+defining the number of hours this method will wait before
+returning a failure (False) flag.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>boolean (True/False)
 If runwrf_finish_check for wrf returns ‘complete’ (‘failed’),
 this function returns True (False).</p>
+</dd>
+<dt class="field-odd">Return elapsed</dt>
+<dd class="field-odd"><p>string
+specifying the amount of time it took for the WRF simulation to run.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -509,6 +574,8 @@ this function returns True (False).</p>
 <dd><p>Check if a specified WRF subprogram has finished running. Does this specifically by
 checking the first and the last rsl.out.* file created by each processor running
 either wrf.exe or real.exe via OpenMPI.</p>
+<p><a href="#id13"><span class="problematic" id="id14">**</span></a><a href="#id15"><span class="problematic" id="id16">*</span></a>NOTE: It’s not currently possible for geogrid or metgrid to fail,
+because I don’t know what failure message to look for in the log.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -541,7 +608,7 @@ power density (WPD) to match that of the ERA data, and then computes
 the difference across the entire d01 WRF domain for every time period.</p>
 <p>This method waits while the regridding and error calculation is being
 completed by NCL, which can take some seconds to complete.</p>
-<p><a href="#id9"><span class="problematic" id="id10">**</span></a><a href="#id11"><span class="problematic" id="id12">*</span></a>NOTE: I don’t need to copy the wrf2era_error.ncl script into each
+<p><a href="#id17"><span class="problematic" id="id18">**</span></a><a href="#id19"><span class="problematic" id="id20">*</span></a>NOTE: I don’t need to copy the wrf2era_error.ncl script into each
 WRFOUT directory, but that’s how I currently get the error file for
 each simulation to be written into the correct dirctory.</p>
 <dl class="field-list simple">
@@ -712,7 +779,7 @@ Last line of the input file.</p>
 <p>Known Issues/Wishlist:</p>
 <dl class="class">
 <dt id="optwrf.simplega.Chromosome">
-<em class="property">class </em><code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">Chromosome</code><span class="sig-paren">(</span><em class="sig-param">genes</em>, <em class="sig-param">start_date</em>, <em class="sig-param">end_date</em>, <em class="sig-param">fitness=None</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.Chromosome" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">Chromosome</code><span class="sig-paren">(</span><em class="sig-param">genes</em>, <em class="sig-param">start_date</em>, <em class="sig-param">end_date</em>, <em class="sig-param">fitness=None</em>, <em class="sig-param">runtime=None</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.Chromosome" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>This class provides information about each unique individual to be placed within
 populations used in the genetic algorithm (e.g., parent population, mating population,
@@ -778,7 +845,7 @@ defining how to display eah individual in the population.</p></li>
 
 <dl class="function">
 <dt id="optwrf.simplega.find_elites">
-<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">find_elites</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">n_elites</em>, <em class="sig-param">fn_display_pop</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.find_elites" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">find_elites</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">n_elites</em>, <em class="sig-param">fn_display_pop</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.find_elites" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finds elites within the population by sorting the members of the population from
 best (numerically lowest) to worst (numerically highest) fitness value,
 and returns a list (with the nuber of individuals specified by the user)
@@ -786,11 +853,13 @@ containing the individuals with the best fitness.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>population</strong> – list of Chromosome instances</p></li>
+<li><p><strong>population</strong> – list of Chromosome instances.</p></li>
 <li><p><strong>n_elites</strong> – integer
 specifying the number of individuals you want to keep from the population.</p></li>
 <li><p><strong>fn_display_pop</strong> – function
 for printing information about the population to the screen.</p></li>
+<li><p><strong>verbose</strong> – boolean (default=False)
+determining whether or not to print lots of model information to the screen.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -826,7 +895,9 @@ specifying the elite individuals extracted from the population.</p>
 specifies the number of individuals in the population to be generated.</p></li>
 <li><p><strong>initial_population</strong> – list of Chromosome instances
 allows users to seed the population with individuals of desired
-parameter combinations and start/end dates.</p></li>
+parameter combinations and start/end dates. If more inidividuals than
+the population size are specified, the ones listed first will be placed
+into the population.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -837,7 +908,7 @@ parameter combinations and start/end dates.</p></li>
 
 <dl class="function">
 <dt id="optwrf.simplega.generate_random_dates">
-<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">generate_random_dates</code><span class="sig-paren">(</span><em class="sig-param">year=2011</em>, <em class="sig-param">n_days=1</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.generate_random_dates" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">generate_random_dates</code><span class="sig-paren">(</span><em class="sig-param">year=2011</em>, <em class="sig-param">n_days=1</em>, <em class="sig-param">input_start_date=None</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.generate_random_dates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a random start date and end date for running the WRF model.
 Start and end dates are offset by the parameter n_days, which is set to 1 as default</p>
 <dl class="field-list simple">
@@ -849,27 +920,32 @@ If this is specified as None, random dates between Jan 1, 2000 and today can be 
 <li><p><strong>n_days</strong> – integer
 specifying the nuber of days between the start and the end dates of the simulation.
 The default is set to 1 day.</p></li>
+<li><p><strong>input_start_date</strong> – string
+specifying a desired start date.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dt class="field-even">Return random_start_date</dt>
+<dd class="field-even"><p>string
+specifying the simulation start date.</p>
 </dd>
-</dl>
-<dl class="simple">
-<dt>random_start_date: string</dt><dd><p>specifys the simulation start date</p>
-</dd>
-<dt>random_end_date: string</dt><dd><p>specifys the simulation end date</p>
+<dt class="field-odd">Return random_end_date</dt>
+<dd class="field-odd"><p>string
+specifying the simulation end date.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="optwrf.simplega.get_best">
-<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">get_best</code><span class="sig-paren">(</span><em class="sig-param">population</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.get_best" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">get_best</code><span class="sig-paren">(</span><em class="sig-param">population</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.get_best" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finds the location of the individual within the population with the best (lowest) fitness.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>population</strong> – list of Chromosome instances</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>population</strong> – list of Chromosome instances.</p></li>
+<li><p><strong>verbose</strong> – boolean (default=False)
+determining whether or not to print lots of model information to the screen.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>best_individual: single Chromosome instance
@@ -880,13 +956,17 @@ individual within a population with the lowest fitness.</p>
 
 <dl class="function">
 <dt id="optwrf.simplega.mutate">
-<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">mutate</code><span class="sig-paren">(</span><em class="sig-param">offspring_population</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.mutate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">optwrf.simplega.</code><code class="sig-name descname">mutate</code><span class="sig-paren">(</span><em class="sig-param">offspring_population</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.simplega.mutate" title="Permalink to this definition">¶</a></dt>
 <dd><p>The mutate operator takes in the genes of one offspring
 and randomly replaces one of the genes from the set of choices.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>offspring_population</strong> – list of Chromosome instances
-population of individuals created from the genes of mating population.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>offspring_population</strong> – list of Chromosome instances
+population of individuals created from the genes of mating population.</p></li>
+<li><p><strong>verbose</strong> – boolean (default=False)
+determining whether or not to print lots of model information to the screen.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>offspring_population: list of Chromosome instances
@@ -922,22 +1002,26 @@ and will be sent to the crossover operator.</p>
 <div class="section" id="module-optwrf.wrfparams">
 <span id="optwrf-wrfparams"></span><h2>optwrf.wrfparams<a class="headerlink" href="#module-optwrf.wrfparams" title="Permalink to this headline">¶</a></h2>
 <p>Generates sets of WRF physics parameters, finds corresponding numeric identifies,
-and writes the numeric paramter options to a CSV.
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-Known Issues/Wishlist:
+and writes the numeric paramter options to a CSV.</p>
+<p>Known Issues/Wishlist:
 - It would be better if I could read in the parameters from the in_yaml
 file only once, but I’m not sure how variables across different
 functions in the same module work.</p>
 <dl class="function">
 <dt id="optwrf.wrfparams.apply_dependencies">
 <code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">apply_dependencies</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.apply_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies depependencies among parameters discovered during runtime</p>
-<dl class="simple">
-<dt>param_ids: list</dt><dd><p>List of WRF physics parameters</p>
+<dd><p>Applies depependencies among parameters. Generally,
+these were discovered by attempting to run an incompatible combination
+of parameters or from the WRF User’s Guide.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param_ids</strong> – list of integers
+corresponding to the namelist.input values of each input parameterization.</p>
 </dd>
-</dl>
-<dl class="simple">
-<dt>param_ids: list</dt><dd><p>List of WRF physics parameters after known dependencies have been applied</p>
+<dt class="field-even">Return param_ids</dt>
+<dd class="field-even"><p>list of integers
+corresponding to the namelist.input values of each input parameterization
+after known dependencies have been applied.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -945,48 +1029,209 @@ functions in the same module work.</p>
 <dl class="function">
 <dt id="optwrf.wrfparams.combine">
 <code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">combine</code><span class="sig-paren">(</span><em class="sig-param">lst1</em>, <em class="sig-param">lst2</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.combine" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Combines two lists where at LEAST one of the two entries in the i’th position is None.
+The out_list contains values that are not None contained in either list.
+If both lists have None in the i’th position, then the out_list will also contain None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lst1</strong> – list</p></li>
+<li><p><strong>lst2</strong> – list</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return out_list</dt>
+<dd class="field-even"><p>list
+combined from lst1 and lst2.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.wrfparams.filldefault">
 <code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">filldefault</code><span class="sig-paren">(</span><em class="sig-param">in_yaml</em>, <em class="sig-param">in_param_ids</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.filldefault" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Fills an incomplete list (None values) of paramerization IDs with the defaults. The default value of
+these parameterization schemes is set by those that were originally used by ICF in the study over NYC.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_yaml</strong> – string
+specifying the name of the yaml file containing parameter name integer pairs
+in sections by parameterization option.</p></li>
+<li><p><strong>in_param_ids</strong> – list of integers containing some Nones
+corresponding to the namelist.input values of each input parameterization.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return param_ids</dt>
+<dd class="field-even"><p>list of integers
+corresponding to the namelist.input values of each input parameterization.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.wrfparams.flexible_generate">
-<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">flexible_generate</code><span class="sig-paren">(</span><em class="sig-param">generate_params=True</em>, <em class="sig-param">mp=None</em>, <em class="sig-param">lw=None</em>, <em class="sig-param">sw=None</em>, <em class="sig-param">lsm=None</em>, <em class="sig-param">pbl=None</em>, <em class="sig-param">cu=None</em>, <em class="sig-param">in_yaml='params.yml'</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.flexible_generate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">flexible_generate</code><span class="sig-paren">(</span><em class="sig-param">generate_params=True</em>, <em class="sig-param">mp=None</em>, <em class="sig-param">lw=None</em>, <em class="sig-param">sw=None</em>, <em class="sig-param">lsm=None</em>, <em class="sig-param">pbl=None</em>, <em class="sig-param">cu=None</em>, <em class="sig-param">in_yaml='params.yml'</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.flexible_generate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a parameter combination of the 6 core parameters if the user has specified this option.
-Otherwise, use specified input parameters and use defaults for the remaining paramters.</p>
+Otherwise, use specified input parameters and use defaults (determined by the fill_default() method)
+for the remaining paramters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>generate_params</strong> – boolean (default=True)
+specifying if parameters should be randomly generated or if some/all parameters
+will be user-specified. In the event that generate_params=False and not all
+parameters are specified, the remaining parameters will be filled with defaults.</p></li>
+<li><p><strong>mp</strong> – string or integer (default=None)
+specifying the microphysics parameterization name or namelist.input value.</p></li>
+<li><p><strong>lw</strong> – string or integer (default=None)
+specifying the longwave radiation parameterization name or namelist.input value.</p></li>
+<li><p><strong>sw</strong> – string or integer (default=None)
+specifying the shortwave radiation parameterization name or namelist.input value.</p></li>
+<li><p><strong>lsm</strong> – string or integer (default=None)
+specifying the land surface parameterization name or namelist.input value.</p></li>
+<li><p><strong>pbl</strong> – string or integer (default=None)
+specifying the planetary boundary layer parameterization name or namelist.input value.</p></li>
+<li><p><strong>cu</strong> – string or integer (default=None)
+specifying the cumulus parameterization name or namelist.input value.</p></li>
+<li><p><strong>in_yaml</strong> – string
+specifying the name of the yaml file containing parameter name integer pairs
+in sections by parameterization option.</p></li>
+<li><p><strong>verbose</strong> – boolean (default=False)
+determining whether or not to print lots of model information to the screen.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return param_ids</dt>
+<dd class="field-even"><p>list of integers
+corresponding to the namelist.input values of each input parameterization.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="optwrf.wrfparams.generate">
 <code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">generate</code><span class="sig-paren">(</span><em class="sig-param">in_yaml='params.yml'</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.generate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates a random set of parameters.</p>
+<dd><p>Generates a random set of WRF physics parameters. These physics parameters include:
+1. Microphysics
+2. Longwave radiation
+3. Shortwave Radieation
+4. Land Surface
+5. Planetary Boundary Layer
+6. Cumulus (clouds)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>in_yaml</strong> – string
+specifying the name of the yaml file containing parameter name integer pairs
+in sections by parameterization option.</p>
+</dd>
+<dt class="field-even">Return param_list</dt>
+<dd class="field-even"><p>list
+specifying the integer assoicated with each parameter option.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="optwrf.wrfparams.ids2str">
 <code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">ids2str</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.ids2str" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Takes the parameterization IDs and combines them to form a string for appending to directory
+and file names for easy identification.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param_ids</strong> – list of integers
+corresponding to the namelist.input values of each input parameterization.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>paramstr: string
+combining each integer and associated abbreviation for all the parameterization options.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="optwrf.wrfparams.name2num">
 <code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">name2num</code><span class="sig-paren">(</span><em class="sig-param">in_yaml='params.yml'</em>, <em class="sig-param">use_defaults=True</em>, <em class="sig-param">mp_in='morrison2mom'</em>, <em class="sig-param">lw_in='rrtm'</em>, <em class="sig-param">sw_in='dudia'</em>, <em class="sig-param">lsm_in='noah'</em>, <em class="sig-param">pbl_in='myj'</em>, <em class="sig-param">clo_in='grell-freitas'</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.name2num" title="Permalink to this definition">¶</a></dt>
-<dd><p>Maps the name of the parameterization,
+<dd><p>Maps the name of the physics parameterization,
 which is defined generally by the name of the individual or
 institution that designed the scheme, to the namelist.input value.
 The default value of these parameterization schemes is set by those that
 were originally used by ICF in the study over NYC.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_yaml</strong> – string
+specifying the name of the yaml file containing parameter name integer pairs
+in sections by parameterization option.</p></li>
+<li><p><strong>use_defaults</strong> – boolean (default=True)
+determining wether or not you would like to return the default parameterization
+option if none is specified or if you would rather return None.</p></li>
+<li><p><strong>mp_in</strong> – string
+specifying the microphysics parameterization name.</p></li>
+<li><p><strong>lw_in</strong> – string
+specifying the longwave radiation parameterization name.</p></li>
+<li><p><strong>sw_in</strong> – string
+specifying the shortwave radiation paramterization name.</p></li>
+<li><p><strong>lsm_in</strong> – string
+specifying the land surface model parameterization name.</p></li>
+<li><p><strong>pbl_in</strong> – string
+specifying the planetary boundary layer parameterization name.</p></li>
+<li><p><strong>clo_in</strong> – string
+specifying the cumulus parameterization name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return param_ids</dt>
+<dd class="field-even"><p>list of integers
+corresponding to the namelist.input values of each input parameterization.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="optwrf.wrfparams.num2name">
+<code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">num2name</code><span class="sig-paren">(</span><em class="sig-param">param_ids</em>, <em class="sig-param">physics_type</em>, <em class="sig-param">in_yaml='params.yml'</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.num2name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of param_ids and maps them to the physical parameterization name.
+Note that this only works for one type of physics at a time (i.e., microphysics,
+lw radiation, sw radiation, land surface, PBL, cumulus).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_ids</strong> – list of integers
+corresponding to the namelist.input values of each input parameterization.</p></li>
+<li><p><strong>physics_type</strong> – string
+specifying a parameterization category. Options include: microphysics,
+lw radiation, sw radiation, land surface, PBL, and cumulus.</p></li>
+<li><p><strong>in_yaml</strong> – string
+specifying the name of the yaml file containing parameter name integer pairs
+in sections by parameterization option.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return param_names</dt>
+<dd class="field-even"><p>list of strings
+corresponding to the physical parameterization names.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="optwrf.wrfparams.pbl2sfclay">
 <code class="sig-prename descclassname">optwrf.wrfparams.</code><code class="sig-name descname">pbl2sfclay</code><span class="sig-paren">(</span><em class="sig-param">id_pbl</em>, <em class="sig-param">rnd=False</em><span class="sig-paren">)</span><a class="headerlink" href="#optwrf.wrfparams.pbl2sfclay" title="Permalink to this definition">¶</a></dt>
-<dd><p>Assigns the surface layer scheme based on the
-specified or randomly selected PBL scheme. If multiple surface layer
-schemes are available, one may be selected at random by setting rnd = True.
-Otherwise, sf_sfclay defaults to option 1 (the revised MM5 scheme).</p>
+<dd><p>Assigns the surface layer scheme based on the specified or randomly selected PBL scheme.
+If multiple surface layer schemes are available, one may be selected at random
+by setting rnd = True. Otherwise, id_sfclay defaults to option 1 (revised MM5 scheme).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id_pbl</strong> – integer
+corresponding to the namelist.input value of the planetary boundary layer parameterization.</p></li>
+<li><p><strong>rnd</strong> – boolean (default=False)
+that dictates whether or not compatible id_sfclay parameterization options are
+selected randomly or if the default value, id_sfclay = 1, is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return id_sfclay</dt>
+<dd class="field-even"><p>integer
+corresponding to the namelist.input value of the surface layer parameterization.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
