@@ -214,6 +214,8 @@ def mutate(offspring_population, verbose=False):
 
     :param offspring_population: list of Chromosome instances
         population of individuals created from the genes of mating population.
+    :param verbose: boolean (default=False)
+        determining whether or not to print lots of model information to the screen.
     :return: offspring_population: list of Chromosome instances
         mutated offspring population.
 
@@ -232,7 +234,9 @@ def get_best(population, verbose=False):
     """
     Finds the location of the individual within the population with the best (lowest) fitness.
 
-    :param population: list of Chromosome instances
+    :param population: list of Chromosome instances.
+    :param verbose: boolean (default=False)
+        determining whether or not to print lots of model information to the screen.
     :return: best_individual: single Chromosome instance
         individual within a population with the lowest fitness.
 
@@ -253,11 +257,13 @@ def find_elites(population, n_elites, fn_display_pop, verbose=False):
     and returns a list (with the nuber of individuals specified by the user)
     containing the individuals with the best fitness.
 
-    :param population: list of Chromosome instances
+    :param population: list of Chromosome instances.
     :param n_elites: integer
         specifying the number of individuals you want to keep from the population.
     :param fn_display_pop: function
         for printing information about the population to the screen.
+    :param verbose: boolean (default=False)
+        determining whether or not to print lots of model information to the screen.
     :return: elites: list of Chromosome instances
         specifying the elite individuals extracted from the population.
 

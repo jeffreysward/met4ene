@@ -4,8 +4,6 @@ All simulation parameters and fitness values are saved in an SQL database.
 
 
 Known Issues/Wishlist:
-- This whole things needs to change...
-    - I want the thread pool executor to operate within a Class or a function.
 
 """
 

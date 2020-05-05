@@ -4,9 +4,10 @@ and process WRF output data.
 
 
 Known Issues/Wishlist:
+- My username/password are currently hard-coded into this function. I SHOULD CHAGE THIS!
 - I'm unhappy with the output to screen from rda_download(). Perhaps edit that and
 check_file_status() as well.
-- I want to figure out a better way to set the command aliai.
+- A better way to set the command aliai would be nice.
 - Better Documentation
 
 """
@@ -717,7 +718,16 @@ class WRFModel:
         to wrfout_processed_d01.nc data file to be used by the regridding script (wrf2era_error.ncl) in
         wrf_era5_diff().
 
-        NEEDS BETTER DOCUMENTATION!!!
+        This method makes use of two different packages that are not endogeneous to optwrf. The first is
+        pvlib.wrfcast, which is a module for processing WRF output data that I have customized based on the
+        pvlib.forecast model. The purpose of this is to eventually be able to use this method to calculate
+        PV output from systems installed at any arbitrary location within your WRF model domain (this
+        is not yet implemented). I have use this wrfcast module to calculate the GHI from WRF output data
+        The second package is the wrf module maintained by NCAR, which reproduces some of the funcionality
+        of NCL in Python. I use this to interpolate the wind speed to 100m.
+
+        With the help of these two packages, the remaineder of the methods claculates the WPD, formats the
+        data to be easily compatible with other methods, and writes the data to a NetCDF file.
 
         """
 

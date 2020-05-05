@@ -1,11 +1,11 @@
 """
 Functions that simplify running in a linux environment.
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+
 Known Issues/Wishlist:
 
 """
 
-import datetime
 from shutil import rmtree
 import string
 
@@ -14,10 +14,10 @@ def remove_dir(directory, verbose=False):
     """
     This function utilized an exception clause to delete a directory.
 
-    Parameters
-    ----------
-    directory : string
+    :param directory: string
         complete path to the directory to be removed.
+    :param verbose: boolean (default=False)
+        determining whether or not to print lots of model information to the screen.
 
     """
 
@@ -29,27 +29,33 @@ def remove_dir(directory, verbose=False):
 
 
 def strfdelta(tdelta, fmt='{H:02}h {M:02}m {S:02}s', inputtype='timedelta'):
-    """Convert a datetime.timedelta object or a regular number to a custom-
+    """
+    Convert a datetime.timedelta object or a regular number to a custom-
     formatted string, just like the stftime() method does for datetime.datetime
     objects.
 
-    The fmt argument allows custom formatting to be specified.  Fields can
-    include seconds, minutes, hours, days, and weeks.  Each field is optional.
+    :param tdelta: datetime.timedelta object
+        defining the difference in time that you would like to format.
+    :param fmt: string
+        allows custom formatting to be specified.  Fields can include
+        seconds, minutes, hours, days, and weeks.  Each field is optional.
 
-    Some examples:
-        '{D:02}d {H:02}h {M:02}m {S:02}s' --> '05d 08h 04m 02s'
-        '{H:02}:{M:02}:{S:02}'            --> '01:44:33' (default)
-        '{W}w {D}d {H}:{M:02}:{S:02}'     --> '4w 5d 8:04:02'
-        '{D:2}d {H:2}:{M:02}:{S:02}'      --> ' 5d  8:04:02'
-        '{H}h {S}s'                       --> '72h 800s'
-
-    The inputtype argument allows tdelta to be a regular number instead of the
-    default, which is a datetime.timedelta object.  Valid inputtype strings:
-        's', 'seconds',
-        'm', 'minutes',
-        'h', 'hours',
-        'd', 'days',
-        'w', 'weeks'
+        Some examples:
+            '{D:02}d {H:02}h {M:02}m {S:02}s' --> '05d 08h 04m 02s'
+            '{H:02}:{M:02}:{S:02}'            --> '01:44:33' (default)
+            '{W}w {D}d {H}:{M:02}:{S:02}'     --> '4w 5d 8:04:02'
+            '{D:2}d {H:2}:{M:02}:{S:02}'      --> ' 5d  8:04:02'
+            '{H}h {S}s'                       --> '72h 800s'.
+    :param inputtype: string (default=timedelta)
+        allowsing tdelta to be a regular number instead of the default,
+        which is a datetime.timedelta object.  Valid inputtype strings:
+            's', 'seconds',
+            'm', 'minutes',
+            'h', 'hours',
+            'd', 'days',
+            'w', 'weeks'.
+    :return string
+        formated to specification.
 
     """
     # Convert tdelta to integer seconds.
