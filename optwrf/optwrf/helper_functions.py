@@ -83,37 +83,31 @@ def strfdelta(tdelta, fmt='{H:02}h {M:02}m {S:02}s', inputtype='timedelta'):
     return f.format(fmt, **values)
 
 
-def date2season(dates):
+def date2season(date):
     """
-    Takes a list of dates and return the corresponding season. Seasons are
+    Takes a timestamp and returns the corresponding season. Seasons are
     defined simply by month:
         Winter  Dec - Feb
         Spring  Mar - May
         Summer  Jun - Aug
         Fall    Sep - Nov
 
-    :param dates: list of timestamps
+    :param date: timestamps
     :return seasons: list of strings
         corresponding to the season of the input date.
 
     """
-    def get_season(date):
-        mo = date.month
-        if mo in [12, 1, 2]:
-            season = 'winter'
-        elif mo in [3, 4, 5]:
-            season = 'spring'
-        elif mo in [6, 7, 8]:
-            season = 'summer'
-        elif mo in [9, 10, 11]:
-            season = 'fall'
-        else:
-            print(f'{mo} is not a correct month code (1 - 12).')
-            raise ValueError
-        return season
-    # Make sure dates input is in list form
-    if type(dates) is not list:
-        dates = [dates]
-    # Check to see if the list has length greater than 1
-    seasons = [get_season(dat) for dat in dates]
-    return seasons
+    mo = date.month
+    if mo in [12, 1, 2]:
+        season = 'winter'
+    elif mo in [3, 4, 5]:
+        season = 'spring'
+    elif mo in [6, 7, 8]:
+        season = 'summer'
+    elif mo in [9, 10, 11]:
+        season = 'fall'
+    else:
+        print(f'{mo} is not a correct month code (1 - 12).')
+        raise ValueError
+
+    return season
