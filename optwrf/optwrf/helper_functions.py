@@ -6,6 +6,8 @@ Known Issues/Wishlist:
 
 """
 
+import datetime
+import math
 from shutil import rmtree
 import string
 
@@ -111,3 +113,76 @@ def date2season(date):
         raise ValueError
 
     return season
+
+
+def daylight(day, latitude=40):
+    """
+    This function calculates the number of daylight hours given jullian day of the year, and the latitude.
+    For the optwrf work, I have set the default latitude to the 40th parallel since that cuts through
+    the center of the domain.
+
+    :param day: integer corresponding to jullian day of the year
+    :param latitude: in degrees North
+    :return daylightamount: float giving the numer of daylight hours
+
+    """
+    P = math.asin(0.39795 * math.cos(0.2163108 + 2 * math.atan(0.9671396 * math.tan(.00860 * (day - 186)))))
+    pi = math.pi
+    daylightamount = 24 - (24 / pi) * math.acos((math.sin(0.8333 * pi / 180) +
+                                                 math.sin(latitude * pi / 180) * math.sin(P))
+                                                / (math.cos(latitude * pi / 180) * math.cos(P)))
+    return daylightamount
+
+
+def daylight_frac(day, latitude=40):
+    """
+    Calculates the daylight fraction, i.e., the fraction created by dividing the number of daylight hours
+    by the longest day of the year at a given latitude.
+
+    :param day: integer corresponding to jullian day of the year
+    :param latitude: in degrees North
+    :return frac: nondimensional fraction of the daylight hours on the day vs the longest day
+
+    """
+    # Ensure that the day is a Julian day integer.
+    if type(day) is int:
+        if day > 365:
+            print('The Julian day variable must be between 1 - 365')
+            raise ValueError
+        jday = day
+    elif type(day) is str:
+        dt = format_date(day)
+        tt = dt.timetuple()
+        jday = tt.tm_yday
+    else:
+        print(f'Day: ({day}) has an incorrect type: ({type(day)}).\nPlease input an int or str.')
+        raise TypeError
+
+    # Calculate the daylight amount
+    daylightamount = daylight(jday, latitude)
+    # Calculate the longest day
+    daylengths = [daylight(d, latitude) for d in range(1, 366)]
+    longestday = max(daylengths)
+    # Calculate the daylight fraction
+    frac = daylightamount/longestday
+    return frac
+
+
+def format_date(in_date):
+    """
+    Formats an input date so that it can be correctly written to the namelist.
+
+    :param in_date : string
+        string specifying the date
+    :return: datetime64 array specifying the date
+
+    """
+    for fmt in ('%b %d %Y', '%B %d %Y', '%b %d, %Y', '%B %d, %Y',
+                '%m-%d-%Y', '%m.%d.%Y', '%m/%d/%Y',
+                '%b %d %Y %H', '%B %d %Y %H', '%b %d, %Y %H', '%B %d, %Y %H',
+                '%m-%d-%Y %H', '%m.%d.%Y %H', '%m/%d/%Y %H'):
+        try:
+            return datetime.datetime.strptime(in_date, fmt)
+        except ValueError:
+            pass
+    raise ValueError('No valid date format found; please use a common US format (e.g., Jan 01, 2011 00)')

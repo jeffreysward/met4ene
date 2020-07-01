@@ -369,11 +369,13 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         mae = wrf_sim.wrf_era5_diff()
         ghi_mean_error = mae[1]
         wpd_mean_error = mae[2]
+        daylight_factor = hf.daylight_frac(start_date)  # daylight fraction
+        fitness = daylight_factor * ghi_mean_error + correction_factor * wpd_mean_error
 
     else:
         ghi_mean_error = 6.022 * 10 ** 23
         wpd_mean_error = 6.022 * 10 ** 23
-    fitness = ghi_mean_error + correction_factor * wpd_mean_error
+        fitness = 6.022 * 10 ** 23
 
     return fitness, ghi_mean_error, wpd_mean_error, runtime
 
