@@ -54,6 +54,8 @@ def conn_to_db(db_name='optwrf.db'):
                         cu_physics INTEGER,
                         sf_sfclay_physics INTEGER,
                         fitness FLOAT,
+                        ghi_error FLOAT,
+                        wpd_error FLOAT,
                         runtime FLOAT 
                         )""")
     return db_conn
@@ -77,13 +79,14 @@ def insert_sim(individual, db_conn, verbose=False):
     with db_conn:
         c.execute("""INSERT INTO simulations VALUES (
                     :start_date, :mp_physics, :ra_lw_physics, :ra_sw_physics, :sf_surface_physics, 
-                    :bl_pbl_physics, :cu_physics, :sf_sfclay_physics, :fitness, :runtime)""",
+                    :bl_pbl_physics, :cu_physics, :sf_sfclay_physics, :fitness, :ghi_error, :wpd_error, :runtime)""",
                   {'start_date': individual.Start_date, 'mp_physics': individual.Genes[0],
                    'ra_lw_physics': individual.Genes[1],
                    'ra_sw_physics': individual.Genes[2], 'sf_surface_physics': individual.Genes[3],
                    'bl_pbl_physics': individual.Genes[4], 'cu_physics': individual.Genes[5],
                    'sf_sfclay_physics': individual.Genes[6],
-                   'fitness': individual.Fitness, 'runtime': individual.Runtime})
+                   'fitness': individual.Fitness, 'ghi_error': individual.GHI_error,
+                   'wpd_error': individual.WPD_error, 'runtime': individual.Runtime})
 
 
 def update_sim(individual, db_conn):
@@ -101,7 +104,9 @@ def update_sim(individual, db_conn):
     with db_conn:
         c.execute("""UPDATE simulations 
                     SET start_date = :start_date, 
-                    fitness = :fitness, 
+                    fitness = :fitness,
+                    ghi_error = :ghi_error,
+                    wpd_error = :wpd_error, 
                     runtime = :runtime
                     WHERE mp_physics = :mp_physics
                     AND ra_lw_physics = :ra_lw_physics
@@ -110,11 +115,12 @@ def update_sim(individual, db_conn):
                     AND bl_pbl_physics = :bl_pbl_physics
                     AND cu_physics = :cu_physics
                     AND sf_sfclay_physics = :sf_sfclay_physics""",
-                  {'start_date': individual.Start_date, 'fitness': individual.Fitness, 'runtime': individual.Runtime,
-                   'mp_physics': individual.Genes[0], 'ra_lw_physics': individual.Genes[1],
-                   'ra_sw_physics': individual.Genes[2], 'sf_surface_physics': individual.Genes[3],
-                   'bl_pbl_physics': individual.Genes[4], 'cu_physics': individual.Genes[5],
-                   'sf_sfclay_physics': individual.Genes[6]})
+                  {'start_date': individual.Start_date, 'fitness': individual.Fitness,
+                   'ghi_error': individual.GHI_error, 'wpd_error': individual.WPD_error,
+                   'runtime': individual.Runtime, 'mp_physics': individual.Genes[0],
+                   'ra_lw_physics': individual.Genes[1], 'ra_sw_physics': individual.Genes[2],
+                   'sf_surface_physics': individual.Genes[3], 'bl_pbl_physics': individual.Genes[4],
+                   'cu_physics': individual.Genes[5], 'sf_sfclay_physics': individual.Genes[6]})
 
 
 def get_individual_by_genes(individual, db_conn):
@@ -280,8 +286,10 @@ def get_fitness(param_ids, verbose=False):
         print('Calculating fitness for: {}'.format(param_ids))
     time.sleep(2)
     fitness = random.randrange(0, 100)
+    error1 = random.randrange(0, 100)
+    error2 = random.randrange(0, 100)
     runtime = hf.strfdelta(datetime.datetime.now() - start_time)
-    return fitness, runtime
+    return fitness, error1, error2, runtime
 
 
 def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
@@ -361,11 +369,13 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         mae = wrf_sim.wrf_era5_diff()
         ghi_mean_error = mae[1]
         wpd_mean_error = mae[2]
-        fitness = ghi_mean_error + correction_factor * wpd_mean_error
-    else:
-        fitness = 6.022 * 10 ** 23
 
-    return fitness, runtime
+    else:
+        ghi_mean_error = 6.022 * 10 ** 23
+        wpd_mean_error = 6.022 * 10 ** 23
+    fitness = ghi_mean_error + correction_factor * wpd_mean_error
+
+    return fitness, ghi_mean_error, wpd_mean_error, runtime
 
 
 def run_simplega(pop_size, n_generations, testing=False, initial_pop_file=None, restart_file=True, verbose=False):
@@ -434,20 +444,28 @@ def run_simplega(pop_size, n_generations, testing=False, initial_pop_file=None, 
                     fitness_threads.append(None)
             # Get the results from the thread pool executor
             fitness_matrix = []
+            ghi_error_matrix = []
+            wpd_error_matrix = []
             runtime_matrix = []
             for thread in fitness_threads:
                 try:
-                    fitness_value, runtime_value = thread.result()
+                    fitness_value, ghi_error_value, wpd_error_value, runtime_value = thread.result()
                 except AttributeError:
                     fitness_value = None
                     runtime_value = None
+                    ghi_error_value = None
+                    wpd_error_value = None
                 fitness_matrix.append(fitness_value)
+                ghi_error_matrix.append(ghi_error_value)
+                wpd_error_matrix.append(wpd_error_value)
                 runtime_matrix.append(runtime_value)
             # Attach fitness and runtime values generated by the thread pool to their Chromosome
             ii = 0
             for individual in pop:
                 if individual.Fitness is None:
                     individual.Fitness = fitness_matrix[ii]
+                    individual.GHI_error = ghi_error_matrix[ii]
+                    individual.WPD_error = wpd_error_matrix[ii]
                     individual.Runtime = runtime_matrix[ii]
                     insert_sim(individual, db_conn)
                 ii += 1

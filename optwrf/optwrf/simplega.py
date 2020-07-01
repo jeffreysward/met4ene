@@ -26,11 +26,13 @@ class Chromosome:
         3. An end date defining when the WRF forecast will finish running.
         4. A fitness value that will be used to determine how well each instance preforms.
     """
-    def __init__(self, genes, start_date, end_date, fitness=None, runtime=None):
+    def __init__(self, genes, start_date, end_date, fitness=None, ghi_error=None, wpd_error=None, runtime=None):
         self.Genes = genes
         self.Start_date = start_date
         self.End_date = end_date
         self.Fitness = fitness
+        self.GHI_error = ghi_error
+        self.WPD_error = wpd_error
         self.Runtime = runtime
 
 
