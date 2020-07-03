@@ -209,21 +209,25 @@ def crossover(mating_population):
     return offspring_population
 
 
-def mutate(offspring_population, verbose=False):
+def mutate(offspring_population, mutation_rate=0.02, verbose=False):
     """
     The mutate operator takes in the genes of one offspring
     and randomly replaces one of the genes from the set of choices.
 
     :param offspring_population: list of Chromosome instances
         population of individuals created from the genes of mating population.
+    :param mutation_rate: float describing the mutation rate (between 0 and 1).
+        Grefenstette (1986) found that mutation rates above 0.05 were generally harmful,
+        but that failing to use mutation led to poor performance.
     :param verbose: boolean (default=False)
         determining whether or not to print lots of model information to the screen.
     :return: offspring_population: list of Chromosome instances
         mutated offspring population.
 
     """
+    mutation_int = int(1/mutation_rate)
     for child in offspring_population:
-        if random.randint(1, len(offspring_population)) is 1:
+        if random.randint(1, mutation_int) is 1:
             new_child = generate_genes()
             gene_idx = random.randint(0, len(new_child) - 1)
             if verbose:

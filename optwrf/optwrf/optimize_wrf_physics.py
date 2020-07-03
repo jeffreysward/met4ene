@@ -380,7 +380,7 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     return fitness, ghi_mean_error, wpd_mean_error, runtime
 
 
-def run_simplega(pop_size, n_generations, testing=False, initial_pop_file=None, restart_file=True, verbose=False):
+def run_simplega(pop_size, n_generations, elite_pct=0.08, testing=False, initial_pop_file=None, restart_file=True, verbose=False):
     """
     Runs the simple genetic algorithm specified in simplega either
     to optimize the WRF model physics or with a test fitness function
@@ -479,9 +479,9 @@ def run_simplega(pop_size, n_generations, testing=False, initial_pop_file=None, 
 
     # Record the start time, and calculate the number of elites
     start_time = datetime.datetime.now()
-    n_elites = int(0.34 * pop_size) if int(0.34 * pop_size) > 0 else 1
+    n_elites = int(elite_pct * pop_size) if int(elite_pct * pop_size) > 0 else 1
     if verbose:
-        print('The number of elites is {}'.format(n_elites))
+        print(f'The elite percentage is {elite_pct*100}%; the number of elites is {n_elites}')
 
     # Create an initial population
     if initial_pop_file is not None:

@@ -20,6 +20,7 @@ check_file_status() as well.
 import calendar
 import datetime
 import dateutil
+import geocat.comp
 import netCDF4
 import numpy as np
 import os
@@ -1409,3 +1410,88 @@ def check_file_status(filepath, filesize):
     percent_complete = (size / filesize) * 100
     sys.stdout.write(f'{filepath}: {percent_complete}%\n')
     sys.stdout.flush()
+
+
+def wrf_era5_regrid(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
+    """
+
+    :param in_yr:
+    :param in_mo:
+    :param wrfdir:
+    :param eradir:
+    :return:
+
+    """
+    # WRF file containing source grid
+    wrffile = 'wrfout_processed_d01.nc'
+    try:
+        wrfdata = xr.open_dataset(wrffile)
+    except FileNotFoundError:
+        print(f'The wrfout file {wrfdir+wrffile} does not exist. Check that your path.')
+        wrfdata = None
+        eradata = None
+        return wrfdata, eradata
+
+    # Get wrf variable(s) to regrid
+    wrf_lat = wrfdata.XLAT
+    wrf_lon = wrfdata.XLONG
+
+    # Read in and convert GHI from W m-2 to kW m-2
+    ghi = wrfdata.ghi
+    ghi = ghi/1000
+
+    # Read in WPD, convert from W m-2 to kW m-2
+    wpd = wrfdata.wpd
+    wpd = wpd/1000
+
+    # ERA data file(s)
+    erafile = f'ERA5_EastUS_WPD-GHI_{in_yr}-{in_mo}.nc'
+    try:
+        eradata = xr.open_dataset(erafile)
+    except FileNotFoundError:
+        print(f'The wrfout file {eradir + erafile} does not exist. Check that your path.')
+        eradata = None
+        return wrfdata, eradata
+
+    # Get variables to compare with regridded WRF variables.
+    era_lat = eradata.latitude
+    era_lon = eradata.longitude
+
+    # Read in ERA_GHI, convert from W m-2 to kW m-2
+    era_ghi = eradata.GHI
+    era_ghi = era_ghi / 1000
+
+    # Read in ERA_WPD, convert from W m-2 to kW m-2
+    era_wpd = eradata.WPD
+    era_wpd = era_wpd / 1000
+
+    # Write these back to the xarray dataset
+    eradata['ghi'] = era_ghi
+    eradata['wpd'] = era_wpd
+
+    # Do the regridding
+    wrf_ghi_regrid = geocat.comp.rcm2rgrid(wrf_lat, wrf_lon, ghi, era_lat, era_lon)
+    wrf_wpd_regrid = geocat.comp.rcm2rgrid(wrf_lat, wrf_lon, wpd, era_lat, era_lon)
+
+    # Add the regridded variables to the WRF xarray dataset
+    wrfdata['ghi_regrid'] = wrf_ghi_regrid
+    wrfdata['wpd_regrid'] = wrf_wpd_regrid
+
+    return wrfdata, eradata
+
+
+def wrf_era5_error(wrfdata, eradata):
+    pass
+    # # Loop through all the times in the WRF file to compute mean bias
+    # ghi_error = abs(wrf_ghi_regrid - era_ghi)
+    # wpd_error = abs(wrf_wpd_regrid - era_wpd)
+    #
+    #
+    # # Sum all computed biases across the domain and save/print
+    # GHI_MAE_hr = sum(GHI_diff)
+    # WPD_MAE_hr = sum(WPD_diff)
+    #
+    #
+    # # Compute the mean bias and save/print
+    # GHI_MAE := sum(GHI_MAE)/n
+    # WPD_MAE := sum(WPD_MAE)/n
