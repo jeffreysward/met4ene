@@ -4,3 +4,4 @@ directory_paths:
   DIR_DATA_ROOT: '/Users/swardy9230/Box\ Sync/01_Research/01_Renewable_Analysis/WRF_Solar_and_Wind/wrf_data/'
   DIR_MET4ENE: '/Users/swardy9230/Box\ Sync/01_Research/01_Renewable_Analysis/WRF_Solar_and_Wind/met4ene/'
   DIR_TEMPLATES: '/Users/swardy9230/Box\ Sync/01_Research/01_Renewable_Analysis/WRF_Solar_and_Wind/met4ene/templates/magma2templates/'
+  DIR_ERA5_ROOT: '/Users/swardy9230/Box\ Sync/01_Research/01_Renewable_Analysis/WRF_Solar_and_Wind/wrf_data/ERA5/'

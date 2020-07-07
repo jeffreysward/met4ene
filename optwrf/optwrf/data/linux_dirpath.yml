@@ -4,3 +4,4 @@ directory_paths:
   DIR_DATA_ROOT: '/home/jsward/Documents/01_Research/01_Renewable_Analysis/WRF/wrf_data/'
   DIR_MET4ENE: '/home/jsward/Documents/01_Research/01_Renewable_Analysis/WRF/met4ene/'
   DIR_TEMPLATES: '/home/jsward/Documents/01_Research/01_Renewable_Analysis/WRF/met4ene/templates/magma2templates/'
+  DIR_ERA5_ROOT: '/home/jsward/Documents/01_Research/01_Renewable_Analysis/WRF/wrf_data/ERA5/'
