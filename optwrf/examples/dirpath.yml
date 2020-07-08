@@ -4,3 +4,4 @@ directory_paths:
   DIR_DATA_ROOT: '/share/mzhang/jas983/wrf_data/'
   DIR_MET4ENE: '/share/mzhang/jas983/wrf_data/met4ene/'
   DIR_TEMPLATES: '/share/mzhang/jas983/wrf_data/met4ene/templates/magma2templates/'
+  DIR_ERA5_ROOT: '/share/mzhang/jas983/wrf_data/data/ERA5/'

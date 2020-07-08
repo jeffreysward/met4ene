@@ -914,7 +914,7 @@ class WRFModel:
 
                 # Make the ERA5 data directory if it does not exist
                 if not os.path.exists(self.DIR_ERA5_ROOT):
-                    os.mkdir(self.DIR_ERA5_ROOT)
+                    os.makedirs(self.DIR_ERA5_ROOT)
 
                 # Define paths to the required data on the RDA site
                 dspath = 'http://rda.ucar.edu/data/ds633.0/'
@@ -947,7 +947,7 @@ class WRFModel:
 
                 # Run ncks to reduce the size of the files
                 for rda_file, local_file in zip(rda_filelist, local_filenames):
-                    CMD_REDUCE = 'ncks -d longitude,265.,295. -d latitude,30.,50. %s %s' % \
+                    CMD_REDUCE = 'ncks -d longitude,264.,296. -d latitude,28.,52. %s %s' % \
                                  (rda_file, local_file)
                     if self.verbose:
                         print(f'Running the following from the command line:\n{CMD_REDUCE}')
@@ -958,10 +958,10 @@ class WRFModel:
                     cmd = self.CMD_MV % (file, self.DIR_ERA5_ROOT)
                     os.system(cmd)
 
-                # Remove the raw ERA5 files
-                for file in rda_filelist:
-                    cmd = self.CMD_RM % file
-                    os.system(cmd)
+                # # Remove the raw ERA5 files
+                # for file in rda_filelist:
+                #     cmd = self.CMD_RM % file
+                #     os.system(cmd)
 
         # Read in the wind files using the xarray open_dataset method
         era_100u = xr.open_dataset(erafile_100u)
