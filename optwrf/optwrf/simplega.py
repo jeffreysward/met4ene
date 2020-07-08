@@ -110,7 +110,7 @@ def generate_random_dates(year=2011, n_days=1, input_start_date=None):
         random_number_of_days = random.randrange(days_between_dates)
         random_start_date = start_date + datetime.timedelta(days=random_number_of_days)
     else:
-        random_start_date = runwrf.format_date(input_start_date)
+        random_start_date = hf.format_date(input_start_date)
     random_end_date = random_start_date + datetime.timedelta(days=n_days)
     # Change from datetime object to string
     random_start_date = random_start_date.strftime('%b %d %Y')

@@ -20,16 +20,17 @@ check_file_status() as well.
 import calendar
 import datetime
 import dateutil
-import geocat.comp
 import netCDF4
 import numpy as np
 import os
 import pandas as pd
 import requests
+import scipy
 import sys
 import time
 import wrf
 import xarray as xr
+import xesmf as xe
 import yaml
 
 from pvlib.wrfcast import WRF
@@ -991,13 +992,13 @@ class WRFModel:
             ssrd_slice = era_ssrd_raw.sel(forecast_initial_time=timestr)
             ssrd_slice = ssrd_slice.assign_coords(forecast_hour=pd.date_range(start=timestr.values, freq='H',
                                                                               periods=(len(ssrd_slice.forecast_hour))))
-            ssrd_slice = ssrd_slice.rename({'forecast_hour': 'time'})
+            ssrd_slice = ssrd_slice.rename({'forecast_hour': 'Time'})
             ssrd_slice = ssrd_slice.reset_coords('forecast_initial_time', drop=True)
             if first is True:
                 era_ssrd['SSRD'] = ssrd_slice['SSRD']
                 first = False
             else:
-                era_ssrd = xr.concat([era_ssrd, ssrd_slice], 'time')
+                era_ssrd = xr.concat([era_ssrd, ssrd_slice], 'Time')
         era_ssrd = era_ssrd.drop('utc_date')
 
         # Convert SSRD to GHI
@@ -1012,7 +1013,7 @@ class WRFModel:
                      + '-01 00:00:00'
         last_hour = self.forecast_start.strftime('%Y') + '-' + self.forecast_start.strftime('%m') \
                     + '-' + str(mo_len) + ' 23:00:00'
-        era_out = era_out.sel(time=slice(first_hour, last_hour))
+        era_out = era_out.sel(Time=slice(first_hour, last_hour))
 
         # Write the processed data back to a NetCDF file
         processed_era_file = self.DIR_ERA5_ROOT + 'ERA5_EastUS_WPD-GHI_' \
@@ -1023,76 +1024,42 @@ class WRFModel:
     def wrf_era5_diff(self):
         """
         Computes the difference between the wrf simulation and ERA5
-        by calling the wrf2era_error.ncl script from the command line.
-        NCL (short for NCAR Command Language) will be deprecated at
-        some point in the future, and will be replaced by wrf-python,
-        but the regridding functionality has not been ported to this
-        package currently. Therefore, this function is a somewhat clumsy
-        workaround.
+        reanalysis using the xesmf package.
 
-        wrf2era_error.ncl reads the previously-processed ERA and wrfout files,
+        This function calls sub-functions that read the previously-processed ERA5 and wrfout files,
         regrids the wrfout global horizontal irradiance (GHI) and wind
-        power density (WPD) to match that of the ERA data, and then computes
+        power density (WPD) to match that of the ERA5 data, and then computes
         the difference across the entire d01 WRF domain for every time period.
 
-        This method waits while the regridding and error calculation is being
-        completed by NCL, which can take some seconds to complete.
-
-        ***NOTE: I don't need to copy the wrf2era_error.ncl script into each
-        WRFOUT directory, but that's how I currently get the error file for
-        each simulation to be written into the correct dirctory.
-
         :return total_error: list
-            Sum of the mean absolute error accumulated for each grid cell
-            during each time period in the WRF simulation.
+            Sum of the absolute error accumulated in each grid cell
+            during all time periods in the WRF simulation.
 
         """
-        # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
-        CMD_REGRID = 'ncl -Q in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'paramstr="%s"\' %swrf2era_error.ncl ' \
-                     '|& tee log.regrid' % \
-                     (self.forecast_start.strftime('%Y'), self.forecast_start.strftime('%m'),
-                      self.forecast_start.strftime('%d'), self.DIR_WRFOUT, self.paramstr, self.DIR_WRFOUT)
-        os.system(CMD_REGRID)
-
-        # Extract the total error after the script has run
-        startTimeInt = int(time.time())
-        error_file = self.DIR_WRFOUT + 'mae_wrfyera_' + self.paramstr + '.csv'
-        while not os.path.exists(error_file):
-            log_message = read_last_3lines('log.regrid')
-            if 'fatal' in log_message:
-                print('NCLError: NCL has failed with the following message:')
-                print_last_3lines('log.regrid')
-                mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
-                return mae
-            elif (int(time.time()) - startTimeInt) < 600:
-                print('TimeoutError in wrf2era_error.ncl: took more than 10min to run... returning large error values.')
-                mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
-                return mae
-            else:
-                time.sleep(1)
-        mae = read_last_line(error_file)
-        mae = mae.split(',')
-        mae[-1] = mae[-1].strip()
-        try:
-            mae = [float(i) for i in mae]
-        except ValueError:
-            mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
-        if self.verbose:
-            print(f'!!! Parameters {self.paramstr} have a total error {sum(mae)} kW m-2')
+        # Regrid WRF to the ERA5 grid using xesmf
+        input_year = self.forecast_start.strftime('%Y')
+        input_month = self.forecast_start.strftime('%m')
+        wrfdata, eradata = wrf_era5_regrid_xesmf(input_year, input_month,
+                                                 wrfdir=self.DIR_WRFOUT, eradir=self.DIR_ERA5_ROOT)
 
         # Clean up extraneous files that wrf2era_error.ncl created
-        regridding_files = ['source_grid_file.nc',
-                            'destination_grid_file.nc',
-                            'log.regrid',
-                            'PET0.RegridWeightGen.Log',
-                            'WRF_to_ERA5.nc'
+        regridding_files = ['bilinear_191x191_97x129.nc'
                             ]
         for file in regridding_files:
             try:
                 os.system(self.CMD_RM % file)
             except FileNotFoundError:
                 print(f'WARNING: expected regridding file ({file}) was not deleted.')
-        return mae
+
+        # Calculate the error between the WRF simulation and the ERA5 reanalysis
+        wrfdata = wrf_era5_error(wrfdata, eradata)
+
+        # Calculate the total error
+        error = [0, wrfdata['total_ghi_error'].sum(), wrfdata['total_wpd_error'].sum()]
+        if self.verbose:
+            print(f'!!! Parameters {self.paramstr} have a total error {sum(error)}')
+
+        return error
 
 
 def determine_computer():
@@ -1412,7 +1379,7 @@ def check_file_status(filepath, filesize):
     sys.stdout.flush()
 
 
-def wrf_era5_regrid(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
+def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
     """
 
     :param in_yr:
@@ -1422,40 +1389,46 @@ def wrf_era5_regrid(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_
     :return:
 
     """
+
+    # The following function is an ad-hoc fix that changes out-of-original-grid values from zero to NaN.
+    def add_matrix_NaNs(regrid):
+        X = regrid.weights
+        M = scipy.sparse.csr_matrix(X)
+        num_nonzeros = np.diff(M.indptr)
+        M[num_nonzeros == 0, 0] = np.NaN
+        regrid.weights = scipy.sparse.coo_matrix(M)
+        return regrid
+
     # WRF file containing source grid
     wrffile = 'wrfout_processed_d01.nc'
     try:
-        wrfdata = xr.open_dataset(wrffile)
+        wrfdata = xr.open_dataset(wrfdir + wrffile)
     except FileNotFoundError:
-        print(f'The wrfout file {wrfdir+wrffile} does not exist. Check that your path.')
+        print(f'The wrfout file {wrfdir + wrffile} does not exist. Check that your path.')
         wrfdata = None
         eradata = None
         return wrfdata, eradata
 
     # Get wrf variable(s) to regrid
-    wrf_lat = wrfdata.XLAT
-    wrf_lon = wrfdata.XLONG
-
     # Read in and convert GHI from W m-2 to kW m-2
     ghi = wrfdata.ghi
-    ghi = ghi/1000
+    ghi = ghi / 1000
 
     # Read in WPD, convert from W m-2 to kW m-2
     wpd = wrfdata.wpd
-    wpd = wpd/1000
+    wpd = wpd / 1000
 
     # ERA data file(s)
-    erafile = f'ERA5_EastUS_WPD-GHI_{in_yr}-{in_mo}.nc'
+    erafile = f'ERA5_EastUS_WPD-GHI_{str(in_yr).zfill(4)}-{str(in_mo).zfill(2)}.nc'
     try:
-        eradata = xr.open_dataset(erafile)
+        eradata = xr.open_dataset(eradir + erafile)
     except FileNotFoundError:
         print(f'The wrfout file {eradir + erafile} does not exist. Check that your path.')
         eradata = None
         return wrfdata, eradata
 
     # Get variables to compare with regridded WRF variables.
-    era_lat = eradata.latitude
-    era_lon = eradata.longitude
+    eradata = eradata.rename({'longitude': 'lon', 'latitude': 'lat'})
 
     # Read in ERA_GHI, convert from W m-2 to kW m-2
     era_ghi = eradata.GHI
@@ -1470,8 +1443,10 @@ def wrf_era5_regrid(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_
     eradata['wpd'] = era_wpd
 
     # Do the regridding
-    wrf_ghi_regrid = geocat.comp.rcm2rgrid(wrf_lat, wrf_lon, ghi, era_lat, era_lon)
-    wrf_wpd_regrid = geocat.comp.rcm2rgrid(wrf_lat, wrf_lon, wpd, era_lat, era_lon)
+    regridder = xe.Regridder(wrfdata, eradata, 'bilinear')
+    regridder = add_matrix_NaNs(regridder)
+    wrf_ghi_regrid = regridder(ghi)
+    wrf_wpd_regrid = regridder(wpd)
 
     # Add the regridded variables to the WRF xarray dataset
     wrfdata['ghi_regrid'] = wrf_ghi_regrid
@@ -1481,17 +1456,26 @@ def wrf_era5_regrid(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_
 
 
 def wrf_era5_error(wrfdata, eradata):
-    pass
-    # # Loop through all the times in the WRF file to compute mean bias
-    # ghi_error = abs(wrf_ghi_regrid - era_ghi)
-    # wpd_error = abs(wrf_wpd_regrid - era_wpd)
-    #
-    #
-    # # Sum all computed biases across the domain and save/print
-    # GHI_MAE_hr = sum(GHI_diff)
-    # WPD_MAE_hr = sum(WPD_diff)
-    #
-    #
-    # # Compute the mean bias and save/print
-    # GHI_MAE := sum(GHI_MAE)/n
-    # WPD_MAE := sum(WPD_MAE)/n
+    """
+
+    :param wrfdata:
+    :param eradata:
+    :return:
+
+    """
+    # Compute the error (absolute difference) between WRF and ERA5 data
+    # Note that only times from the WRF file will remain in *error variables.
+    wrfdata['ghi_error'] = abs(wrfdata.ghi_regrid - eradata.ghi)
+    wrfdata['wpd_error'] = abs(wrfdata.wpd_regrid - eradata.wpd)
+
+    # Sum all the hours in the wrfdata to get the total errors.
+    # To get around an xrray nan bug, fill all nan with -1.
+    # Since we applied abs(), all the values in our errors are >= 0
+    ghi_error_nonan = wrfdata.ghi_error.fillna(-1)
+    total_ghi_error = ghi_error_nonan.sum(dim='Time')
+    wrfdata['total_ghi_error'] = total_ghi_error.where(total_ghi_error > 0)
+    wpd_error_nonan = wrfdata.wpd_error.fillna(-1)
+    total_wpd_error = wpd_error_nonan.sum(dim='Time')
+    wrfdata['total_wpd_error'] = total_wpd_error.where(total_wpd_error > 0)
+
+    return wrfdata
