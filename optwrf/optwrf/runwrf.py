@@ -958,10 +958,10 @@ class WRFModel:
                     cmd = self.CMD_MV % (file, self.DIR_ERA5_ROOT)
                     os.system(cmd)
 
-                # # Remove the raw ERA5 files
-                # for file in rda_filelist:
-                #     cmd = self.CMD_RM % file
-                #     os.system(cmd)
+                # Remove the raw ERA5 files
+                for file in rda_filelist:
+                    cmd = self.CMD_RM % file
+                    os.system(cmd)
 
         # Read in the wind files using the xarray open_dataset method
         era_100u = xr.open_dataset(erafile_100u)
