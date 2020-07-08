@@ -9,6 +9,7 @@ Last updated by Jeff Sward 02/19/2020
 """
 
 from optwrf.runwrf import WRFModel
+import optwrf.helper_functions as hf
 import os
 import sys
 
@@ -70,6 +71,12 @@ daily_mean_wpd_error = total_annual_wpd_error / 365
 print(f'The annual daily mean GHI error is: {daily_mean_ghi_error} kW m-2')
 print(f'The annual daily mean WPD error is: {daily_mean_wpd_error} kW m-2')
 
+# Calculate the annual mean daylight fraction
+daylight_factors = []
+for jday in range(1, 366):
+    daylight_factors.append(hf.daylight_frac(jday))
+mean_daylight_factor = sum(daylight_factors) / len(daylight_factors)
+
 # Calculate the correction factor
-alpha = daily_mean_ghi_error / daily_mean_wpd_error
+alpha = (daily_mean_ghi_error / mean_daylight_factor) / daily_mean_wpd_error
 print(f'The fitness function correction factor is {alpha}.')
