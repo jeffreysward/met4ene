@@ -11,9 +11,9 @@ import optwrf.wrfparams as wp
 import optwrf.simplega as sga
 import optwrf.optimize_wrf_physics as owp
 
-param_ids = [10, 1, 1, 2, 2, 3, 2]
-start_date = 'Dec 31  2011'
-end_date = 'Jan 1 2012'
+param_ids = [8, 7, 3, 1, 1, 10, 1]
+start_date = 'Dec 13  2011'
+end_date = 'Dec 14 2011'
 on_aws, on_cheyenne, on_magma = determine_computer()
 
 

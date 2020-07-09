@@ -26,9 +26,11 @@ end_dates = ['Feb 1 2011', 'Mar 1 2011', 'Apr 1 2011', 'May 1 2011',
 print('Starting wrfout file processing...')
 for start_date, end_date in zip(start_dates, end_dates):
     wrf_sim = WRFModel(param_ids, start_date, end_date)
-    processed_wrfout_file = wrf_sim.DIR_WRFOUT + 'default_all_2011/wrfout_processed_d01.nc'
+    DIR_WRFOUT = wrf_sim.DIR_MET4ENE + 'wrfout/ARW/default_all_2011/%s_' % \
+		                             (wrf_sim.forecast_start.strftime('%Y-%m-%d')) + wrf_sim.paramstr + '/'
+    processed_wrfout_file = DIR_WRFOUT + 'wrfout_processed_d01.nc'
     if not os.path.exists(processed_wrfout_file):
-        wrfout_file = wrf_sim.DIR_WRFOUT + 'wrfout_d01.nc'
+        wrfout_file = DIR_WRFOUT + 'wrfout_d01.nc'
         if not os.path.exists(wrfout_file):
             print(f'\nYour have an incorrect wrfout file path:\n{wrfout_file}.')
             raise FileNotFoundError
@@ -40,8 +42,7 @@ print('!Done!')
 print('Starting ERA5 file processing...')
 for start_date, end_date in zip(start_dates, end_dates):
     wrf_sim = WRFModel(param_ids, start_date, end_date)
-    ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
-    processed_era_file = ERA5_ROOT + 'ERA5_EastUS_WPD-GHI_' \
+    processed_era_file = wrf_sim.DIR_ERA5_ROOT + 'ERA5_EastUS_WPD-GHI_' \
                          + wrf_sim.forecast_start.strftime('%Y') + '-' \
                          + wrf_sim.forecast_start.strftime('%m') + '.nc'
     if not os.path.exists(processed_era_file):
