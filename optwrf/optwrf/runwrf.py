@@ -1042,7 +1042,7 @@ class WRFModel:
         wrfdata, eradata = wrf_era5_regrid_xesmf(input_year, input_month,
                                                  wrfdir=self.DIR_WRFOUT, eradir=self.DIR_ERA5_ROOT)
 
-        # Clean up extraneous files that wrf2era_error.ncl created
+        # Clean up extraneous files that are created
         regridding_files = ['bilinear_191x191_97x129.nc'
                             ]
         for file in regridding_files:
