@@ -10,6 +10,7 @@ Known Issues/Wishlist:
 import concurrent.futures
 import csv
 import datetime
+import os
 import random
 import sqlite3
 import sys
@@ -330,33 +331,38 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     wrf_sim = WRFModel(param_ids, start_date, end_date,
                        bc_data=bc_data, n_domains=n_domains, setup_yaml=setup_yaml, verbose=verbose)
 
-    # Next, get boundary condition data for the simulation
-    # ERA is the only supported data type right now.
-    vtable_sfx = wrf_sim.get_bc_data()
+    # Check to see if WRFModel instance exists; if not, run the WRF model.
+    if not os.path.exists(wrf_sim.DIR_WRFOUT + 'wrfout_d01.nc'):
+        # Next, get boundary condition data for the simulation
+        # ERA is the only supported data type right now.
+        vtable_sfx = wrf_sim.get_bc_data()
 
-    # Setup the working directory to run the simulation
-    wrf_sim.wrfdir_setup(vtable_sfx)
+        # Setup the working directory to run the simulation
+        wrf_sim.wrfdir_setup(vtable_sfx)
 
-    # Prepare the namelists
-    wrf_sim.prepare_namelists()
+        # Prepare the namelists
+        wrf_sim.prepare_namelists()
 
-    # Run WPS
-    success = wrf_sim.run_wps()
-    if verbose:
-        print(f'WPS ran successfully? {success}')
-
-    # Run REAL
-    if success:
-        success = wrf_sim.run_real()
+        # Run WPS
+        success = wrf_sim.run_wps()
         if verbose:
-            print(f'Real ran successfully? {success}')
+            print(f'WPS ran successfully? {success}')
 
-    # RUN WRF
-    if success:
-        success, runtime = wrf_sim.run_wrf()
-        if verbose:
-            print(f'WRF ran successfully? {success}')
+        # Run REAL
+        if success:
+            success = wrf_sim.run_real()
+            if verbose:
+                print(f'Real ran successfully? {success}')
+
+        # RUN WRF
+        if success:
+            success, runtime = wrf_sim.run_wrf()
+            if verbose:
+                print(f'WRF ran successfully? {success}')
+        else:
+            runtime = '00h 00m 00s'
     else:
+        success = True
         runtime = '00h 00m 00s'
 
     # Postprocess wrfout file and ERA5 data
@@ -380,7 +386,8 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     return fitness, ghi_mean_error, wpd_mean_error, runtime
 
 
-def run_simplega(pop_size, n_generations, elite_pct=0.08, testing=False, initial_pop_file=None, restart_file=True, verbose=False):
+def run_simplega(pop_size, n_generations, elite_pct=0.08, testing=False,
+                 initial_pop_file=None, restart_file=True, verbose=False):
     """
     Runs the simple genetic algorithm specified in simplega either
     to optimize the WRF model physics or with a test fitness function
@@ -390,6 +397,9 @@ def run_simplega(pop_size, n_generations, elite_pct=0.08, testing=False, initial
         describing population size for the genetic algorithm. Must be >= 1
     :param n_generations: int
         corresponding to the total number of generations after which the genetic algorithm will time out.
+    :param elite_pct: float (default = 0.08)
+        value between 0 - 1 defining the percentage of the parent population that is automatically
+        moved to the offspring population unchanged.
     :param testing: boolean (default = False)
         flag that uses a random number generator as the fitness function when True.
     :param initial_pop_file: string (default = None)
