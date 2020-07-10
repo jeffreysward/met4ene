@@ -27,7 +27,7 @@ print('Starting wrfout file processing...')
 for start_date, end_date in zip(start_dates, end_dates):
     wrf_sim = WRFModel(param_ids, start_date, end_date)
     DIR_WRFOUT = wrf_sim.DIR_MET4ENE + 'wrfout/ARW/default_all_2011/%s_' % \
-		                             (wrf_sim.forecast_start.strftime('%Y-%m-%d')) + wrf_sim.paramstr + '/'
+                 (wrf_sim.forecast_start.strftime('%Y-%m-%d')) + wrf_sim.paramstr + '/'
     processed_wrfout_file = DIR_WRFOUT + 'wrfout_processed_d01.nc'
     if not os.path.exists(processed_wrfout_file):
         wrfout_file = DIR_WRFOUT + 'wrfout_d01.nc'

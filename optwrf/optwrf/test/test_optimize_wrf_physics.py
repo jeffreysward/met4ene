@@ -50,7 +50,7 @@ def test_get_wrf_fitness():
         print('\n!!!Not running test_wrf_era5_diff -- switch to Magma, Cheyenne, or AWS!!!')
         return
     fitness = get_wrf_fitness(param_ids, start_date, end_date, verbose=True)
-    assert fitness >= 0
+    assert fitness >= 0.0
 
 
 def test_run_simplega():
