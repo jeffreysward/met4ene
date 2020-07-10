@@ -26,11 +26,11 @@ end_dates = ['Feb 1 2011', 'Mar 1 2011', 'Apr 1 2011', 'May 1 2011',
 print('Starting wrfout file processing...')
 for start_date, end_date in zip(start_dates, end_dates):
     wrf_sim = WRFModel(param_ids, start_date, end_date)
-    DIR_WRFOUT = wrf_sim.DIR_MET4ENE + 'wrfout/ARW/default_all_2011/%s_' % \
+    wrf_sim.DIR_WRFOUT = wrf_sim.DIR_MET4ENE + 'wrfout/ARW/default_all_2011/%s_' % \
                  (wrf_sim.forecast_start.strftime('%Y-%m-%d')) + wrf_sim.paramstr + '/'
-    processed_wrfout_file = DIR_WRFOUT + 'wrfout_processed_d01.nc'
+    processed_wrfout_file = wrf_sim.DIR_WRFOUT + 'wrfout_processed_d01.nc'
     if not os.path.exists(processed_wrfout_file):
-        wrfout_file = DIR_WRFOUT + 'wrfout_d01.nc'
+        wrfout_file = wrf_sim.DIR_WRFOUT + 'wrfout_d01.nc'
         if not os.path.exists(wrfout_file):
             print(f'\nYour have an incorrect wrfout file path:\n{wrfout_file}.')
             raise FileNotFoundError
@@ -57,6 +57,8 @@ total_monthly_wpd_error = []
 print('Calculating difference between WRF and ERA5...')
 for start_date, end_date in zip(start_dates, end_dates):
     wrf_sim = WRFModel(param_ids, start_date, end_date)
+    wrf_sim.DIR_WRFOUT = wrf_sim.DIR_MET4ENE + 'wrfout/ARW/default_all_2011/%s_' % \
+                         (wrf_sim.forecast_start.strftime('%Y-%m-%d')) + wrf_sim.paramstr + '/'
     error = wrf_sim.wrf_era5_diff()
     total_monthly_ghi_error.append(error[1])
     total_monthly_wpd_error.append(error[2])
