@@ -1049,13 +1049,13 @@ class WRFModel:
             try:
                 os.system(self.CMD_RM % file)
             except FileNotFoundError:
-                print(f'WARNING: expected regridding file ({file}) was not deleted.')
+                print(f'WARNING: expected regridding file ({file}) did not exist.')
 
         # Calculate the error between the WRF simulation and the ERA5 reanalysis
         wrfdata = wrf_era5_error(wrfdata, eradata)
 
         # Calculate the total error
-        error = [0, wrfdata['total_ghi_error'].sum(), wrfdata['total_wpd_error'].sum()]
+        error = [0, float(wrfdata['total_ghi_error'].sum().values), float(wrfdata['total_wpd_error'].sum().values)]
         if self.verbose:
             print(f'!!! Parameters {self.paramstr} have a total error {sum(error)}')
 

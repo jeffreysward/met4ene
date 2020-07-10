@@ -16,4 +16,5 @@ pip install siphon
 conda install -c conda-forge nco  # I did this for the magma2 and MacOS environments only.
 conda install -c conda-forge ncl
 conda install -c conda-forge -c ncar geocat-comp  # New NCL for python package
-conda install -c conda-forge xesmf  # ESMF regridding package
+# ESMF regridding package -- you get an error if you don't specify esmpy=7.1.0
+conda install -c conda-forge xesmf esmpy=7.1.0
