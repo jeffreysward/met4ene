@@ -20,7 +20,8 @@ will automatically pass.
 import os
 
 from optwrf.runwrf import WRFModel
-from optwrf.runwrf import determine_computer, format_date
+from optwrf.runwrf import determine_computer
+import optwrf.helper_functions as hf
 
 param_ids = [10, 1, 1, 2, 2, 3, 2]
 start_date = 'Dec 31, 2011'
@@ -30,7 +31,7 @@ on_aws, on_cheyenne, on_magma = determine_computer()
 
 def test_format_date():
     """Checks the function that ensures consistency in the input date format."""
-    date = format_date(start_date)
+    date = hf.format_date(start_date)
     print(f'Starting forecast at {date}')
     assert date is not None
 
