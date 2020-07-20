@@ -24,7 +24,7 @@ endif
 cd $DIR
 
 # Install NetCDF
-wget "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/netcdf-4.1.3.tar.gz"
+wget --no-check-certificate "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/netcdf-4.1.3.tar.gz"
 tar xzvf netcdf-4.1.3.tar.gz
 cd netcdf-4.1.3
 ./configure --prefix=$DIR/netcdf --disable-dap --disable-netcdf-4 --disable-shared
@@ -35,7 +35,7 @@ setenv NETCDF $DIR/netcdf
 cd ..
 
 # Install mpich
-wget "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/mpich-3.0.4.tar.gz"
+wget --no-check-certificate "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/mpich-3.0.4.tar.gz"
 tar xzvf mpich-3.0.4.tar.gz
 cd mpich-3.0.4
 ./configure --prefix=$DIR/mpich
@@ -46,7 +46,7 @@ cd ..
 # Install zlib
 setenv JASPERLIB $DIR/grib2/lib 
 setenv JASPERINC $DIR/grib2/include
-wget "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/zlib-1.2.7.tar.gz"
+wget --no-check-certificate "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/zlib-1.2.7.tar.gz"
 tar xzvf zlib-1.2.7.tar.gz
 cd zlib-1.2.7
 ./configure --prefix=$DIR/grib2
@@ -54,7 +54,7 @@ make && make install
 cd ..
 
 # Install libpng
-wget "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/libpng-1.2.50.tar.gz"
+wget --no-check-certificate "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/libpng-1.2.50.tar.gz"
 tar xzvf libpng-1.2.50.tar.gz
 cd libpng-1.2.50
 ./configure --prefix=$DIR/grib2
@@ -62,7 +62,7 @@ make && make install
 cd ..
 
 # Install jasperlib
-wget "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/jasper-1.900.1.tar.gz"
+wget --no-check-certificate "http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/jasper-1.900.1.tar.gz"
 tar xzvf jasper-1.900.1.tar.gz
 cd jasper-1.900.1
 ./configure --prefix=$DIR/grib2
