@@ -10,7 +10,6 @@
 #SBATCH -t 6:00:00		# Run time (hh:mm:ss) 
 #SBATCH --mem=20000M		# memory required per node
 #SBATCH --partition=default_cpu	# Which queue it should run on.
-# #SBATCH --nodes=1		# Total number of nodes requested 
 
 if ( $#argv == 1 ) then
     cd $argv
