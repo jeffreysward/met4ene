@@ -70,7 +70,7 @@ make && make install
 cd ../../.. #change back into the wrf dir
 
 # Clone the WRF repository and compile the executables
-git clone -b release-v4.1 https://github.com/wrf-model/WRF
+git clone -b release-v4.0.1 https://github.com/wrf-model/WRF
 cd WRF
 ./configure #Choose options 34 and 1
 ./compile em_real >& log.compile.em_real
