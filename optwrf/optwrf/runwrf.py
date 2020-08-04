@@ -1042,15 +1042,6 @@ class WRFModel:
         wrfdata, eradata = wrf_era5_regrid_xesmf(input_year, input_month,
                                                  wrfdir=self.DIR_WRFOUT, eradir=self.DIR_ERA5_ROOT)
 
-        # Clean up extraneous files that are created
-        regridding_files = ['bilinear_191x191_97x129.nc'
-                            ]
-        for file in regridding_files:
-            try:
-                os.system(self.CMD_RM % file)
-            except FileNotFoundError:
-                print(f'WARNING: expected regridding file ({file}) did not exist.')
-
         # Calculate the error between the WRF simulation and the ERA5 reanalysis
         wrfdata = wrf_era5_error(wrfdata, eradata)
 
@@ -1379,7 +1370,8 @@ def check_file_status(filepath, filesize):
     sys.stdout.flush()
 
 
-def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
+def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/',
+                          keep_weights=True):
     """
 
     :param in_yr:
@@ -1442,8 +1434,11 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     eradata['ghi'] = era_ghi
     eradata['wpd'] = era_wpd
 
-    # Do the regridding
-    regridder = xe.Regridder(wrfdata, eradata, 'bilinear')
+    # Do the regridding (reuse the weights if the file exists)
+    try:
+        regridder = xe.Regridder(wrfdata, eradata, 'bilinear', reuse_weights=True)
+    except FileNotFoundError:
+        regridder = xe.Regridder(wrfdata, eradata, 'bilinear')
     regridder = add_matrix_NaNs(regridder)
     wrf_ghi_regrid = regridder(ghi)
     wrf_wpd_regrid = regridder(wpd)
@@ -1451,6 +1446,10 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     # Add the regridded variables to the WRF xarray dataset
     wrfdata['ghi_regrid'] = wrf_ghi_regrid
     wrfdata['wpd_regrid'] = wrf_wpd_regrid
+
+    # Clean up regridding scripts if necessary
+    if not keep_weights:
+        regridder.clean_weight_file()
 
     return wrfdata, eradata
 
