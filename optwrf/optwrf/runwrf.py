@@ -1378,6 +1378,7 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     :param in_mo:
     :param wrfdir:
     :param eradir:
+    :param keep_weights:
     :return:
 
     """
@@ -1437,7 +1438,7 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     # Do the regridding (reuse the weights if the file exists)
     try:
         regridder = xe.Regridder(wrfdata, eradata, 'bilinear', reuse_weights=True)
-    except FileNotFoundError:
+    except ValueError:
         regridder = xe.Regridder(wrfdata, eradata, 'bilinear')
     regridder = add_matrix_NaNs(regridder)
     wrf_ghi_regrid = regridder(ghi)
