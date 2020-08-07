@@ -14,9 +14,9 @@ from optwrf.runwrf import WRFModel
 from optwrf.runwrf import determine_computer
 
 
-param_ids = [10, 1, 1, 2, 2, 3, 2]
-start_date = 'Dec 31, 2011'
-end_date = 'Jan 1, 2012'
+param_ids = [8, 3, 7, 7, 7, 99]
+start_date = 'Jul 26, 2011'
+end_date = 'Jul 27, 2011'
 on_aws, on_cheyenne, on_magma = determine_computer()
 
 
