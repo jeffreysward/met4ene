@@ -295,7 +295,7 @@ def get_fitness(param_ids, verbose=False):
 
 def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
                     bc_data='ERA', n_domains=1, correction_factor=2.907987759368731e-7,
-                    setup_yaml='dirpath.yml', verbose=False):
+                    setup_yaml='dirpath.yml', disable_timeout=False, verbose=False):
     """
     Using the input physics parameters, date, boundary condition, and domain data,
     this function runs the WRF model and computes the error between WRF and ERA5.
@@ -316,6 +316,8 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         across an entrie year. Calculated using opwrf/examples/Fitness_correction_factor.py.
     :param setup_yaml: string
         defining the path to the yaml file where input directory paths are specified.
+    :param disable_timeout: boolean (default = False)
+        telling runwrf if subprogram timeouts are allowed or not.
     :param verbose: boolean (default = False)
         instructing the program to print everything or just key information to the screen.
     :return fitness: float
@@ -344,19 +346,19 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         wrf_sim.prepare_namelists()
 
         # Run WPS
-        success = wrf_sim.run_wps()
+        success = wrf_sim.run_wps(disable_timeout)
         if verbose:
             print(f'WPS ran successfully? {success}')
 
         # Run REAL
         if success:
-            success = wrf_sim.run_real()
+            success = wrf_sim.run_real(disable_timeout)
             if verbose:
                 print(f'Real ran successfully? {success}')
 
         # RUN WRF
         if success:
-            success, runtime = wrf_sim.run_wrf()
+            success, runtime = wrf_sim.run_wrf(disable_timeout)
             if verbose:
                 print(f'WRF ran successfully? {success}')
         else:
@@ -377,6 +379,8 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         wpd_mean_error = mae[2]
         daylight_factor = hf.daylight_frac(start_date)  # daylight fraction
         fitness = daylight_factor * ghi_mean_error + correction_factor * wpd_mean_error
+        if verbose:
+            print(f'!!! Physics options set {param_ids} has fitness {fitness}')
 
     else:
         ghi_mean_error = 6.022 * 10 ** 23

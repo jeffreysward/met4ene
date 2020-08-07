@@ -1048,7 +1048,8 @@ class WRFModel:
         # Calculate the total error
         error = [0, float(wrfdata['total_ghi_error'].sum().values), float(wrfdata['total_wpd_error'].sum().values)]
         if self.verbose:
-            print(f'!!! Parameters {self.paramstr} have a total error {sum(error)}')
+            print(f'!!! Physics options set {self.paramstr} has total '
+                  f'\nghi error {error[1]} and wpd error {error[2]} kW m-2 day-1')
 
         return error
 
