@@ -24,6 +24,7 @@ import netCDF4
 import numpy as np
 import os
 import pandas as pd
+import random
 import requests
 import scipy
 import sys
@@ -1437,11 +1438,10 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     eradata['ghi'] = era_ghi
     eradata['wpd'] = era_wpd
 
-    # Do the regridding (reuse the weights if the file exists)
-    try:
-        regridder = xe.Regridder(wrfdata, eradata, 'bilinear', reuse_weights=True)
-    except ValueError:
-        regridder = xe.Regridder(wrfdata, eradata, 'bilinear')
+    # Generate a random weight file name to keep the threads from getting confused
+    weight_file = f'bilinear_{random.randint(1,10 ** 10)}'
+    # Do the regridding
+    regridder = xe.Regridder(wrfdata, eradata, 'bilinear', filename=weight_file)
     regridder = add_matrix_NaNs(regridder)
     wrf_ghi_regrid = regridder(ghi)
     wrf_wpd_regrid = regridder(wpd)
@@ -1451,8 +1451,7 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     wrfdata['wpd_regrid'] = wrf_wpd_regrid
 
     # Clean up regridding scripts if necessary
-    if not keep_weights:
-        regridder.clean_weight_file()
+    regridder.clean_weight_file()
 
     return wrfdata, eradata
 

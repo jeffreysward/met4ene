@@ -15,6 +15,7 @@ dependencies:
   - wrf-python
   - metpy
   - cartopy
+  - iris
 #  - xesmf
 #  - esmpy=7.1.0
 #  - basemap
