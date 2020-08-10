@@ -5,6 +5,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.7
+  - jupyter
   - pytest
   - pyyaml
   - requests
@@ -12,5 +13,9 @@ dependencies:
   - scipy
   - xarray
   - wrf-python
-  - xesmf
-  - esmpy=7.1.0
+  - metpy
+  - cartopy
+#  - xesmf
+#  - esmpy=7.1.0
+#  - basemap
+#  - pyresample

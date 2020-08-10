@@ -1,6 +1,7 @@
+README.rst
 setup.py
 optwrf/__init__.py
-optwrf/linuxhelper.py
+optwrf/helper_functions.py
 optwrf/optimize_wrf_physics.py
 optwrf/runwrf.py
 optwrf/simplega.py
@@ -14,12 +15,13 @@ optwrf/data/__init__.py
 optwrf/data/dirpath.yml
 optwrf/data/linux_dirpath.yml
 optwrf/data/mac_dirpath.yml
-optwrf/data/params.yml
 optwrf/test/__init__.py
 optwrf/test/dirpath.yml
 optwrf/test/linux_dirpath.yml
 optwrf/test/mac_dirpath.yml
 optwrf/test/params.yml
+optwrf/test/test_helper_functions.py
 optwrf/test/test_optimize_wrf_physics.py
 optwrf/test/test_runwrf_postwrf.py
 optwrf/test/test_runwrf_setup.py
+optwrf/test/test_wrfparams.py

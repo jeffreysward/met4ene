@@ -30,7 +30,7 @@ import sys
 import time
 import wrf
 import xarray as xr
-import xesmf as xe
+# import xesmf as xe
 import yaml
 
 from pvlib.wrfcast import WRF
@@ -764,7 +764,8 @@ class WRFModel:
                 met_data = var
                 first = False
             else:
-                met_data = xr.merge([met_data, var])
+                with xr.set_options(keep_attrs=True):
+                    met_data = xr.merge([met_data, var])
 
         variables = {
             'times': 'Times',

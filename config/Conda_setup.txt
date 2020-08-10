@@ -15,3 +15,4 @@ conda install -c conda-forge -c ncar geocat-comp  # New NCL for python package
 # esmpy=7.1.0 installs mpi and mpich into your conda env which is NOT okay on Magma -- you must delete them manually
 # (e.g. in conda/envs/runwrf/bin run 'rm mpi*')!!!
 conda install -c conda-forge xesmf esmpy=7.1.0
+conda install -c anaconda basemap
