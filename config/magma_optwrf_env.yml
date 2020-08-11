@@ -1,0 +1,20 @@
+# Important: you have to manually delete mpi* from the /envs/optwrf/bin dir
+name: optwrf_magma
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - cartopy
+  - esmpy=7.1.0
+  - iris
+  - pyresample
+  - python=3.7
+  - pytest
+  - pyyaml
+  - requests
+  - scipy
+  - siphon
+  - wrf-python
+  - xarray
+  - xesmf 
+#  - metpy
