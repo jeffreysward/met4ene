@@ -13,10 +13,9 @@ dependencies:
   - scipy
   - xarray
   - wrf-python
-  - metpy
   - cartopy
   - iris
-#  - xesmf
-#  - esmpy=7.1.0
-#  - basemap
-#  - pyresample
+  - xesmf
+  - esmpy=7.1.0
+  - pyresample
+#  - metpy
