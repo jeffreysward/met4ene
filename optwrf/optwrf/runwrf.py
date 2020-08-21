@@ -24,6 +24,7 @@ import netCDF4
 import numpy as np
 import os
 import pandas as pd
+import pyresample as prs
 import random
 import requests
 import scipy
@@ -1027,7 +1028,7 @@ class WRFModel:
                              + self.forecast_start.strftime('%m') + '.nc'
         era_out.to_netcdf(path=processed_era_file)
 
-    def wrf_era5_diff(self):
+    def wrf_era5_diff(self, method='xesmf'):
         """
         Computes the difference between the wrf simulation and ERA5
         reanalysis using the xesmf package.
@@ -1045,8 +1046,15 @@ class WRFModel:
         # Regrid WRF to the ERA5 grid using xesmf
         input_year = self.forecast_start.strftime('%Y')
         input_month = self.forecast_start.strftime('%m')
-        wrfdata, eradata = wrf_era5_regrid_xesmf(input_year, input_month,
-                                                 wrfdir=self.DIR_WRFOUT, eradir=self.DIR_ERA5_ROOT)
+        if method == 'xesmf':
+            wrfdata, eradata = wrf_era5_regrid_xesmf(input_year, input_month,
+                                                     wrfdir=self.DIR_WRFOUT, eradir=self.DIR_ERA5_ROOT)
+        elif method == 'pyresample':
+            wrfdata, eradata = wrf_era5_regrid_pyresample(input_year, input_month,
+                                                          wrfdir=self.DIR_WRFOUT, eradir=self.DIR_ERA5_ROOT)
+        else:
+            print(f'Invalid regridding method: {method}. Only xesmf and pyresample are currently supported.')
+            raise NameError
 
         # Calculate the error between the WRF simulation and the ERA5 reanalysis
         wrfdata = wrf_era5_error(wrfdata, eradata)
@@ -1456,6 +1464,107 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
 
     # Clean up regridding scripts if necessary
     regridder.clean_weight_file()
+
+    return wrfdata, eradata
+
+
+def wrf_era5_regrid_pyresample(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
+    """
+
+    :param in_yr:
+    :param in_mo:
+    :param wrfdir:
+    :param eradir:
+    :return:
+
+    """
+    #
+    def prs_nearest_regrid(data, var, source_def, target_def, target_lat, target_lon):
+        first = True
+        for timestr in data.Time:
+            # Select the time slice from xarray
+            data_slice = data[var].sel(Time=timestr)
+            # Regrid with a nearest neighbor algorithm
+            regridded_data_slice = prs.kd_tree.resample_nearest(source_def, data_slice.values, \
+                                                                target_def, radius_of_influence=25000, fill_value=None)
+            # Put result into an xarray DataArray
+            regridded_data_slice_da = xr.DataArray(regridded_data_slice, dims=('lat', 'lon'),
+                                                   coords={'lat': target_lat, 'lon': target_lon})
+            # Transform the latitude coordinate back to [0-360]
+            regridded_data_slice_da.coords['lon'] = (regridded_data_slice_da.coords['lon'] % 360)
+            # Add a time dimension
+            regridded_data_slice_da.coords['Time'] = timestr.values
+            regridded_data_slice_da = regridded_data_slice_da.expand_dims('Time')
+            if first is True:
+                regridded_data = regridded_data_slice_da
+                first = False
+            else:
+                regridded_data = xr.concat([regridded_data, regridded_data_slice_da], 'Time')
+
+        return regridded_data
+
+    # WRF file containing source grid
+    wrffile = 'wrfout_processed_d01.nc'
+    try:
+        wrfdata = xr.open_dataset(wrfdir + wrffile)
+    except FileNotFoundError:
+        print(f'The wrfout file {wrfdir + wrffile} does not exist. Check that your path.')
+        wrfdata = None
+        eradata = None
+        return wrfdata, eradata
+
+    # Get wrf variable(s) to regrid
+    # Read in and convert GHI from W m-2 to kW m-2
+    wrfdata['ghi'] = wrfdata.ghi / 1000
+
+    # Read in WPD, convert from W m-2 to kW m-2
+    wrfdata['wpd'] = wrfdata.wpd / 1000
+
+    # ERA data file(s)
+    erafile = f'ERA5_EastUS_WPD-GHI_{str(in_yr).zfill(4)}-{str(in_mo).zfill(2)}.nc'
+    try:
+        eradata = xr.open_dataset(eradir + erafile)
+    except FileNotFoundError:
+        print(f'The wrfout file {eradir + erafile} does not exist. Check that your path.')
+        eradata = None
+        return wrfdata, eradata
+
+    # Get variables to compare with regridded WRF variables.
+    eradata = eradata.rename({'longitude': 'lon', 'latitude': 'lat'})
+
+    # Read in ERA_GHI, convert from W m-2 to kW m-2
+    era_ghi = eradata.GHI
+    era_ghi = era_ghi / 1000
+
+    # Read in ERA_WPD, convert from W m-2 to kW m-2
+    era_wpd = eradata.WPD
+    era_wpd = era_wpd / 1000
+
+    # Write these back to the xarray dataset
+    eradata['ghi'] = era_ghi
+    eradata['wpd'] = era_wpd
+
+    # Sort the ERA data for pyresammple
+    eradata = eradata.sortby('lat', ascending=True)
+
+    # Create grid definitions for pyresample
+    # SwathDefinition() require that lons and lats be in a specific format (taken care of by check_and_wrap())
+    # and that they have the same shape (taken care of by np.meshgrid())
+    era_lon, era_lat = prs.utils.check_and_wrap(eradata.lon.values, eradata.lat.values)
+    era_lon2d, era_lat2d = np.meshgrid(era_lon, era_lat)
+    # Create the definition for the target (ERA5 lat/lon) grid
+    era_def = prs.geometry.SwathDefinition(lons=era_lon2d, lats=era_lat2d)
+    # Preprocess and create the definition for the source (WRF Lambert Conformal) grid
+    wrf_lon, wrf_lat = prs.utils.check_and_wrap(wrfdata.lon.values, wrfdata.lat.values)
+    wrf_def = prs.geometry.SwathDefinition(lons=wrf_lon, lats=wrf_lat)
+
+    # Do the regridding
+    wrf_ghi_regrid = prs_nearest_regrid(wrfdata, 'ghi', wrf_def, era_def, era_lat, era_lon)
+    wrf_wpd_regrid = prs_nearest_regrid(wrfdata, 'wpd', wrf_def, era_def, era_lat, era_lon)
+
+    # Add the regridded variables to the WRF xarray dataset
+    wrfdata['ghi_regrid'] = wrf_ghi_regrid
+    wrfdata['wpd_regrid'] = wrf_wpd_regrid
 
     return wrfdata, eradata
 
