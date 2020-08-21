@@ -823,6 +823,10 @@ class WRFModel:
             except KeyError:
                 pass
 
+        # Drop extra coordinates from the dataset
+        met_data = xr.Dataset.reset_coords(met_data,
+                                           ['wspd_wdir', 'XLONG', 'XLAT', 'XTIME', 'level'], drop=True)
+
         # Slice the last time from the wrfout data to remove duplicates
         met_data = met_data.isel(Time=slice(0, -1))
 

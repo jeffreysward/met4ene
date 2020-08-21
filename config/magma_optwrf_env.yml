@@ -7,6 +7,7 @@ dependencies:
   - cartopy
   - esmpy=7.1.0
   - iris
+  - nco
   - pyresample
   - python=3.7
   - pytest
@@ -16,5 +17,5 @@ dependencies:
   - siphon
   - wrf-python
   - xarray
-  - xesmf 
+  - xesmf
 #  - metpy
