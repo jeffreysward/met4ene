@@ -1385,8 +1385,7 @@ def check_file_status(filepath, filesize):
     sys.stdout.flush()
 
 
-def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/',
-                          keep_weights=True):
+def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
     """
 
     :param in_yr:
