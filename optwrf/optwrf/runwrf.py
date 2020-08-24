@@ -1454,6 +1454,7 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     # Do the regridding
     # regridder = xe.Regridder(wrfdata, eradata, 'bilinear', filename=weight_file)
     regridder = xe.Regridder(wrfdata, eradata, 'bilinear')
+    print(f'The file name is: {regridder.filename} and reuse_weights is: {regridder.reuse_weights}')
     regridder = add_matrix_NaNs(regridder)
     wrf_ghi_regrid = regridder(ghi)
     wrf_wpd_regrid = regridder(wpd)
@@ -1463,7 +1464,7 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     wrfdata['wpd_regrid'] = wrf_wpd_regrid
 
     # Clean up regridding scripts if necessary
-    # regridder.clean_weight_file()
+    regridder.clean_weight_file()
 
     return wrfdata, eradata
 
