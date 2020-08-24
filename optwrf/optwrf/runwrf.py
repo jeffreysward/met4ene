@@ -1451,9 +1451,10 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     eradata['wpd'] = era_wpd
 
     # Generate a random weight file name to keep the threads from getting confused
-    weight_file = f'bilinear_{random.randint(1,10 ** 10)}'
+    # weight_file = f'bilinear_{random.randint(1,10 ** 10)}'
     # Do the regridding
-    regridder = xe.Regridder(wrfdata, eradata, 'bilinear', filename=weight_file)
+    # regridder = xe.Regridder(wrfdata, eradata, 'bilinear', filename=weight_file)
+    regridder = xe.Regridder(wrfdata, eradata, 'bilinear')
     regridder = add_matrix_NaNs(regridder)
     wrf_ghi_regrid = regridder(ghi)
     wrf_wpd_regrid = regridder(wpd)
@@ -1463,7 +1464,7 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     wrfdata['wpd_regrid'] = wrf_wpd_regrid
 
     # Clean up regridding scripts if necessary
-    regridder.clean_weight_file()
+    # regridder.clean_weight_file()
 
     return wrfdata, eradata
 
