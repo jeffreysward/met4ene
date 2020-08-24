@@ -7,6 +7,7 @@ dependencies:
   - cartopy
   - esmpy=7.1.0
   - nco
+  - netCDF4
   - pyresample
   - python=3.7
   - pytest

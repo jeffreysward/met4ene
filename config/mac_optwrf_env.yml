@@ -8,6 +8,7 @@ dependencies:
   - esmpy=7.1.0
   - jupyter
   - nco
+  - netCDF4
   - pyresample
   - pytest
   - python=3.7
@@ -17,5 +18,5 @@ dependencies:
   - siphon
   - wrf-python
   - xarray
-  - xesmf
+#  - xesmf
 #  - metpy
