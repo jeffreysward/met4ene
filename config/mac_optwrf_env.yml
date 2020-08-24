@@ -4,19 +4,18 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - python=3.7
+  - cartopy
+  - esmpy=7.1.0
   - jupyter
   - nco
+  - pyresample
   - pytest
+  - python=3.7
   - pyyaml
   - requests
-  - siphon
   - scipy
-  - xarray
+  - siphon
   - wrf-python
-  - cartopy
-  - iris
+  - xarray
   - xesmf
-  - esmpy=7.1.0
-  - pyresample
 #  - metpy

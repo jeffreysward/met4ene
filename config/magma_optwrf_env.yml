@@ -6,7 +6,6 @@ channels:
 dependencies:
   - cartopy
   - esmpy=7.1.0
-  - iris
   - nco
   - pyresample
   - python=3.7
