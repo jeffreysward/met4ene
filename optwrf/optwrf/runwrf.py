@@ -1482,6 +1482,8 @@ def wrf_era5_regrid_pyresample(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/
     #
     def prs_nearest_regrid(data, var, source_def, target_def, target_lat, target_lon):
         first = True
+        print(data.Time)
+        print(f'\nType: {type(data.Time)}\n')
         for timestr in data.Time:
             # Select the time slice from xarray
             print(f'Time: {timestr.values} of type {type(timestr.values)}')
