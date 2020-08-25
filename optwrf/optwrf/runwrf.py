@@ -1484,6 +1484,7 @@ def wrf_era5_regrid_pyresample(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/
         first = True
         for timestr in data.Time:
             # Select the time slice from xarray
+            print(f'Time: {timestr}')
             data_slice = data[var].sel(Time=timestr)
             # Regrid with a nearest neighbor algorithm
             regridded_data_slice = prs.kd_tree.resample_nearest(source_def, data_slice.values, \
