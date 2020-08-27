@@ -1,10 +1,11 @@
 # Important: you have to manually delete mpi* from the /envs/optwrf/bin dir
-name: optwrf_magma
+name: optwrf
 channels:
   - defaults
   - conda-forge
 dependencies:
   - cartopy
+  - dask
   - esmpy=7.1.0
   - nco
   - netCDF4
@@ -17,5 +18,5 @@ dependencies:
   - siphon
   - wrf-python
   - xarray
-  - xesmf
+#  - xesmf
 #  - metpy

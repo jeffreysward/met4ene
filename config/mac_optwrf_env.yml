@@ -5,6 +5,7 @@ channels:
   - conda-forge
 dependencies:
   - cartopy
+  - dask
   - esmpy=7.1.0
   - jupyter
   - nco
