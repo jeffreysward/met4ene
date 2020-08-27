@@ -1,13 +1,12 @@
 # Important: you have to manually delete mpi* from the /envs/optwrf/bin dir
 name: optwrf
 channels:
-  - defaults
   - conda-forge
 dependencies:
   - cartopy
   - dask
-  - esmf=8.0.1=mpi_openmpi_hda7c4e6_0
-  - esmpy=8.0.1=mpi_openmpi_py38h51f2404_0
+  - esmf=8.0.1
+  - esmpy=8.0.1
   - nco
   - netCDF4
   - pip
