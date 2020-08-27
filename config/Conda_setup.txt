@@ -16,3 +16,12 @@ conda install -c conda-forge -c ncar geocat-comp  # New NCL for python package
 # (e.g. in conda/envs/runwrf/bin run 'rm mpi*')!!!
 conda install -c conda-forge xesmf esmpy=7.1.0
 conda install -c anaconda basemap
+
+
+#THE REAL STEPS FOR CREATING THE OPTWRF CONDA ENVIRONMENT (in progress...)
+1. Navigate to the ~/met4ene/config directory
+2. Run `conda env create -f environment.yml`
+3. Navigate to ~/met4ene/optwrf directory
+4. Run `pip install -e .`
+5. Navigate to ~/pvlib-python directory
+6. Run `pip install -e .`

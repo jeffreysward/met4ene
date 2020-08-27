@@ -996,7 +996,7 @@ class WRFModel:
 
         first = True
         for timestr in era_ssrd_raw.forecast_initial_time:
-            ssrd_slice = era_ssrd_raw.sel(forecast_initial_time=timestr)
+            ssrd_slice = era_ssrd_raw.sel(forecast_initial_time=timestr.dt.strftime('%Y-%m-%d %H'))
             ssrd_slice = ssrd_slice.assign_coords(forecast_hour=pd.date_range(start=timestr.values, freq='H',
                                                                               periods=(len(ssrd_slice.forecast_hour))))
             ssrd_slice = ssrd_slice.rename({'forecast_hour': 'Time'})
@@ -1464,7 +1464,10 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     wrfdata['wpd_regrid'] = wrf_wpd_regrid
 
     # Clean up regridding scripts if necessary
-    regridder.clean_weight_file()
+    try:
+        regridder.clean_weight_file()
+    except AttributeError:
+        pass
 
     return wrfdata, eradata
 
@@ -1486,7 +1489,7 @@ def wrf_era5_regrid_pyresample(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/
         print(f'\nType: {type(data.Time)}\n')
         for timestr in data.Time:
             # Select the time slice from xarray
-            data_slice = data[var].sel(Time=timestr.values)
+            data_slice = data[var].sel(Time=timestr.dt.strftime('%Y-%m-%d %H'))
             # Regrid with a nearest neighbor algorithm
             regridded_data_slice = prs.kd_tree.resample_nearest(source_def, data_slice.values,
                                                                 target_def, radius_of_influence=25000, fill_value=None)

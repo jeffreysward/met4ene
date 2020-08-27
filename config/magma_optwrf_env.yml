@@ -6,9 +6,11 @@ channels:
 dependencies:
   - cartopy
   - dask
-  - esmpy=7.1.0
+  - esmf=8.0.1=mpi_openmpi_hda7c4e6_0
+  - esmpy=8.0.1=mpi_openmpi_py38h51f2404_0
   - nco
   - netCDF4
+  - pip
   - pyresample
   - python=3.7
   - pytest
@@ -18,5 +20,5 @@ dependencies:
   - siphon
   - wrf-python
   - xarray
-#  - xesmf
-#  - metpy
+  - pip:
+    - git+https://github.com/pangeo-data/xESMF.git
