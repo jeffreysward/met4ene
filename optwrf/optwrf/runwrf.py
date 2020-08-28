@@ -1028,7 +1028,7 @@ class WRFModel:
                              + self.forecast_start.strftime('%m') + '.nc'
         era_out.to_netcdf(path=processed_era_file)
 
-    def wrf_era5_diff(self, method='xesmf'):
+    def wrf_era5_diff(self, method='ncl'):
         """
         Computes the difference between the wrf simulation and ERA5
         reanalysis using the xesmf package.
@@ -1043,24 +1043,32 @@ class WRFModel:
             during all time periods in the WRF simulation.
 
         """
-        # Regrid WRF to the ERA5 grid using xesmf
+        # Create a wrapper function to calculate the error for the non-NCL methods
+        def calculate_error_wrapper(wrfdat, eradat):
+            # Calculate the error between the WRF simulation and the ERA5 reanalysis
+            wrfdat = wrf_era5_error(wrfdat, eradat)
+            # Calculate the total error
+            return [0, float(wrfdat['total_ghi_error'].sum().values), float(wrfdat['total_wpd_error'].sum().values)]
+
+        # Regrid WRF to the ERA5 grid using NCL, xesmf, or pyresample
         input_year = self.forecast_start.strftime('%Y')
         input_month = self.forecast_start.strftime('%m')
-        if method == 'xesmf':
+        input_day = self.forecast_start.strftime('%d')
+        if method == 'ncl':
+            error = wrf_era5_regrid_ncl(input_year, input_month, input_day, self.paramstr,
+                                        wrfdir=self.DIR_WRFOUT, eradir=self.DIR_ERA5_ROOT)
+        elif method == 'xesmf':
             wrfdata, eradata = wrf_era5_regrid_xesmf(input_year, input_month,
                                                      wrfdir=self.DIR_WRFOUT, eradir=self.DIR_ERA5_ROOT)
+            error = calculate_error_wrapper(wrfdata, eradata)
         elif method == 'pyresample':
             wrfdata, eradata = wrf_era5_regrid_pyresample(input_year, input_month,
                                                           wrfdir=self.DIR_WRFOUT, eradir=self.DIR_ERA5_ROOT)
+            error = calculate_error_wrapper(wrfdata, eradata)
         else:
             print(f'Invalid regridding method: {method}. Only xesmf and pyresample are currently supported.')
             raise NameError
 
-        # Calculate the error between the WRF simulation and the ERA5 reanalysis
-        wrfdata = wrf_era5_error(wrfdata, eradata)
-
-        # Calculate the total error
-        error = [0, float(wrfdata['total_ghi_error'].sum().values), float(wrfdata['total_wpd_error'].sum().values)]
         if self.verbose:
             print(f'!!! Physics options set {self.paramstr} has total '
                   f'\nghi error {error[1]} and wpd error {error[2]} kW m-2 day-1')
@@ -1385,6 +1393,51 @@ def check_file_status(filepath, filesize):
     sys.stdout.flush()
 
 
+def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
+    """
+
+    :param in_yr:
+    :param in_mo:
+    :param in_da:
+    :param paramstr:
+    :param wrfdir:
+    :param eradir:
+    :return:
+
+    """
+    # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
+    CMD_REGRID = 'ncl -Q in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'ERAdir="%s"\' \'paramstr="%s"\' ' \
+                 '%swrf2era_error.ncl |& tee log.regrid' % \
+                 (in_yr, in_mo, in_da, wrfdir, eradir, paramstr, wrfdir)
+    os.system(CMD_REGRID)
+
+    # Extract the total error after the script has run
+    startTimeInt = int(time.time())
+    error_file = wrfdir + 'mae_wrfyera_' + paramstr + '.csv'
+    while not os.path.exists(error_file):
+        log_message = read_last_3lines('log.regrid')
+        if 'fatal' in log_message:
+            print('NCLError: NCL has failed with the following message:')
+            print_last_3lines('log.regrid')
+            mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
+            return mae
+        elif (int(time.time()) - startTimeInt) < 600:
+            print('TimeoutError in wrf2era_error.ncl: took more than 10min to run... returning large error values.')
+            mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
+            return mae
+        else:
+            time.sleep(1)
+    mae = read_last_line(error_file)
+    mae = mae.split(',')
+    mae[-1] = mae[-1].strip()
+    try:
+        error = [float(i) for i in mae]
+    except ValueError:
+        error = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
+
+    return error
+
+
 def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
     """
 
@@ -1463,11 +1516,11 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     wrfdata['ghi_regrid'] = wrf_ghi_regrid
     wrfdata['wpd_regrid'] = wrf_wpd_regrid
 
-    # Clean up regridding scripts if necessary
-    # try:
-    #     regridder.clean_weight_file()
-    # except AttributeError:
-    #     pass
+    # Clean up regridding files if necessary
+    try:
+        regridder.clean_weight_file()
+    except AttributeError:
+        pass
 
     return wrfdata, eradata
 

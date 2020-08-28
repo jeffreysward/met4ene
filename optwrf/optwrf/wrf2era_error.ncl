@@ -13,7 +13,9 @@
 ; which are written to a csv file named mae_wrf2era_<parmstr>.csv.
 ;
 ; Here is a syntax example of calling this script:
-; ncl in_yr=2011 in_mo=01 in_da=10 'WRFdir="/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-10_10mp1lw1sw2lsm2pbl2cu/"' 'paramstr="10mp1lw1sw2lsm2pbl2cu"' wrf2era_error.ncl
+; ncl in_yr=2011 in_mo=01 in_da=10 \
+; 'WRFdir="/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2011-01-10_10mp1lw1sw2lsm2pbl2cu/"' \
+; 'ERAdir = "/share/mzhang/jas983/wrf_data/data/ERA5/"' 'paramstr="10mp1lw1sw2lsm2pbl2cu"' wrf2era_error.ncl
 ;
 ;----------------------------------------------------------------------
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
@@ -88,7 +90,6 @@ begin
     ;print("Last WRF time: " + wrf_datestr(dimsizes(wrf_datestr) - 1))
 
 ;---ERA data file(s)
-    ERAdir   = "/share/mzhang/jas983/wrf_data/data/ERA5/"
     ERAfile  = "ERA5_EastUS_WPD-GHI_" + sprinti("%0.4i", in_yr) + "-" + sprinti("%0.2i", in_mo) +  ".nc"
     if (fileexists(ERAdir+ERAfile)) then
         dfile = addfile(ERAdir+ERAfile, "r")
@@ -150,7 +151,7 @@ begin
     Opt                   = True
 
     ;---"bilinear" is the default. "patch" and "conserve" are other options.
-    Opt@InterpMethod      = "bilinear"           ;;---Change (maybe)
+    Opt@InterpMethod      = "conserve"           ;;---Change (maybe)
 
     Opt@WgtFileName       = "WRF_to_ERA5.nc"
 
@@ -244,18 +245,17 @@ begin
         n := n + 1
     end do        ; END OF TIME LOOP
 
-;---Compute the mean bias and save/print
-    n := n - 1
-    GHI_MAE := sum(GHI_MAE)/n
-    WPD_MAE := sum(WPD_MAE)/n
+;---Compute the total bias and save/print
+    GHI_MAE := sum(GHI_MAE)
+    WPD_MAE := sum(WPD_MAE)
     ;print("The mean bias in GHI is: " + GHI_MAE + " " + GHI@units)
     ;print("The mean bias in WPD is: " + WPD_MAE + " " + WPD@units)
 
-    fields = (/"N/A","GHI_MAE", "WPD_MAE"/)   ; Define field names
-    fields = dq + fields + dq           ; Pre/append quotes to field names
-    header = [/str_join(fields,", ")/]  ; Header is field names separated by commas
-    alist  = [/0, GHI_MAE, WPD_MAE/]       ; List of variables to write
-    format = "%7.2f,%7.2f,%7.2f"              ; Format to use for each variable
+    fields = (/"N/A","GHI_MAE", "WPD_MAE"/)        ; Define field names
+    fields = dq + fields + dq                      ; Pre/append quotes to field names
+    header = [/str_join(fields,", ")/]             ; Header is field names separated by commas
+    alist  = [/0, GHI_MAE, WPD_MAE/]               ; List of variables to write
+    format = "%7.2f,%7.2f,%7.2f"                   ; Format to use for each variable
     write_table(csv_filename, "a", header, "%s")   ; Write header to CSV file.
     write_table(csv_filename, "a", alist, format)  ; Write mixed data to CSV file.
 
