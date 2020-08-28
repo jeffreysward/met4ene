@@ -1465,7 +1465,7 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
 
     # Clean up regridding scripts if necessary
     try:
-        regridder.clean_weight_file()
+        # regridder.clean_weight_file()
     except AttributeError:
         pass
 
