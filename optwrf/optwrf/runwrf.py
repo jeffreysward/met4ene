@@ -1464,10 +1464,10 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     wrfdata['wpd_regrid'] = wrf_wpd_regrid
 
     # Clean up regridding scripts if necessary
-    try:
-        # regridder.clean_weight_file()
-    except AttributeError:
-        pass
+    # try:
+    #     regridder.clean_weight_file()
+    # except AttributeError:
+    #     pass
 
     return wrfdata, eradata
 
