@@ -1502,10 +1502,7 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     eradata['ghi'] = era_ghi
     eradata['wpd'] = era_wpd
 
-    # Generate a random weight file name to keep the threads from getting confused
-    # weight_file = f'bilinear_{random.randint(1,10 ** 10)}'
-    # Do the regridding
-    # regridder = xe.Regridder(wrfdata, eradata, 'bilinear', filename=weight_file)
+    # Do the regridding ('conservative' donesn't currently work)
     regridder = xe.Regridder(wrfdata, eradata, 'bilinear')
     print(f'The file name is: {regridder.filename} and reuse_weights is: {regridder.reuse_weights}')
     regridder = add_matrix_NaNs(regridder)
