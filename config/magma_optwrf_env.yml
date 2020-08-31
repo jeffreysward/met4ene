@@ -3,12 +3,11 @@ name: optwrf
 channels:
   - conda-forge
 dependencies:
-  - cartopy
-  - dask
+  - cartopy=0.17.0
   - esmf=8.0.1
   - esmpy=8.0.1
   - nco
-  - netCDF4
+  - netCDF4=1.5.3
   - pip
   - pyresample
   - python=3.7
@@ -18,6 +17,6 @@ dependencies:
   - scipy
   - siphon
   - wrf-python
-  - xarray
+  - xarray=0.16.0
   - pip:
     - git+https://github.com/pangeo-data/xESMF.git
