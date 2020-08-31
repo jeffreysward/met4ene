@@ -10,18 +10,18 @@ pip install siphon
 # Install optwrf by cloning the met4ene repository and running (pip install -e .) in the directory with setup.py
 conda install -c conda-forge nco  # I did this for the magma2 and MacOS environments only.
 conda install -c conda-forge ncl
-conda install -c conda-forge -c ncar geocat-comp  # New NCL for python package
-# ESMF regridding package -- you get an error if you don't specify esmpy=7.1.0
-# esmpy=7.1.0 installs mpi and mpich into your conda env which is NOT okay on Magma -- you must delete them manually
+conda install -c conda-forge -c ncar geocat-comp  # New NCL for python package (not actually used)
+# esmpy=8.0.1 installs mpi and mpich into your conda env which is NOT okay on Magma -- you must delete them manually
 # (e.g. in conda/envs/runwrf/bin run 'rm mpi*')!!!
-conda install -c conda-forge xesmf esmpy=7.1.0
-conda install -c anaconda basemap
+conda install -c conda-forge xesmf esmpy=8.0.1 (Only used for plotting)
 
 
 #THE REAL STEPS FOR CREATING THE OPTWRF CONDA ENVIRONMENT (in progress...)
-1. Navigate to the ~/met4ene/config directory
-2. Run `conda env create -f environment.yml`
-3. Navigate to ~/met4ene/optwrf directory
+1. Navigate to ~/met4ene/config
+2. Run `conda env create -f <computer>_optwrf_env.yml`
+3. Navigate to ~/met4ene/optwrf
 4. Run `pip install -e .`
 5. Navigate to ~/pvlib-python directory
 6. Run `pip install -e .`
+7. Navigate to ~/conda/envs/optwrf/bin
+8. Run 'rm mpi*'

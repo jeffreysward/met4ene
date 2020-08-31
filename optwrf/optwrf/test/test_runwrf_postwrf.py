@@ -44,6 +44,26 @@ def test_process_era5_data():
     assert os.path.exists(processed_era_file) == 1
 
 
+def test_wrf_era5_diff_ncl():
+    if [on_aws, on_cheyenne, on_magma].count(True) is 0:
+        print('\n!!!Not running test_wrf_era5_diff -- switch to Magma, Cheyenne, or AWS.')
+        return
+    wrf_sim = WRFModel(param_ids, start_date, end_date)
+    processed_wrfout_file = wrf_sim.DIR_WRFOUT + 'wrfout_processed_d01.nc'
+    ERA5_ROOT = '/share/mzhang/jas983/wrf_data/data/ERA5/'
+    processed_era_file = ERA5_ROOT + 'ERA5_EastUS_WPD-GHI_' \
+                         + wrf_sim.forecast_start.strftime('%Y') + '-' \
+                         + wrf_sim.forecast_start.strftime('%m') + '.nc'
+
+    if not os.path.exists(processed_wrfout_file):
+        wrf_sim.process_wrfout_data()
+    if not os.path.exists(processed_era_file):
+        wrf_sim.process_era5_data()
+    mae = wrf_sim.wrf_era5_diff(method='ncl')
+    total_error = sum(mae)
+    assert total_error >= 0
+
+
 def test_wrf_era5_diff_xesmf():
     if [on_aws, on_cheyenne, on_magma].count(True) is 0:
         print('\n!!!Not running test_wrf_era5_diff -- switch to Magma, Cheyenne, or AWS.')
