@@ -37,8 +37,8 @@ begin
     end if
 
 ;---Get wrf variable(s) to regrid, and format them for NCL.
-    wrf_lat = sfile->XLAT
-    wrf_lon = sfile->XLONG
+    wrf_lat = sfile->lat
+    wrf_lon = sfile->lon
     wrf_time_raw = sfile->Times
     ;---The Times variable from wrf in datetime64 python format; NCL requires integer
     wrf_time = toint(wrf_time_raw)
