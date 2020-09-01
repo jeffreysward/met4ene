@@ -1,0 +1,59 @@
+attrs @ file:///home/conda/feedstock_root/build_artifacts/attrs_1597959372343/work
+beautifulsoup4 @ file:///home/conda/feedstock_root/build_artifacts/beautifulsoup4_1597679909012/work
+brotlipy==0.7.0
+Cartopy @ file:///home/conda/feedstock_root/build_artifacts/cartopy_1596899864375/work
+certifi==2020.6.20
+cffi @ file:///home/conda/feedstock_root/build_artifacts/cffi_1595805535531/work
+cftime @ file:///home/conda/feedstock_root/build_artifacts/cftime_1595215618295/work
+chardet==3.0.4
+configobj==5.0.6
+cryptography @ file:///home/conda/feedstock_root/build_artifacts/cryptography_1598621005849/work
+cycler==0.10.0
+ESMPy==8.0.0
+GDAL==3.1.2
+idna @ file:///home/conda/feedstock_root/build_artifacts/idna_1593328102638/work
+importlib-metadata @ file:///home/conda/feedstock_root/build_artifacts/importlib-metadata_1593211369179/work
+iniconfig @ file:///home/conda/feedstock_root/build_artifacts/iniconfig_1596221474428/work
+kiwisolver==1.2.0
+matplotlib @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-base_1597952254444/work
+more-itertools @ file:///home/conda/feedstock_root/build_artifacts/more-itertools_1598643641143/work
+mpi4py==3.0.3
+netCDF4 @ file:///home/conda/feedstock_root/build_artifacts/netcdf4_1598211496337/work
+numpy @ file:///home/conda/feedstock_root/build_artifacts/numpy_1597938346492/work
+olefile==0.46
+-e git+git@github.com:jeffreysward/met4ene.git@b092617b4a83cf4443803c80bd8f182806bfe89c#egg=optwrf&subdirectory=optwrf
+OWSLib @ file:///home/conda/feedstock_root/build_artifacts/owslib_1591376955812/work
+packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_1589925210001/work
+pandas @ file:///home/conda/feedstock_root/build_artifacts/pandas_1598294454723/work
+Pillow @ file:///home/conda/feedstock_root/build_artifacts/pillow_1594213010297/work
+pluggy @ file:///home/conda/feedstock_root/build_artifacts/pluggy_1592827471208/work
+protobuf==3.13.0
+-e git+git@github.com:jeffreysward/pvlib-python.git@920d39f1876748db773b579992efd9cd4c50cb0f#egg=pvlib
+py @ file:///home/conda/feedstock_root/build_artifacts/py_1593088446458/work
+pycparser @ file:///home/conda/feedstock_root/build_artifacts/pycparser_1593275161868/work
+pyepsg==0.4.0
+pykdtree==1.3.1
+pyOpenSSL==19.1.0
+pyparsing==2.4.7
+pyproj @ file:///home/conda/feedstock_root/build_artifacts/pyproj_1595910431008/work
+pyresample @ file:///home/conda/feedstock_root/build_artifacts/pyresample_1591820083528/work
+pyshp==2.1.0
+PySocks==1.7.1
+pytest==6.0.1
+python-dateutil==2.8.1
+pytz==2020.1
+PyYAML==5.3.1
+requests @ file:///home/conda/feedstock_root/build_artifacts/requests_1592425495151/work
+scipy @ file:///home/conda/feedstock_root/build_artifacts/scipy_1595583586868/work
+Shapely @ file:///home/conda/feedstock_root/build_artifacts/shapely_1597990519654/work
+siphon @ file:///home/conda/feedstock_root/build_artifacts/siphon_1598222408419/work
+six @ file:///home/conda/feedstock_root/build_artifacts/six_1590081179328/work
+soupsieve @ file:///home/conda/feedstock_root/build_artifacts/soupsieve_1597680516047/work
+toml @ file:///home/conda/feedstock_root/build_artifacts/toml_1589469402899/work
+tornado==6.0.4
+urllib3 @ file:///home/conda/feedstock_root/build_artifacts/urllib3_1595434816409/work
+wrapt==1.12.1
+wrf-python==1.3.2
+xarray @ file:///home/conda/feedstock_root/build_artifacts/xarray_1594532077462/work
+xesmf @ git+https://github.com/pangeo-data/xESMF.git@8494718b2ffc831178714cba537aec20dea7afb8
+zipp==3.1.0
