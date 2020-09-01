@@ -976,6 +976,8 @@ class WRFModel:
         era_100v = xr.open_dataset(erafile_100v)
         era_100wind = xr.merge([era_100u, era_100v])
         era_100wind = era_100wind.drop('utc_date')
+        era_100wind = era_100wind.rename({'time': 'Time'})
+        print(f'era_100wind: {era_100wind}')
 
         # Read in the ssrd files using the xarray open_dataset method
         era_ssrd1 = xr.open_dataset(erafile_ssrd1)
@@ -1014,6 +1016,7 @@ class WRFModel:
 
         # Combine the wind power density and ghi datasets
         era_out = xr.merge([era_100wind, era_ssrd])
+        print(f'era_out: {era_out}')
 
         # Slice the dataset to only one month (UTC)
         first_hour = self.forecast_start.strftime('%Y') + '-' + self.forecast_start.strftime('%m') \

@@ -103,7 +103,7 @@ begin
     ;---Get variables to compare with regridded WRF variables.
     ERA_lat  = dfile->latitude
     ERA_lon  = dfile->longitude
-    ERA_time = dfile->time
+    ERA_time = dfile->Time
     ;---Read in ERA_GHI, convert from W m-2 to kW m-2, and reset the default _FillValue
     ERA_GHI  = dfile->GHI
     ERA_GHI  = ERA_GHI/1000
