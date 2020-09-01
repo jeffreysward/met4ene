@@ -294,7 +294,7 @@ def get_fitness(param_ids, verbose=False):
 
 
 def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
-                    bc_data='ERA', n_domains=1, correction_factor=2.907987759368731e-7,
+                    bc_data='ERA', n_domains=1, correction_factor=0.0004218304553577255,
                     setup_yaml='dirpath.yml', disable_timeout=False, verbose=False):
     """
     Using the input physics parameters, date, boundary condition, and domain data,

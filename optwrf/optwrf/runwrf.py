@@ -1436,6 +1436,20 @@ def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/sha
     except ValueError:
         error = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
 
+    # Clean up extraneous files that wrf2era_error.ncl created
+    regridding_files = ['source_grid_file.nc',
+                        'destination_grid_file.nc',
+                        'log.regrid',
+                        'PET0.RegridWeightGen.Log',
+                        'WRF_to_ERA5.nc'
+                        ]
+    cmd_rm = 'rm %s'
+    for file in regridding_files:
+        try:
+            os.system(cmd_rm % file)
+        except FileNotFoundError:
+            print(f'WARNING: expected regridding file ({file}) was not deleted.')
+
     return error
 
 
