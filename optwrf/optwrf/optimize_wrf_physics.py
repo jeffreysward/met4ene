@@ -375,19 +375,19 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     # Compute the error between WRF run and ERA5 dataset and return fitness
     if success:
         mae = wrf_sim.wrf_era5_diff()
-        ghi_mean_error = mae[1]
-        wpd_mean_error = mae[2]
+        ghi_total_error = mae[1]
+        wpd_total_error = mae[2]
         daylight_factor = hf.daylight_frac(start_date)  # daylight fraction
-        fitness = daylight_factor * ghi_mean_error + correction_factor * wpd_mean_error
+        fitness = daylight_factor * ghi_total_error + correction_factor * wpd_total_error
         if verbose:
             print(f'!!! Physics options set {param_ids} has fitness {fitness}')
 
     else:
-        ghi_mean_error = 6.022 * 10 ** 23
-        wpd_mean_error = 6.022 * 10 ** 23
+        ghi_total_error = 6.022 * 10 ** 23
+        wpd_total_error = 6.022 * 10 ** 23
         fitness = 6.022 * 10 ** 23
 
-    return fitness, ghi_mean_error, wpd_mean_error, runtime
+    return fitness, ghi_total_error, wpd_total_error, runtime
 
 
 def run_simplega(pop_size, n_generations, elite_pct=0.08, testing=False,
