@@ -160,7 +160,7 @@ class WRFModel:
             complete = False
             failed = False
         if failed:
-            print(f'ERROR: {program} has failed. Last message was:\n{msg}')
+            print(f'\nRunwrfError: {program} has failed. Last message was:\n{msg}')
             return 'failed'
         elif complete:
             return 'complete'
@@ -1032,14 +1032,16 @@ class WRFModel:
     def wrf_era5_diff(self, method='ncl'):
         """
         Computes the difference between the wrf simulation and ERA5
-        reanalysis using the xesmf package.
+        reanalysis using NCL, xESMF, or PyResample.
 
         This function calls sub-functions that read the previously-processed ERA5 and wrfout files,
         regrids the wrfout global horizontal irradiance (GHI) and wind
         power density (WPD) to match that of the ERA5 data, and then computes
         the difference across the entire d01 WRF domain for every time period.
 
-        :return total_error: list
+        :param method: str
+            Identifying the regridding method ('ncl', 'xesmf', and 'pyresample' are supported).
+        :return error: list
             Sum of the absolute error accumulated in each grid cell
             during all time periods in the WRF simulation.
 
@@ -1396,6 +1398,17 @@ def check_file_status(filepath, filesize):
 
 def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
     """
+    Converts (regrids) the WRF grid to the ERA5 grid and calculates the total absolute error
+    between the global horizonal irradiance (GHI) and wind power density (WPD) in kW -m -2.
+
+    This function is really just a python wrapper for the NCL script i.e., this function calls
+    the NCL script wrf2era_error.ncl which calculates the errors in GHI and WPD using conservative
+    regridding and then writes these values to a CSV file read by this script.
+
+    This obviously not the most elegant solution to this problem, but the sad reality is that,
+    currently, no python packages exist that interface well with esmpy in a HPC environment.
+    The promising new packages is xESMF, but it doesn't work with python's concurrent.futures
+    module currently (see wrf_era5_regrid_xesmf).
 
     :param in_yr:
     :param in_mo:
@@ -1403,7 +1416,9 @@ def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/sha
     :param paramstr:
     :param wrfdir:
     :param eradir:
-    :return:
+    :return error: list
+            Sum of the absolute error in GHI (index=1) and WPD (index=2) accumulated in each grid cell
+            during all time periods in the WRF simulation. The zeroth index is a placeholder.
 
     """
     # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis

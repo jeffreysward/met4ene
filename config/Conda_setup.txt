@@ -1,27 +1,10 @@
-# Setup instructions for runwrf conda environment
-conda create --name runwrf python=3.7
-pip install -U pytest
-pip install PyYAML
-pip install requests
-pip install jupyter
-conda install -c conda-forge xarray cartopy wrf-python pynio pseudonetcdf
-pip install siphon
-# Install pvlib-python by cloning the repository and running (pip install -e .) in the directory with setup.py
-# Install optwrf by cloning the met4ene repository and running (pip install -e .) in the directory with setup.py
-conda install -c conda-forge nco  # I did this for the magma2 and MacOS environments only.
-conda install -c conda-forge ncl
-conda install -c conda-forge -c ncar geocat-comp  # New NCL for python package (not actually used)
-# esmpy=8.0.1 installs mpi and mpich into your conda env which is NOT okay on Magma -- you must delete them manually
-# (e.g. in conda/envs/runwrf/bin run 'rm mpi*')!!!
-conda install -c conda-forge xesmf esmpy=8.0.1 (Only used for plotting)
-
-
-#THE REAL STEPS FOR CREATING THE OPTWRF CONDA ENVIRONMENT (in progress...)
+#Use these steps to create the optwrf conda environment
 1. Navigate to ~/met4ene/config
 2. Run `conda env create -f <computer>_optwrf_env.yml`
 3. Navigate to ~/met4ene/optwrf
-4. Run `pip install -e .`
+4. Run `pip install -e .` (Install in edit mode)
 5. Navigate to ~/pvlib-python directory
-6. Run `pip install -e .`
+6. Run `pip install -e .` (Install in edit mode)
 7. Navigate to ~/conda/envs/optwrf/bin
-8. Run 'rm mpi*'
+8. Run 'rm mpi*' (if you fail to do this, WRF will not work properly as it was
+   compiled with executables on the HPC system rather than the one's installed by conda.)
