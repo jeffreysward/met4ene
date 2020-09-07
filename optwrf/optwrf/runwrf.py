@@ -747,6 +747,7 @@ class WRFModel:
             # Read in the wrfout file using the netCDF4.Dataset method
             netcdf_data = netCDF4.Dataset(datapath)
         except FileNotFoundError:
+            time.sleep(10)
             # Rename the wrfout files.
             for n in range(1, self.n_domains + 1):
                 os.system(self.CMD_MV % (self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '_'
