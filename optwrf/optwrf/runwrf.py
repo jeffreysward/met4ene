@@ -740,12 +740,21 @@ class WRFModel:
         data to be easily compatible with other methods, and writes the data to a NetCDF file.
 
         """
-
         # Absolute path to wrfout data file
         datapath = self.DIR_WRFOUT + 'wrfout_d01.nc'
 
-        # Read in the wrfout file using the netCDF4.Dataset method (I think you can also do this with an xarray method)
-        netcdf_data = netCDF4.Dataset(datapath)
+        try:
+            # Read in the wrfout file using the netCDF4.Dataset method
+            netcdf_data = netCDF4.Dataset(datapath)
+        except FileNotFoundError:
+            # Rename the wrfout files.
+            for n in range(1, self.n_domains + 1):
+                os.system(self.CMD_MV % (self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '_'
+                                         + self.forecast_start.strftime('%Y') + '-'
+                                         + self.forecast_start.strftime('%m') + '-'
+                                         + self.forecast_start.strftime('%d') + '_00:00:00',
+                                         self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '.nc'))
+            netcdf_data = netCDF4.Dataset(datapath)
 
         # Create an xarray.Dataset from the wrf qurery_variables.
         query_variables = [
