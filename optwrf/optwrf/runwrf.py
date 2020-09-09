@@ -1056,6 +1056,9 @@ class WRFModel:
             during all time periods in the WRF simulation.
 
         """
+        # I'M DOING THIS FOR DEBUGGING; IT SHOULD BE REMOVED SOON
+        self.verbose = True
+
         # Create a wrapper function to calculate the error for the non-NCL methods
         def calculate_error_wrapper(wrfdat, eradat):
             # Calculate the error between the WRF simulation and the ERA5 reanalysis
@@ -1435,6 +1438,7 @@ def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/sha
     CMD_REGRID = 'ncl -Q in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'ERAdir="%s"\' \'paramstr="%s"\' ' \
                  '%swrf2era_error.ncl |& tee log.regrid' % \
                  (in_yr, in_mo, in_da, wrfdir, eradir, paramstr, wrfdir)
+    print(f'Running regridding in: {wrfdir}')
     os.system(CMD_REGRID)
 
     # Extract the total error after the script has run
@@ -1460,20 +1464,6 @@ def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/sha
         error = [float(i) for i in mae]
     except ValueError:
         error = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
-
-    # Clean up extraneous files that wrf2era_error.ncl created
-    regridding_files = ['source_grid_file.nc',
-                        'destination_grid_file.nc',
-                        'log.regrid',
-                        'PET0.RegridWeightGen.Log',
-                        'WRF_to_ERA5.nc'
-                        ]
-    cmd_rm = 'rm %s'
-    for file in regridding_files:
-        try:
-            os.system(cmd_rm % file)
-        except FileNotFoundError:
-            print(f'WARNING: expected regridding file ({file}) was not deleted.')
 
     return error
 
