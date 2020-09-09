@@ -11,7 +11,7 @@ import optwrf.optimize_wrf_physics as owp
 
 # Name of the csv file and optwrf database
 #csv_outfile = 'optwrf_database.csv'
-csv_outfile = 'optwrf_database_061520.csv'
+csv_outfile = 'optwrf_database_090820.csv'
 #sql_database = 'optwrf.db'
 sql_database = 'optwrf.db'
 
