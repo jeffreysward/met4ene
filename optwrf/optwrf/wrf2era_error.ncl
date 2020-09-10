@@ -162,6 +162,7 @@ begin
 
     Opt@DstGridLat        = ERA_lat           ; destination grid
     Opt@DstGridLon        = ERA_lon
+    Opt@DstGridType       = "rectilinear"
     Opt@DstRegional       = True              ;;--Change (maybe)
 ;    Opt@DstMask2D = where(.not.ismissing(ERA_lat).and.\
 ;                          .not.ismissing(ERA_lon),1,0) ; Necessary if lat/lon
@@ -177,8 +178,8 @@ begin
     ;Opt@RemoveDstFile     = True
     ;Opt@RemoveWgtFile     = True
     ;Opt@RemovePETLog      = True
-;    Opt@PrintTimings      = True
-    ;Opt@Debug             = True
+    ;Opt@PrintTimings      = True
+    Opt@Debug             = True
 
 ;---Do the regridding
     GHI_regrid = ESMF_regrid(GHI,Opt)
