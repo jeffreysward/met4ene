@@ -334,7 +334,12 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
                        bc_data=bc_data, n_domains=n_domains, setup_yaml=setup_yaml, verbose=verbose)
 
     # Check to see if WRFModel instance exists; if not, run the WRF model.
-    if not os.path.exists(wrf_sim.DIR_WRFOUT + 'wrfout_d01.nc'):
+    wrfout_file_path = wrf_sim.DIR_WRFOUT + 'wrfout_d01.nc'
+    orig_wrfout_file_path = wrf_sim.DIR_WRFOUT + 'wrfout_d01_' \
+                       + wrf_sim.forecast_start.strftime('%Y') + '-' \
+                       + wrf_sim.forecast_start.strftime('%m') + '-' \
+                       + wrf_sim.forecast_start.strftime('%d') + '_00:00:00'
+    if [os.path.exists(file) for file in [wrfout_file_path, orig_wrfout_file_path]].count(True) is 0:
         # Next, get boundary condition data for the simulation
         # ERA is the only supported data type right now.
         vtable_sfx = wrf_sim.get_bc_data()
