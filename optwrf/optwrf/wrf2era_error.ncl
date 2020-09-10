@@ -167,14 +167,14 @@ begin
 ;                          .not.ismissing(ERA_lon),1,0) ; Necessary if lat/lon
 ;                                                       ; has missing values.
     ;---Use the following 5 options if you want to regenerate the weight file every time.
-    Opt@SrcForceOverwrite = True
-    Opt@DstForceOverwrite = True
-    Opt@RemoveSrcFile     = True
-    Opt@RemoveDstFile     = True
-    Opt@RemoveWgtFile     = True
-    Opt@RemovePETLog      = True
+    ;Opt@SrcForceOverwrite = True
+    ;Opt@DstForceOverwrite = True
+    ;Opt@RemoveSrcFile     = True
+    ;Opt@RemoveDstFile     = True
+    ;Opt@RemoveWgtFile     = True
+    ;Opt@RemovePETLog      = True
 ;    Opt@PrintTimings      = True
-    Opt@Debug             = True
+    ;Opt@Debug             = True
 
 ;---Do the regridding
     GHI_regrid = ESMF_regrid(GHI,Opt)
