@@ -166,7 +166,11 @@ begin
 ;    Opt@DstMask2D = where(.not.ismissing(ERA_lat).and.\
 ;                          .not.ismissing(ERA_lon),1,0) ; Necessary if lat/lon
 ;                                                       ; has missing values.
-    ;---Use the following 5 options if you want to regenerate the weight file every time.
+    ;---Use the following 3 options if you want to reuse EXISTING weight files.
+    Opt@SkipSrcGrid = True
+    Opt@SkipDstGrid = True
+    Opt@SkipWgtGen = True
+    ;---Use the following 5 options if you want to regenerate the weight file every time (HIGH MEMORY!!!)
     ;Opt@SrcForceOverwrite = True
     ;Opt@DstForceOverwrite = True
     ;Opt@RemoveSrcFile     = True
