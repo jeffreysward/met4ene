@@ -179,7 +179,7 @@ begin
     ;Opt@RemoveWgtFile     = True
     ;Opt@RemovePETLog      = True
     ;Opt@PrintTimings      = True
-    Opt@Debug             = True
+    ;Opt@Debug             = True
 
 ;---Do the regridding
     GHI_regrid = ESMF_regrid(GHI,Opt)

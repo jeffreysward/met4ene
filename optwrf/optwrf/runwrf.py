@@ -1440,7 +1440,7 @@ def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/sha
                  (in_yr, in_mo, in_da, wrfdir, eradir, paramstr, wrfdir)
     # Include a random amount of sleep time to ensure staggering of regridding tasks in a restart run.
     # I added this in an effort to subvert using too much memory on the Magma login node (only 30GB available).
-    time.sleep(random.randint(0, 600))
+    # time.sleep(random.randint(300, 1800))
     os.system(CMD_REGRID)
 
     # Extract the total error after the script has run
