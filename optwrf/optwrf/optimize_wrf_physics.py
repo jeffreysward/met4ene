@@ -374,7 +374,9 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
 
     # Postprocess wrfout file and ERA5 data
     if success:
-        wrf_sim.process_wrfout_data()
+        proc_wrfout_file_path = wrf_sim.DIR_WRFOUT + 'wrfout_processed_d01.nc'
+        if not os.path.exists(proc_wrfout_file_path):
+            wrf_sim.process_wrfout_data()
         wrf_sim.process_era5_data()
 
     # Compute the error between WRF run and ERA5 dataset and return fitness

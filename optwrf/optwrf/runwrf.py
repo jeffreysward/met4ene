@@ -1409,7 +1409,8 @@ def check_file_status(filepath, filesize):
     sys.stdout.flush()
 
 
-def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
+def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/',
+                        recalculate=False):
     """
     Converts (regrids) the WRF grid to the ERA5 grid and calculates the total absolute error
     between the global horizonal irradiance (GHI) and wind power density (WPD) in kW -m -2.
@@ -1434,31 +1435,33 @@ def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/sha
             during all time periods in the WRF simulation. The zeroth index is a placeholder.
 
     """
-    # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
-    CMD_REGRID = 'ncl -Q in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'ERAdir="%s"\' \'paramstr="%s"\' ' \
-                 '%swrf2era_error.ncl |& tee log.regrid' % \
-                 (in_yr, in_mo, in_da, wrfdir, eradir, paramstr, wrfdir)
-    # Include a random amount of sleep time to ensure staggering of regridding tasks in a restart run.
-    # I added this in an effort to subvert using too much memory on the Magma login node (only 30GB available).
-    # time.sleep(random.randint(300, 1800))
-    os.system(CMD_REGRID)
-
-    # Extract the total error after the script has run
-    startTimeInt = int(time.time())
+    # Check to see if the regridding function has been run before
     error_file = wrfdir + 'mae_wrfyera_' + paramstr + '.csv'
-    while not os.path.exists(error_file):
-        log_message = read_last_3lines('log.regrid')
-        if 'fatal' in log_message:
-            print('NCLError: NCL has failed with the following message:')
-            print_last_3lines('log.regrid')
-            mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
-            return mae
-        elif (int(time.time()) - startTimeInt) < 600:
-            print('TimeoutError in wrf2era_error.ncl: took more than 10min to run... returning large error values.')
-            mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
-            return mae
-        else:
-            time.sleep(1)
+    if not os.path.exists(error_file) or recalculate:
+        # Run the NCL script that computes the error between the WRF run and the ERA5 surface analysis
+        CMD_REGRID = 'ncl -Q in_yr=%s in_mo=%s in_da=%s \'WRFdir="%s"\' \'ERAdir="%s"\' \'paramstr="%s"\' ' \
+                     '%swrf2era_error.ncl' % \
+                     (in_yr, in_mo, in_da, wrfdir, eradir, paramstr, wrfdir)
+        # Include a random amount of sleep time to ensure staggering of regridding tasks in a restart run.
+        # I added this in an effort to subvert using too much memory on the Magma login node (only 30GB available).
+        # time.sleep(random.randint(300, 1800))
+        os.system(CMD_REGRID)
+
+        # Extract the total error after the script has run
+        startTimeInt = int(time.time())
+        while not os.path.exists(error_file):
+            log_message = read_last_3lines('log.regrid')
+            if 'fatal' in log_message:
+                print('NCLError: NCL has failed with the following message:')
+                print_last_3lines('log.regrid')
+                mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
+                return mae
+            elif (int(time.time()) - startTimeInt) < 600:
+                print('TimeoutError in wrf2era_error.ncl: took more than 10min to run... returning large error values.')
+                mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
+                return mae
+            else:
+                time.sleep(1)
     mae = read_last_line(error_file)
     mae = mae.split(',')
     mae[-1] = mae[-1].strip()
