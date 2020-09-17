@@ -285,7 +285,7 @@ def get_fitness(param_ids, verbose=False):
     start_time = datetime.datetime.now()
     if verbose:
         print('Calculating fitness for: {}'.format(param_ids))
-    time.sleep(180)
+    time.sleep(120)
     fitness = random.randrange(0, 100)
     error1 = random.randrange(0, 100)
     error2 = random.randrange(0, 100)
