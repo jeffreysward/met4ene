@@ -780,7 +780,7 @@ class WRFModel:
                     try:
                         met_data = xr.merge([met_data, var])
                     except ValueError:
-                        met_data = met_data.drop_vars('Time')
+                        met_data = met_data.drop_vars('Time', errors='ignore')
                         met_data = xr.merge([met_data, var])
 
         variables = {
