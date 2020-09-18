@@ -780,7 +780,8 @@ class WRFModel:
                     try:
                         met_data = xr.merge([met_data, var])
                     except ValueError:
-                        met_data = met_data.drop_vars('Time', errors='ignore')
+                        print(f'There is something strange going on in: {self.DIR_WRFOUT}')
+                        print(f'The variable is {key}, and it looks like\n{var}')
                         met_data = xr.merge([met_data, var])
 
         variables = {
