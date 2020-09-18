@@ -747,15 +747,8 @@ class WRFModel:
             # Read in the wrfout file using the netCDF4.Dataset method
             netcdf_data = netCDF4.Dataset(datapath)
         except FileNotFoundError:
-            time.sleep(10)
-            # Rename the wrfout files.
-            for n in range(1, self.n_domains + 1):
-                os.system(self.CMD_MV % (self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '_'
-                                         + self.forecast_start.strftime('%Y') + '-'
-                                         + self.forecast_start.strftime('%m') + '-'
-                                         + self.forecast_start.strftime('%d') + '_00:00:00',
-                                         self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '.nc'))
-            netcdf_data = netCDF4.Dataset(datapath)
+            # This means that WRF probably either failed or timed out.
+            return False
 
         # Create an xarray.Dataset from the wrf qurery_variables.
         query_variables = [
@@ -780,9 +773,9 @@ class WRFModel:
                     try:
                         met_data = xr.merge([met_data, var])
                     except ValueError:
-                        print(f'There is something strange going on in: {self.DIR_WRFOUT}')
-                        print(f'The variable is {key}, and it looks like\n{var}')
-                        met_data = xr.merge([met_data, var])
+                        print(f'A ValueError was raised in runwrf.process_wrfout_data()\n'
+                              f'There is something strange going on in: {self.DIR_WRFOUT}')
+                        return False
 
         variables = {
             'times': 'Times',
@@ -849,6 +842,8 @@ class WRFModel:
         # Write the processed data to a wrfout NetCDF file
         new_filename = self.DIR_WRFOUT + 'wrfout_processed_d01.nc'
         met_data.to_netcdf(path=new_filename)
+
+        return True
 
     def process_era5_data(self):
         """
