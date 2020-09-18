@@ -58,7 +58,7 @@ def test_get_wrf_fitness():
 
 def test_run_simplega():
     """Tests the genetic algroithm framework without running WRF."""
-    WRFga_winner = run_simplega(pop_size=200, n_generations=1, testing=True)
+    WRFga_winner = run_simplega(pop_size=100, n_generations=1, testing=True)
     assert WRFga_winner.Fitness >= 0
 
 
