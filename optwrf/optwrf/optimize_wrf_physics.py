@@ -285,7 +285,7 @@ def get_fitness(param_ids, verbose=False):
     start_time = datetime.datetime.now()
     if verbose:
         print('Calculating fitness for: {}'.format(param_ids))
-    time.sleep(60)
+    time.sleep(1)
     fitness = random.randrange(0, 100)
     error1 = random.randrange(0, 100)
     error2 = random.randrange(0, 100)
@@ -495,10 +495,9 @@ def run_simplega(pop_size, n_generations, elite_pct=0.08, testing=False,
                     ii += 1
             except KeyboardInterrupt:
                 # cancel() returns False if it's already done and True if was able to cancel it;
-                # we don't need that return value
+                # we don't need that return value, so we ignore it with the underscore.
                 for future in fitness_threads:
-                    status = future.cancel()
-                    print(f'Thread {future} was cancelled {status} (Also returns false if it was already done).')
+                    _ = future.cancel()
         fn_display_pop(pop)
 
     # ------> BEGINNING OF SIMPLEGA <------ #
