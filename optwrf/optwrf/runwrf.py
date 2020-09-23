@@ -294,9 +294,12 @@ class WRFModel:
             required to run WPS.
 
         """
-        # Clean potential old simulation dir and remake the dir
-        hf.remove_dir(self.DIR_WRFOUT)
-        os.makedirs(self.DIR_WRFOUT, 0o755)
+        # Make the simulation directory; delete the old one if it exists
+        try:
+            os.makedirs(self.DIR_WRFOUT, 0o755)
+        except FileExistsError:
+            hf.remove_dir(self.DIR_WRFOUT)
+            os.makedirs(self.DIR_WRFOUT, 0o755)
 
         # Link WRF tables, data, and executables.
         cmd = self.CMD_LN % (self.DIR_WRF + 'run/aerosol*', self.DIR_WRFOUT)
