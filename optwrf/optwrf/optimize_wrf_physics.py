@@ -345,15 +345,17 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         vtable_sfx = wrf_sim.get_bc_data()
 
         # Setup the working directory to run the simulation
-        wrf_sim.wrfdir_setup(vtable_sfx)
+        success = wrf_sim.wrfdir_setup(vtable_sfx)
 
         # Prepare the namelists
-        wrf_sim.prepare_namelists()
+        if success:
+            success = wrf_sim.prepare_namelists()
 
         # Run WPS
-        success = wrf_sim.run_wps(disable_timeout)
-        if verbose:
-            print(f'WPS ran successfully? {success}')
+        if success:
+            success = wrf_sim.run_wps(disable_timeout)
+            if verbose:
+                print(f'WPS ran successfully? {success}')
 
         # Run REAL
         if success:

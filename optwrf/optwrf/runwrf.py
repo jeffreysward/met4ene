@@ -296,10 +296,12 @@ class WRFModel:
         """
         # Make the simulation directory; delete the old one if it exists
         try:
-            os.makedirs(self.DIR_WRFOUT, 0o755)
-        except FileExistsError:
             hf.remove_dir(self.DIR_WRFOUT)
             os.makedirs(self.DIR_WRFOUT, 0o755)
+        except FileExistsError as e:
+            print(f'{e.errno} {e}')
+            print(f'OptWRFError in wrfdir_setup; skipping this simulaion.')
+            return False
 
         # Link WRF tables, data, and executables.
         cmd = self.CMD_LN % (self.DIR_WRF + 'run/aerosol*', self.DIR_WRFOUT)
@@ -359,6 +361,7 @@ class WRFModel:
         # Link the regridding script
         cmd = self.CMD_LN % (self.DIR_RUNWRF + 'wrf2era_error.ncl', self.DIR_WRFOUT)
         os.system(cmd)
+        return True
 
     def prepare_namelists(self):
         """
@@ -366,6 +369,7 @@ class WRFModel:
         and physics options to the WPS and/or WRF namelist files.
 
         """
+
         def read_namelist(namelist_file):
             """
             Opens a namelist file within a context manager.
@@ -385,9 +389,9 @@ class WRFModel:
             NAMELIST_WPS = read_namelist('namelist.wps')
             NAMELIST_WRF = read_namelist('namelist.input')
         except IOError as e:
-            print(e.errno)
-            print(e)
-            exit()
+            print(f'{e.errno} {e}')
+            print(f'OptWRFError in prepare_namelists; skipping this simulaion.')
+            return False
 
         # Write the start and end dates to the WPS Namelist
         wps_dates = ' start_date                     = '
@@ -508,6 +512,7 @@ class WRFModel:
             namelist.write(NAMELIST_WRF.replace('%DOMAIN%', wrf_domains))
         if self.verbose:
             print('Done writing WRF namelist!\n')
+        return True
 
     def run_wps(self, disable_timeout=False):
         """
