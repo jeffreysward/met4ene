@@ -754,8 +754,12 @@ class WRFModel:
         try:
             # Read in the wrfout file using the netCDF4.Dataset method
             netcdf_data = netCDF4.Dataset(datapath)
-        except FileNotFoundError:
+        except FileNotFoundError as e:
             # This means that WRF probably either failed or timed out.
+            print(f'OptWRFWarning in process_wrfout_data: missing wrfout data file {datapath}\n'
+                  f'WRF probably failed or timed out -- skipping this simulation.\n'
+                  f'To force this to run, rename the wrfout file in {self.DIR_WRFOUT} to wrfout_d01.nc')
+            print(f'{e.errno} {e}')
             return False
 
         # Create an xarray.Dataset from the wrf qurery_variables.

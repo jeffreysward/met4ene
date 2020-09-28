@@ -378,6 +378,8 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     if success:
         proc_wrfout_file_path = wrf_sim.DIR_WRFOUT + 'wrfout_processed_d01.nc'
         if not os.path.exists(proc_wrfout_file_path):
+            if verbose:
+                print(f'Postprocessing wrfout file.')
             success = wrf_sim.process_wrfout_data()
         wrf_sim.process_era5_data()
 
