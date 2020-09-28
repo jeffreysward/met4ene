@@ -234,8 +234,8 @@ class WRFModel:
             os.makedirs(self.DIR_DATA_TMP, 0o755)
         except FileExistsError as e:
             if self.verbose:
-                print(f'WARNING: the data directory you just deleted and attempted to remake '
-                      f'was likely remade by another thread: {e}')
+                print(f'OptWRFWarning in get_bc_data: the data directory you just deleted and attempted to remake '
+                      f'was likely remade by another thread:\n\t{e}')
 
         # Depending on what computer you are on...
         if self.on_cheyenne:
@@ -682,6 +682,12 @@ class WRFModel:
         :param timeout_hours: integer
             defining the number of hours this method will wait before
             returning a failure (False) flag.
+        :param save_wps_files: boolean (True/False)
+            which tells the program whether or not to save and move the geo_em
+            and met_em files to a permanent location. This is set to False by
+            default because it only needs to be done once per domain, per
+            boundary conditions, per date and is best done before
+            optimize_wrf_physics is run.
         :return: boolean (True/False)
             If runwrf_finish_check for wrf returns 'complete' ('failed'),
             this function returns True (False).
@@ -767,8 +773,8 @@ class WRFModel:
             # This means that WRF probably either failed or timed out.
             print(f'OptWRFWarning in process_wrfout_data: missing wrfout data file {datapath}\n'
                   f'WRF probably failed or timed out -- skipping this simulation.\n'
-                  f'To force this to run, rename the wrfout file in {self.DIR_WRFOUT} to wrfout_d01.nc')
-            print(f'{e.errno} {e}')
+                  f'To force this to run, rename the wrfout file in {self.DIR_WRFOUT} to wrfout_d01.nc\n'
+                  f'\t{e}')
             return False
 
         # Create an xarray.Dataset from the wrf qurery_variables.
@@ -793,9 +799,11 @@ class WRFModel:
                 with xr.set_options(keep_attrs=True):
                     try:
                         met_data = xr.merge([met_data, var])
-                    except ValueError:
-                        print(f'A ValueError was raised in runwrf.process_wrfout_data()\n'
-                              f'There is something strange going on in: {self.DIR_WRFOUT}')
+                    except ValueError as e:
+                        print(f'OptWRFWarning in process_wrfout_data:\n'
+                              f'there is something strange going on in: {self.DIR_WRFOUT};\n'
+                              f'skipping this simulation\n'
+                              f'\t{e}')
                         return False
 
         variables = {
@@ -865,8 +873,9 @@ class WRFModel:
         try:
             met_data.to_netcdf(path=new_filename)
         except KeyError as e:
-            print(f'OptWRFWarning in process_wrfout_data\n{new_filename} not created\n Skipping this sumulation.')
-            print(f'{e.errno} {e}')
+            print(f'OptWRFWarning in process_wrfout_data\n{new_filename} not created;\n'
+                  f'skipping this sumulation.'
+                  f'\t{e}')
             return False
 
         return True
@@ -1082,8 +1091,6 @@ class WRFModel:
             during all time periods in the WRF simulation.
 
         """
-        # I'M DOING THIS FOR DEBUGGING; IT SHOULD BE REMOVED SOON
-        self.verbose = True
 
         # Create a wrapper function to calculate the error for the non-NCL methods
         def calculate_error_wrapper(wrfdat, eradat):
@@ -1112,8 +1119,8 @@ class WRFModel:
             raise NameError
 
         if self.verbose:
-            print(f'!!! Physics options set {self.paramstr} has total '
-                  f'\nghi error {error[1]} and wpd error {error[2]} kW m-2 day-1')
+            print(f'!!! Physics options set {self.paramstr} has total\n'
+                  f'\tghi error {error[1]} and wpd error {error[2]} kW m-2 day-1')
 
         return error
 
@@ -1438,6 +1445,8 @@ def check_file_status(filepath, filesize):
 def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/',
                         recalculate=False):
     """
+    CONSIDER MOVING THIS WITHIN THE WRFModel METHOD?
+
     Converts (regrids) the WRF grid to the ERA5 grid and calculates the total absolute error
     between the global horizonal irradiance (GHI) and wind power density (WPD) in kW -m -2.
 
@@ -1450,15 +1459,24 @@ def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/sha
     The promising new packages is xESMF, but it doesn't work with python's concurrent.futures
     module currently (see wrf_era5_regrid_xesmf).
 
-    :param in_yr:
-    :param in_mo:
-    :param in_da:
-    :param paramstr:
-    :param wrfdir:
-    :param eradir:
+    :param in_yr: string
+        defining the year that's passed to NCL in the form YYYY / %Y (e.g., 2010, 2011, 2012, ...).
+    :param in_mo: string
+        defining the month that's passed to NCL in the form MM / %m (e.g., 01, 02, 03, ..., 12).
+    :param in_da: string
+        defining the day that's passed to NCL in the form DD / %d (e.g., 01, 02, 03, ..., 31).
+    :param paramstr: string
+        containing the six major physics parameterization ids to aid with naming convention.
+        Same as WRFModel.paramstr.
+    :param wrfdir: string
+        defining the location of the wrfout directory. Same as WRFModel.DIR_WRFOUT.
+    :param eradir: string
+        defining the location of the ERA5 data directory.
+    :param recalculate: boolean (True/False)
+        controling if the regridding function should be perfomed anew if the error_file already exists.
     :return error: list
-            Sum of the absolute error in GHI (index=1) and WPD (index=2) accumulated in each grid cell
-            during all time periods in the WRF simulation. The zeroth index is a placeholder.
+        Sum of the absolute error in GHI (index=1) and WPD (index=2) accumulated in each grid cell
+        during all time periods in the WRF simulation. The zeroth index is a placeholder.
 
     """
     # Check to see if the regridding function has been run before
@@ -1478,12 +1496,13 @@ def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/sha
         while not os.path.exists(error_file):
             log_message = read_last_3lines('log.regrid')
             if 'fatal' in log_message:
-                print('NCLError: NCL has failed with the following message:')
+                print('NCLError in wrf_era5_regrid_ncl: NCL has failed with the following message:')
                 print_last_3lines('log.regrid')
+                print('Returning large error values.')
                 mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
                 return mae
             elif (int(time.time()) - startTimeInt) < 600:
-                print('TimeoutError in wrf2era_error.ncl: took more than 10min to run... returning large error values.')
+                print('TimeoutError in wrf2era_error.ncl: took more than 10min to run... Returning large error values.')
                 mae = [0, 6.022 * 10 ** 23, 6.022 * 10 ** 23]
                 return mae
             else:
@@ -1501,6 +1520,10 @@ def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/sha
 
 def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
     """
+    CONSIDER MOVING THIS WITHIN THE WRFModel METHOD?
+
+    Converts (regrids) the WRF grid to the ERA5 grid and calculates the total absolute error
+    between the global horizonal irradiance (GHI) and wind power density (WPD) in kW -m -2.
 
     :param in_yr:
     :param in_mo:
@@ -1585,6 +1608,10 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
 
 def wrf_era5_regrid_pyresample(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
     """
+    CONSIDER MOVING THIS WITHIN THE WRFModel METHOD?
+
+    Converts (regrids) the WRF grid to the ERA5 grid and calculates the total absolute error
+    between the global horizonal irradiance (GHI) and wind power density (WPD) in kW -m -2.
 
     :param in_yr:
     :param in_mo:
@@ -1687,9 +1714,9 @@ def wrf_era5_regrid_pyresample(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/
 def wrf_era5_error(wrfdata, eradata):
     """
 
-    :param wrfdata:
-    :param eradata:
-    :return:
+    :param wrfdata: xarray.DataSet
+    :param eradata: xarray.DataSet
+    :return wrfdata: xarray.DataSet
 
     """
     # Compute the error (absolute difference) between WRF and ERA5 data
