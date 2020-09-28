@@ -38,6 +38,7 @@ import yaml
 from pvlib.wrfcast import WRF
 import optwrf.helper_functions as hf
 from optwrf.wrfparams import ids2str
+from optwrf.wrfparams import flexible_generate
 
 
 class WRFModel:
@@ -61,7 +62,15 @@ class WRFModel:
         if self.verbose:
             print('Forecast starting on: {}'.format(self.forecast_start))
             print('Forecast ending on: {}'.format(self.forecast_end))
+
+        # Ensure that parameters are in the correct format
         self.paramstr = ids2str(self.param_ids)
+        if len(self.param_ids) == 6:
+            self.param_ids = flexible_generate(generate_params=False, mp=self.param_ids[0],
+                                               lw=self.param_ids[1], sw=self.param_ids[2],
+                                               lsm=self.param_ids[3], pbl=self.param_ids[4], cu=self.param_ids[5])
+            if self.verbose:
+                print(f'Final parameters are: {self.param_ids}')
 
         # Determine which computer you are running on
         # to set directories and command aliai
@@ -299,8 +308,8 @@ class WRFModel:
             hf.remove_dir(self.DIR_WRFOUT)
             os.makedirs(self.DIR_WRFOUT, 0o755)
         except FileExistsError as e:
-            print(f'{e.errno} {e}')
             print(f'OptWRFWarning in wrfdir_setup; skipping this simulaion.')
+            print(f'\t{e}')
             return False
 
         # Link WRF tables, data, and executables.
@@ -389,8 +398,8 @@ class WRFModel:
             NAMELIST_WPS = read_namelist('namelist.wps')
             NAMELIST_WRF = read_namelist('namelist.input')
         except IOError as e:
-            print(f'{e.errno} {e}')
             print(f'OptWRFWarning in prepare_namelists; skipping this simulaion.')
+            print(f'\t{e}')
             return False
 
         # Write the start and end dates to the WPS Namelist
