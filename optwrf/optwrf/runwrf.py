@@ -300,7 +300,7 @@ class WRFModel:
             os.makedirs(self.DIR_WRFOUT, 0o755)
         except FileExistsError as e:
             print(f'{e.errno} {e}')
-            print(f'OptWRFError in wrfdir_setup; skipping this simulaion.')
+            print(f'OptWRFWarning in wrfdir_setup; skipping this simulaion.')
             return False
 
         # Link WRF tables, data, and executables.
@@ -390,7 +390,7 @@ class WRFModel:
             NAMELIST_WRF = read_namelist('namelist.input')
         except IOError as e:
             print(f'{e.errno} {e}')
-            print(f'OptWRFError in prepare_namelists; skipping this simulaion.')
+            print(f'OptWRFWarning in prepare_namelists; skipping this simulaion.')
             return False
 
         # Write the start and end dates to the WPS Namelist
@@ -849,7 +849,12 @@ class WRFModel:
 
         # Write the processed data to a wrfout NetCDF file
         new_filename = self.DIR_WRFOUT + 'wrfout_processed_d01.nc'
-        met_data.to_netcdf(path=new_filename)
+        try:
+            met_data.to_netcdf(path=new_filename)
+        except KeyError as e:
+            print(f'OptWRFWarning in process_wrfout_data\n{new_filename} not created\n Skipping this sumulation.')
+            print(f'{e.errno} {e}')
+            return False
 
         return True
 
