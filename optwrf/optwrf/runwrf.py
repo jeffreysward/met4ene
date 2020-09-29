@@ -1016,17 +1016,24 @@ class WRFModel:
                     cmd = self.CMD_RM % file
                     os.system(cmd)
 
-        # Read in the wind files using the xarray open_dataset method
-        era_100u = xr.open_dataset(erafile_100u)
-        era_100v = xr.open_dataset(erafile_100v)
+        # Read in the wind files using the xarray open_dataset method.
+        # Note that the context managers help with tear down and
+        # hopefully keeps other threads from getting locked out of the ERA5 files.
+        with xr.open_dataset(erafile_100u) as ds1:
+            era_100u = ds1.load()
+        with xr.open_dataset(erafile_100v) as ds2:
+            era_100v = ds2.load()
         era_100wind = xr.merge([era_100u, era_100v])
         era_100wind = era_100wind.drop('utc_date')
         era_100wind = era_100wind.rename({'time': 'Time'})
 
         # Read in the ssrd files using the xarray open_dataset method
-        era_ssrd1 = xr.open_dataset(erafile_ssrd1)
-        era_ssrd2 = xr.open_dataset(erafile_ssrd2)
-        era_ssrd3 = xr.open_dataset(erafile_ssrd3)
+        with xr.open_dataset(erafile_ssrd1) as ds3:
+            era_ssrd1 = ds3.load()
+        with xr.open_dataset(erafile_ssrd2) as ds4:
+            era_ssrd2 = ds4.load()
+        with xr.open_dataset(erafile_ssrd3) as ds5:
+            era_ssrd3 = ds5.load()
         era_ssrd_raw = xr.concat([era_ssrd1, era_ssrd2, era_ssrd3], 'forecast_initial_time')
 
         # Calculate the 100m wind speed
