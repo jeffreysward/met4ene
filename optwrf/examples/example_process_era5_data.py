@@ -13,8 +13,8 @@ from optwrf.runwrf import WRFModel
 param_ids = [8, 7, 3, 1, 1, 10, 1]
 
 # Specify the desired start date below
-start_date = 'Dec 11  2011'
-end_date = 'Dec 12 2011'
+start_date = 'Aug 11  2011'
+end_date = 'Aug 12 2011'
 
 # Run get wrf fitness function
 wrf_sim = WRFModel(param_ids, start_date, end_date, verbose=True)

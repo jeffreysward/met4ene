@@ -10,11 +10,11 @@ import optwrf.optimize_wrf_physics as owp
 
 
 # Specify desired physics options set below
-param_ids = [8, 7, 3, 1, 1, 10, 1]
+param_ids = [19, 4, 4, 7, 8, 99]
 
 # Specify the desired start date below
-start_date = 'Dec 11  2011'
-end_date = 'Dec 12 2011'
+start_date = 'Jul 8 2011'
+end_date = 'Jul 9 2011'
 
 # Run get wrf fitness function
 fitness, ghi_mean_error, wpd_mean_error, runtime = owp.get_wrf_fitness(param_ids, start_date, end_date,
