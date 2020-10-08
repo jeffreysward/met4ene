@@ -848,6 +848,7 @@ class WRFModel:
         met_data['wpd'] = wpd
 
         # Fix a bug in how wrfout data is read in -- attributes must be strings to be written to NetCDF
+        # Unfortunately, this causes the attribute to be less useful for post processing...
         for var in met_data.data_vars:
             try:
                 met_data[var].attrs['projection'] = str(met_data[var].attrs['projection'])
