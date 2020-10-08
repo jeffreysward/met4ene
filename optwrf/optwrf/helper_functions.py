@@ -179,6 +179,7 @@ def format_date(in_date):
     """
     for fmt in ('%b %d %Y', '%B %d %Y', '%b %d, %Y', '%B %d, %Y',
                 '%m-%d-%Y', '%m.%d.%Y', '%m/%d/%Y',
+                '%Y-%m-%d', '%Y.%m.%d', '%Y/%m/%d',
                 '%b %d %Y %H', '%B %d %Y %H', '%b %d, %Y %H', '%B %d, %Y %H',
                 '%m-%d-%Y %H', '%m.%d.%Y %H', '%m/%d/%Y %H'):
         try:
