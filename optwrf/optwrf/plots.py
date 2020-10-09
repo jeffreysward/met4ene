@@ -182,7 +182,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
                 if var in ['ghi', 'ghi_error']:
                     contour_levels = np.linspace(0, 0.75, 22)
                 elif var in ['wpd', 'wpd_error']:
-                    contour_levels = np.linspace(0, 10000, 22)
+                    contour_levels = np.linspace(0, 2500, 22)
                 elif var == 'fitness':
                     contour_levels = np.linspace(0, 1.5, 22)
             else:
@@ -250,7 +250,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
         if var in ['ghi', 'ghi_error']:
             contour_levels = np.linspace(0, 0.75, 22)
         elif var in ['wpd', 'wpd_error']:
-            contour_levels = np.linspace(0, 10000, 22)
+            contour_levels = np.linspace(0, 25000, 22)
         elif var == 'fitness':
             contour_levels = np.linspace(0, 1.5, 22)
     else:
