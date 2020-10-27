@@ -6,7 +6,7 @@ Tests the optimize_wrf_physics functions
 import os
 from optwrf.optimize_wrf_physics \
     import get_wrf_fitness, run_simplega, conn_to_db, print_database, sql_to_csv, close_conn_to_db
-from optwrf.runwrf import determine_computer
+from optwrf.helper_functions import determine_computer
 import optwrf.wrfparams as wp
 import optwrf.simplega as sga
 import optwrf.optimize_wrf_physics as owp

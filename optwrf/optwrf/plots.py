@@ -9,6 +9,8 @@ import cartopy.crs as ccrs
 import numpy as np
 import xarray as xr
 import wrf as wrfpy
+
+import optwrf.regridding
 from optwrf import runwrf, helper_functions
 
 
@@ -200,13 +202,13 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
     if var in ['ghi_error', 'wpd_error', 'fitness']:
         input_year = helper_functions.format_date(datestr).strftime('%Y')
         input_month = helper_functions.format_date(datestr).strftime('%m')
-        wrfdat_proc, eradat_proc = runwrf.wrf_era5_regrid_xesmf(input_year,
-                                                                input_month,
-                                                                wrfdir=wrf_dir,
-                                                                eradir=era_dir)
+        wrfdat_proc, eradat_proc = optwrf.regridding.wrf_era5_regrid_xesmf(input_year,
+                                                                           input_month,
+                                                                           wrfdir=wrf_dir,
+                                                                           eradir=era_dir)
 
         # Calculate the error in GHI and WPD
-        wrfdat_proc = runwrf.wrf_era5_error(wrfdat_proc, eradat_proc)
+        wrfdat_proc = optwrf.regridding.wrf_era5_error(wrfdat_proc, eradat_proc)
 
         print(wrfdat_proc)
 
@@ -585,10 +587,10 @@ def wrf_errorandfitness_plot(wrfdata, save_fig=False, wrf_dir='./', era_dir='./'
     # Regrid the wrf GHI and WPD
     input_year = helper_functions.format_date(start_date).strftime('%Y')
     input_month = helper_functions.format_date(start_date).strftime('%m')
-    wrfdata, eradata = runwrf.wrf_era5_regrid_xesmf(input_year, input_month,
-                                                    wrfdir=wrf_dir, eradir=era_dir)
+    wrfdata, eradata = optwrf.regridding.wrf_era5_regrid_xesmf(input_year, input_month,
+                                                               wrfdir=wrf_dir, eradir=era_dir)
     # Calculate the error in GHI and WPD
-    wrfdata = runwrf.wrf_era5_error(wrfdata, eradata)
+    wrfdata = optwrf.regridding.wrf_era5_error(wrfdata, eradata)
 
     # Calculate the fitness
     correction_factor = 0.0004218304553577255

@@ -8,8 +8,12 @@ Known Issues/Wishlist:
 
 import datetime
 import math
+import os
+import sys
 from shutil import rmtree
 import string
+
+import requests
 
 
 def remove_dir(directory, verbose=False):
@@ -187,3 +191,207 @@ def format_date(in_date):
         except ValueError:
             pass
     raise ValueError('No valid date format found; please use a common US format (e.g., Jan 01, 2011 00)')
+
+
+def determine_computer():
+    """
+    Determines which computer you are currently working on.
+    WARNING: this only works for me on magma.
+
+    :return on_aws: boolean
+        True if working on the mzhang AWS account where the group name is 'ec2-user'
+    :return on_cheyenne: boolean
+        True if working on the NCAR Cheyenne super computer where the group name is 'ncar'
+    :return on_magma: boolean
+        True if working on Jeff Sward's account on the Cornell Magma cluster where the group name is 'pug-jas983'
+
+    """
+    if 'GROUP' in os.environ:
+        # Determine if we are on Cheyenne
+        if os.environ['GROUP'] == 'ncar':
+            on_cheyenne = True
+            on_aws = False
+            on_magma = False
+        # Determine if we are on AWS
+        elif os.environ['GROUP'] == 'ec2-user':
+            on_cheyenne = False
+            on_aws = True
+            on_magma = False
+        elif os.environ['GROUP'] == 'pug-jas983':
+            on_cheyenne = False
+            on_aws = False
+            on_magma = True
+        else:
+            on_cheyenne = False
+            on_aws = False
+            on_magma = False
+    else:
+        on_cheyenne = False
+        on_aws = False
+        on_magma = False
+    return on_aws, on_cheyenne, on_magma
+
+
+def read_last_line(file_name):
+    """
+    Reads the last line of a file.
+
+    :param file_name: string
+        Complete path of the file that you would like read.
+    :return last_line: string
+        Last line of the input file.
+
+    """
+    try:
+        with open(file_name, mode='r') as infile:
+            lines = infile.readlines()
+    except IOError:
+        last_line = 'IOEror in read_last_line: this file does not exist.'
+        return last_line
+    try:
+        last_line = lines[-1]
+    except IndexError:
+        last_line = 'IndexError in read_last_line: no last line appears to exist in this file.'
+    return last_line
+
+
+def read_2nd2_last_line(file_name):
+    """
+    Reads the second to last line of a file.
+
+    :param file_name: string
+        Complete path of the file that you would like read.
+    :return: second2_last_line: string
+        Second to last line of the input file.
+
+    """
+    try:
+        with open(file_name, mode='r') as infile:
+            lines = infile.readlines()
+    except IOError:
+        second2_last_line = 'IOError in read_2nd2_last_line: this file does not currently exist.'
+        return second2_last_line
+    try:
+        second2_last_line = lines[-2]
+    except IndexError:
+        second2_last_line = 'IndexError in read_2nd2_last_line: ' \
+                            'there do not appear to be at least two lines in this file.'
+    return second2_last_line
+
+
+def read_last_3lines(file_name):
+    """
+    Reads the last three lines of a file.
+
+    :param file_name: string
+        Complete path of the file that you would like print.
+    :return: last_3lines: string
+        Last three lines of the input file.
+
+    """
+    try:
+        with open(file_name, mode='r') as infile:
+            lines = infile.readlines()
+    except IOError:
+        last_3lines = 'IOError in print_last_3lines: this file does not currently exist.'
+        return last_3lines
+    try:
+        txt = lines[-4:-1]
+        last_3lines = '\n'.join(txt)
+    except IndexError:
+        last_3lines = 'IndexError in print_last_3lines: there do not appear to be at least three lines in this file.'
+        return last_3lines
+    return last_3lines
+
+
+def print_last_3lines(file_name):
+    """
+    Prints the last three lines of a file.
+
+    :param file_name: string
+        Complete path of the file that you would like print.
+
+    """
+    try:
+        with open(file_name, mode='r') as infile:
+            lines = infile.readlines()
+    except IOError:
+        print('IOError in print_last_3lines: this file does not currently exist.')
+        return
+    try:
+        txt = lines[-4:-1]
+        print('\n'.join(txt))
+    except IndexError:
+        print('IndexError in print_last_3lines: there do not appear to be at least three lines in this file.')
+        return
+
+
+def rda_download(filelist, dspath):
+    """
+    Logs into the NCAR research data archive (RDA)
+    and downloads specified files.
+
+    NOTE: My username/password are currently hard-coded into this function.
+    I SHOULD CHAGE THIS!
+
+    :param filelist: list of strings
+        List of all the files that you would like downloaded from the RDA.
+    :param dspath : string
+        Full path to file on the RDA. You can obtain this from
+    :return: a boolean (True/False) success flag.
+
+    """
+    # Specify login information and url for RDA
+    pswd = 'mkjmJ17'
+    url = 'https://rda.ucar.edu/cgi-bin/login'
+    values = {'email': 'jas983@cornell.edu', 'passwd': pswd, 'action': 'login'}
+
+    # RDA user authentication
+    ret = requests.post(url, data=values)
+    if ret.status_code != 200:
+        print('Bad Authentication for RDA')
+        print(ret.text)
+        return False
+
+    # Download files from RDA server
+    print('Downloading data from RDA...')
+    for datafile in filelist:
+        filename = dspath + datafile
+        file_base = os.path.basename(datafile)
+        # print('Downloading', file_base)
+        req = requests.get(filename, cookies=ret.cookies, allow_redirects=True, stream=True)
+        try:
+            filesize = int(req.headers['Content-length'])
+        except KeyError as e:
+            print(f'KeyError in rda_download: {e}\nCHECK YOUR RDA FILE NAMES!!!')
+            return False
+        with open(file_base, 'wb') as outfile:
+            chunk_size = 1048576
+            for chunk in req.iter_content(chunk_size=chunk_size):
+                outfile.write(chunk)
+        #         if chunk_size < filesize:
+        #             check_file_status(file_base, filesize)
+        check_file_status(file_base, filesize)
+    print('Done downloading data from RDA!')
+    return True
+
+
+def check_file_status(filepath, filesize):
+    """
+    Checks the file status during a download from the internet.
+
+    This is currently not implemented because I don't
+    like the way it prints information to the command line.
+
+    :param filepath: string
+        Path to remote data file
+    :param filesize : int
+        Size of the file as found by req.headers['Content-length']
+
+    """
+    sys.stdout.write('\r')
+    sys.stdout.flush()
+    size = int(os.stat(filepath).st_size)
+    percent_complete = (size / filesize) * 100
+    sys.stdout.write(f'{filepath}: {percent_complete}%\n')
+    sys.stdout.flush()

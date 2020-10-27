@@ -20,7 +20,7 @@ will automatically pass.
 import os
 
 from optwrf.runwrf import WRFModel
-from optwrf.runwrf import determine_computer
+from optwrf.helper_functions import determine_computer
 import optwrf.helper_functions as hf
 
 param_ids = [10, 1, 1, 2, 2, 3, 2]
