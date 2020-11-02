@@ -12,7 +12,93 @@ import xarray as xr
 from pvlib.wrfcast import WRF
 
 
-def process_wrfout_data_manual(DIR_WRFOUT, wrfout_file, save_file=True):
+def get_wspd_wdir(netcdf_data, key):
+    """
+    Formats the wind speed and wind direction so it can be merged into
+    an xarray Dataset with all the other variables extracted using getvar
+    :param netcdf_data:
+    :param key:
+    :return:
+    """
+    var = wrf.getvar(netcdf_data, key, wrf.ALL_TIMES)
+    var = xr.DataArray.reset_coords(var, ['wspd_wdir'], drop=True)
+    var.name = key
+    return var
+
+
+def _wrf2xarray(netcdf_data, query_variables):
+    """
+    Gets data from the netcdf wrfout file and uses wrf-python
+    to create an xarray Dataset.
+
+    Parameters
+    ----------
+    data: netcdf
+        Data returned from UNIDATA NCSS query, or from your local forecast.
+    query_variables: list
+        The variables requested.
+    start: Timestamp
+        The start time
+    end: Timestamp
+        The end time
+
+    Returns
+    -------
+    xarray.Dataset
+    """
+    first = True
+    for key in query_variables:
+        if key in ['wspd', 'wdir']:
+            var = get_wspd_wdir(netcdf_data, key)
+        else:
+            var = wrf.getvar(netcdf_data, key, timeidx=wrf.ALL_TIMES)
+        if first:
+            data = var
+            first = False
+        else:
+            with xr.set_options(keep_attrs=True):
+                try:
+                    data = xr.merge([data, var])
+                except ValueError:
+                    data = data.drop_vars('Time')
+                    data = xr.merge([data, var])
+
+    # Get global attributes from the NetCDF Dataset
+    wrfattrs_names = netcdf_data.ncattrs()
+    wrfattrs = wrf.extract_global_attrs(netcdf_data, wrfattrs_names)
+    data = data.assign_attrs(wrfattrs)
+
+    # Fix a bug in how wrfout data is read in -- attributes must be strings to be written to NetCDF
+    for var in data.data_vars:
+        try:
+            data[var].attrs['projection'] = str(data[var].attrs['projection'])
+        except KeyError:
+            pass
+
+    # Fix another bug that creates a conflict in the 'coordinates' attribute
+    for var in data.data_vars:
+        try:
+            del data[var].attrs['coordinates']
+        except KeyError:
+            pass
+
+    return data
+
+
+def calc_wpd(wind_speed, air_density=1000):
+    """
+    Calculates the wind power density per square meter
+
+    :param wind_speed:
+    :param air_density:
+    :return: wpd
+    """
+
+    wpd = 0.5 * air_density * wind_speed ** 3
+    return wpd
+
+
+def process_wrfout_manual(DIR_WRFOUT, wrfout_file, start=None, end=None, save_file=True):
     """
     Processes the wrfout file -- calculates GHI and wind power denity (WPD) and writes these variables
     to wrfout_processed_d01.nc data file to be used by the regridding script (wrf2era_error.ncl) in
@@ -41,82 +127,54 @@ def process_wrfout_data_manual(DIR_WRFOUT, wrfout_file, save_file=True):
     query_variables = [
         'times',
         'T2',
-        'U10',
-        'V10',
         'CLDFRA',
         'COSZEN',
         'SWDDNI',
-        'SWDDIF'
+        'SWDDIF',
+        'height_agl',
+        'wspd',
+        'wdir',
     ]
 
-    first = True
-    for key in query_variables:
-        var = wrf.getvar(netcdf_data, key, timeidx=wrf.ALL_TIMES)
-        if first:
-            met_data = var
-            first = False
-        else:
-            met_data = xr.merge([met_data, var])
+    met_data = _wrf2xarray(netcdf_data, query_variables)
 
     variables = {
         'times': 'Times',
         'XLAT': 'lat',
         'XLONG': 'lon',
         'T2': 'temp_air',
-        'U10': 'wind_speed_u',
-        'V10': 'wind_speed_v',
         'CLDFRA': 'cloud_fraction',
         'COSZEN': 'cos_zenith',
         'SWDDNI': 'dni',
-        'SWDDIF': 'dhi'
+        'SWDDIF': 'dhi',
+        'height_agl': 'height_agl',
+        'wspd': 'wspd',
+        'wdir': 'wdir',
     }
 
+    # Rename the variables
     met_data = xr.Dataset.rename(met_data, variables)
-    met_data = xr.Dataset.reset_coords(met_data, ['XTIME'], drop=True)
-    # met_data = xr.Dataset.set_coords(met_data, ['Times'])
-    # met_data = xr.Dataset.reset_coords(met_data, ['Times'], drop=True)
 
-    # Process the data using the WRF forecast model methods from pvlib package
+    # Convert air temp from kelvin to celsius and calculate global horizontal irradiance
+    # using the WRF forecast model methods from pvlib package
     fm = WRF()
-    # met_data = fm.process_data(met_data)
-    wind_speed10 = fm.uv_to_speed(met_data)
-    temp_air = fm.kelvin_to_celsius(met_data['temp_air'])
-    ghi = fm.dni_and_dhi_to_ghi(met_data['dni'], met_data['dhi'], met_data['cos_zenith'])
-
-    # Process the data using the wrf-python package
-    height = wrf.getvar(netcdf_data, "height_agl", wrf.ALL_TIMES, units='m')
-    wspd = wrf.getvar(netcdf_data, 'wspd_wdir', wrf.ALL_TIMES, units='m s-1')[0, :]
+    met_data['temp_air'] = fm.kelvin_to_celsius(met_data['temp_air'])
+    met_data['ghi'] = fm.dni_and_dhi_to_ghi(met_data['dni'], met_data['dhi'], met_data['cos_zenith'])
 
     #  Interpolate wind speeds to 100m height
-    wind_speed100 = wrf.interplevel(wspd, height, 100)
+    met_data['wind_speed100'] = wrf.interplevel(met_data['wspd'], met_data['height_agl'], 100)
 
-    # Calculate wind power per square meter
-    air_density = 1000
-    wpd = 0.5 * air_density * wind_speed100 ** 3
+    # Calculate the wind power density
+    met_data['wpd'] = calc_wpd(met_data['wind_speed100'])
 
-    met_data['ghi'] = ghi
-    met_data['wind_speed10'] = wind_speed10
-    met_data['wind_speed100'] = wind_speed100
-    met_data['wpd'] = wpd
-    met_data['temp_air'] = temp_air
+    # Drop unnecessary coordinates
+    met_data = xr.Dataset.reset_coords(met_data, ['XTIME', 'level'], drop=True)
 
-    # Fix a bug in how wrfout data is read in -- attributes must be strings to be written to NetCDF
-    for var in met_data.data_vars:
-        try:
-            met_data[var].attrs['projection'] = str(met_data[var].attrs['projection'])
-        except KeyError:
-            pass
+    # Slice the wrfout data if start and end times ares specified
+    if start and end is not None:
+        met_data = met_data.sel(Time=slice(start, end))
 
-    # Fix another bug that creates a conflict in the 'coordinates' attribute
-    for var in met_data.data_vars:
-        try:
-            del met_data[var].attrs['coordinates']
-        except KeyError:
-            pass
-
-    # Slice the last time from the wrfout data to remove duplicates
-    met_data = met_data.isel(Time=slice(0, -1))
-
+    # Save the output file if specified.
     if save_file:
         # Write the processed data to a wrfout NetCDF file
         new_filename = DIR_WRFOUT + 'wrfout_processed_d01.nc'

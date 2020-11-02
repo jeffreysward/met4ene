@@ -28,9 +28,16 @@ PACKAGES = find_packages()
 # PACKAGES = find_packages(exclude=["old", "log_and_err"])
 SCRIPTS = []
 PACKAGE_DATA = {
-    "": ["*.yml"],
+    "optwrf.test": ["optwrf/data/*"],
 }
-INSTALL_REQUIRES = ["pyyaml", "requests"]
+INSTALL_REQUIRES = [
+    "numpy",
+    "scipy",
+    "pandas",
+    "xarray",
+    "pyyaml",
+    "requests",
+]
 PYTHON_REQUIRES = ">=3.6"
 
 if __name__ == "__main__":

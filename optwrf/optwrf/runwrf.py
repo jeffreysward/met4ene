@@ -94,6 +94,21 @@ class WRFModel:
         self.DIR_RUNWRF = self.DIR_MET4ENE + 'optwrf/optwrf/'
         self.DIR_TEMPLATES = dirpaths.get('DIR_TEMPLATES')
         self.DIR_ERA5_ROOT = dirpaths.get('DIR_ERA5_ROOT')
+        if self.n_domains == 1:
+            self.FILE_WRFOUT_d01 = 'wrfout_d01' + '_' \
+                                   + self.forecast_start.strftime('%Y') + '-' \
+                                   + self.forecast_start.strftime('%m') + '-' \
+                                   + self.forecast_start.strftime('%d') + '_00:00:00'
+        if self.n_domains > 1:
+            self.FILE_WRFOUT_d02 = 'wrfout_d02' + '_' \
+                                   + self.forecast_start.strftime('%Y') + '-' \
+                                   + self.forecast_start.strftime('%m') + '-' \
+                                   + self.forecast_start.strftime('%d') + '_00:00:00'
+        if self.n_domains > 2:
+            self.FILE_WRFOUT_d03 = 'wrfout_d03' + '_' \
+                           + self.forecast_start.strftime('%Y') + '-' \
+                           + self.forecast_start.strftime('%m') + '-' \
+                           + self.forecast_start.strftime('%d') + '_00:00:00'
 
         # Define linux command aliai
         self.CMD_LN = 'ln -sf %s %s'
@@ -724,12 +739,12 @@ class WRFModel:
             print('WRF ran in: ' + hf.strfdelta(elapsed))
 
         # Rename the wrfout files.
-        for n in range(1, self.n_domains + 1):
-            os.system(self.CMD_MV % (self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '_'
-                                     + self.forecast_start.strftime('%Y') + '-'
-                                     + self.forecast_start.strftime('%m') + '-'
-                                     + self.forecast_start.strftime('%d') + '_00:00:00',
-                                     self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '.nc'))
+        # for n in range(1, self.n_domains + 1):
+        #     os.system(self.CMD_MV % (self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '_'
+        #                              + self.forecast_start.strftime('%Y') + '-'
+        #                              + self.forecast_start.strftime('%m') + '-'
+        #                              + self.forecast_start.strftime('%d') + '_00:00:00',
+        #                              self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '.nc'))
 
         if save_wps_files:
             # Move the geo_em file(s) to a permanent location
@@ -740,7 +755,7 @@ class WRFModel:
 
         return True, hf.strfdelta(elapsed)
 
-    def process_wrfout_data(self):
+    def process_wrfout_data(self, domain=1):
         """
         Processes the wrfout file -- calculates GHI and wind power denity (WPD) and writes these variables
         to wrfout_processed_d01.nc data file to be used by the regridding script (wrf2era_error.ncl) in
@@ -759,7 +774,15 @@ class WRFModel:
 
         """
         # Absolute path to wrfout data file
-        datapath = self.DIR_WRFOUT + 'wrfout_d01.nc'
+        if domain == 1:
+            datapath = self.DIR_WRFOUT + self.FILE_WRFOUT_d01
+        elif domain == 2:
+            datapath = self.DIR_WRFOUT + self.FILE_WRFOUT_d02
+        elif domain == 3:
+            datapath = self.DIR_WRFOUT + self.FILE_WRFOUT_d03
+        else:
+            print(f'Domain {domain} does not exist for this WRF simlulation.')
+            raise ValueError
 
         try:
             # Read in the wrfout file using the netCDF4.Dataset method
