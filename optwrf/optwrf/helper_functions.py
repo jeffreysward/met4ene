@@ -6,6 +6,7 @@ Known Issues/Wishlist:
 
 """
 
+import csv
 import datetime
 import math
 import os
@@ -395,3 +396,23 @@ def check_file_status(filepath, filesize):
     percent_complete = (size / filesize) * 100
     sys.stdout.write(f'{filepath}: {percent_complete}%\n')
     sys.stdout.flush()
+
+
+def gen_daily_sims_csv(param_ids, start='Jan 01 2011', end='Jan 01 2012', csv_name='annual_sims.csv'):
+
+    # Define the file header
+    header = ['start_date', 'mp_physics', 'ra_lw_physics', 'ra_sw_physics',
+              'sf_surface_physics', 'bl_pbl_physics', 'cu_physics', 'sfclay_physics']
+    # Create a list of dates based on the start and end dates provided
+    start_date = format_date(start)
+    end_date = format_date(end)
+    date_list = [start_date + datetime.timedelta(days=x) for x in range(0, (end_date-start_date).days)]
+    with open(csv_name, 'w') as csvfile:
+        # Write the header to the CSV file
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerow(header)
+        # Write each row to the CSV file
+        for date in date_list:
+            csv_data = [date.strftime('%b %d %Y'), param_ids[0], param_ids[1], param_ids[2],
+                        param_ids[3], param_ids[4], param_ids[5], param_ids[6]]
+            csv_writer.writerow(csv_data)

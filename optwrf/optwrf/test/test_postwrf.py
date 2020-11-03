@@ -7,7 +7,7 @@ from optwrf import postwrf
 # (note: don't forget to add the "/" at the end of the directory)
 _wrfout_dir = '/Users/swardy9230/Box Sync/01_Research/01_Renewable_Analysis/' \
               'Wind Resource Analysis/wrfout/19mp4lw4sw7lsm8pbl99cu/'
-_wrfout_file = 'wrfout_d02_2011-07-17'
+_wrfout_file = 'wrfout_d03_2011-07-17'
 
 
 def test_process_wrfout_manual(savefile=True):
