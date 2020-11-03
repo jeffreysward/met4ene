@@ -286,7 +286,7 @@ def process_wrfout_manual(DIR_WRFOUT, wrfout_file, start=None, end=None, save_fi
     # Save the output file if specified.
     if save_file:
         # Write the processed data to a wrfout NetCDF file
-        new_filename = DIR_WRFOUT + 'wrfout_processed_d01.nc'
+        new_filename = DIR_WRFOUT + 'processed_' + wrfout_file
         met_data.to_netcdf(path=new_filename)
     else:
         return met_data
