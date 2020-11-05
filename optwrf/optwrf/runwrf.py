@@ -681,7 +681,7 @@ class WRFModel:
         os.system(self.CMD_RM % (self.DIR_WRFOUT + 'rsl.*'))
         return True
 
-    def run_wrf(self, disable_timeout=False, timeout_hours=6, save_wps_files=False):
+    def run_wrf(self, disable_timeout=False, timeout_hours=8, save_wps_files=False):
         """
         Runs wrf.exe and checks to see if it was successful.
 
