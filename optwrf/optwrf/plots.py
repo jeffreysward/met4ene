@@ -11,7 +11,7 @@ import xarray as xr
 import wrf as wrfpy
 
 import optwrf.regridding
-from optwrf import runwrf, helper_functions
+from optwrf import runwrf, postwrf, helper_functions
 
 
 def get_wrf_proj(wrfdata, var):
@@ -49,12 +49,11 @@ def get_wrf_proj(wrfdata, var):
         raise ValueError
 
 
-def get_domain_boundary(wrfds, var, cartopy_crs):
+def get_domain_boundary(wrfda, cartopy_crs):
     """
     Finds the boundary of the WRF domain.
 
-    :param wrfds:
-    :param var:
+    :param wrfda:
     :param cartopy_crs:
     :return:
     """
@@ -62,14 +61,14 @@ def get_domain_boundary(wrfds, var, cartopy_crs):
     variables = {'lat': 'XLAT',
                  'lon': 'XLONG'}
     try:
-        wrfds = xr.Dataset.rename(wrfds, variables)
+        wrfda = xr.Dataset.rename(wrfda, variables)
     except ValueError:
         print(f'Variables {variables} cannot be renamed, '
               f'those on the left are not in this dataset.')
 
     # I need to manually convert the boundaries of the WRF domain into Plate Carree to set the limits.
     # Get the raw map bounds using a wrf-python utility
-    raw_bounds = wrfpy.util.geo_bounds(wrfds[var])
+    raw_bounds = wrfpy.util.geo_bounds(wrfda)
 
     # Get the projected bounds telling cartopy that the input coordinates are lat/lon (Plate Carree)
     projected_bounds = cartopy_crs.transform_points(ccrs.PlateCarree(),
@@ -148,52 +147,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
     # and find the domain boundaries in this projection.
     # NOTE: this task MUST occurr before we regrid the WRF variables or the coordinates change and become incompatible.
     wrf_cartopy_proj = get_wrf_proj(wrfdat, 'dni')
-    proj_bounds = get_domain_boundary(wrfdat, 'ghi', wrf_cartopy_proj)
-
-    # # Rename the lat-lon corrdinates to get wrf-python to recognize them
-    # variables = {'lat': 'XLAT',
-    #              'lon': 'XLONG'}
-    # try:
-    #     wrfdat = xr.Dataset.rename(wrfdat, variables)
-    # except ValueError:
-    #     print(f'Variables {variables} cannot be renamed, '
-    #           f'those on the left are not in this dataset.')
-    #
-    # # This makes it easy to get the latitude and longitude coordinates with the wrf-python function below
-    # lats, lons = wrfpy.latlon_coords(wrfdat['dni'])
-    #
-    # # I have to do this tedious string parsing below to get the projection from the processed wrfout file.
-    # try:
-    #     wrf_proj_params = wrfdat.dni.attrs['projection']
-    # except AttributeError:
-    #     raise ValueError('Variable does not contain projection information')
-    # wrf_proj_params = wrf_proj_params.replace('(', ', ')
-    # wrf_proj_params = wrf_proj_params.replace(')', '')
-    # wrf_proj_params = wrf_proj_params.split(',')
-    # wrf_proj = wrf_proj_params[0]
-    # stand_lon = float(wrf_proj_params[1].split('=')[1])
-    # moad_cen_lat = float(wrf_proj_params[2].split('=')[1])
-    # truelat1 = float(wrf_proj_params[3].split('=')[1])
-    # truelat2 = float(wrf_proj_params[4].split('=')[1])
-    # pole_lat = float(wrf_proj_params[5].split('=')[1])
-    # pole_lon = float(wrf_proj_params[6].split('=')[1])
-    #
-    # # Fortunately, it still apppears to work.
-    # if wrf_proj == 'LambertConformal':
-    #     wrf_cartopy_proj = ccrs.LambertConformal(central_longitude=stand_lon,
-    #                                              central_latitude=moad_cen_lat,
-    #                                              standard_parallels=[truelat1, truelat2])
-    # else:
-    #     print('Your WRF projection is not the expected Lambert Conformal.')
-    #     raise ValueError
-    #
-    # # I need to manually convert the boundaries of the WRF domain into Plate Carree to set the limits.
-    # # Get the raw map bounds using a wrf-python utility
-    # raw_bounds = wrfpy.util.geo_bounds(wrfdat['dni'])
-    # # Get the projected bounds telling cartopy that the input coordinates are lat/lon (Plate Carree)
-    # proj_bounds = wrf_cartopy_proj.transform_points(ccrs.PlateCarree(),
-    #                                                 np.array([raw_bounds.bottom_left.lon, raw_bounds.top_right.lon]),
-    #                                                 np.array([raw_bounds.bottom_left.lat, raw_bounds.top_right.lat]))
+    proj_bounds = get_domain_boundary(wrfdat, wrf_cartopy_proj)
 
     # We can use a basic Plate Carree projection for ERA5
     era5_cartopy_proj = ccrs.PlateCarree()
@@ -265,25 +219,6 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
             # Set the GeoAxes to the projection used by WRF
             ax = fig.add_subplot(1, 1, 1, projection=wrf_cartopy_proj)
 
-            # # Get, format, and set the map bounds
-            #
-            # # Format the projected bounds so they can be used in the xlim and ylim attributes
-            # proj_xbounds = [proj_bounds[0, 0], proj_bounds[1, 0]]
-            # proj_ybounds = [proj_bounds[0, 1], proj_bounds[1, 1]]
-            # # Finally, set the x and y limits
-            # ax.set_xlim(proj_xbounds)
-            # ax.set_ylim(proj_ybounds)
-            #
-            # # Download and add the states, coastlines, and lakes
-            # states = cfeature.NaturalEarthFeature(category="cultural", scale="50m",
-            #                                       facecolor="none",
-            #                                       name="admin_1_states_provinces_shp")
-            #
-            # # Add features to the maps
-            # ax.add_feature(states, linewidth=.5, edgecolor="black")
-            # ax.add_feature(cfeature.LAKES.with_scale('50m'), alpha=0.9)
-            # ax.add_feature(cfeature.OCEAN.with_scale('50m'))
-
             # Make the countour lines for filled contours for the GHI
             if hourly:
                 if var in ['ghi', 'ghi_error']:
@@ -308,7 +243,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
             elif var == 'fitness':
                 color_map = get_cmap("Greys")
             if src == 'wrf' and var in ['ghi', 'wpd']:
-                cn = ax.contourf(wrfpy.to_np(wrfdat.lat), wrfpy.to_np(wrfdat.lon), wrfpy.to_np(plot_var),
+                cn = ax.contourf(wrfpy.to_np(wrfdat.lon), wrfpy.to_np(wrfdat.lat), wrfpy.to_np(plot_var),
                                  contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
             else:
                 cn = ax.contourf(wrfpy.to_np(eradat.longitude), wrfpy.to_np(eradat.latitude), wrfpy.to_np(plot_var),
@@ -316,12 +251,6 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
 
             # Format the plot
             format_cnplot_axis(ax, cn, proj_bounds, title_str=title_str)
-
-            # # Add a color bar
-            # plt.colorbar(cn, ax=ax, shrink=.98)
-
-            # # Add the axis title
-            # ax.set_title(title_str)
 
             # Save the figure(s)
             if save_fig:
@@ -336,26 +265,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
     # Set the GeoAxes to the projection used by WRF
     ax = fig.add_subplot(1, 1, 1, projection=wrf_cartopy_proj)
 
-    # # Get, format, and set the map bounds
-    #
-    # # Format the projected bounds so they can be used in the xlim and ylim attributes
-    # proj_xbounds = [proj_bounds[0, 0], proj_bounds[1, 0]]
-    # proj_ybounds = [proj_bounds[0, 1], proj_bounds[1, 1]]
-    # # Finally, set the x and y limits
-    # ax.set_xlim(proj_xbounds)
-    # ax.set_ylim(proj_ybounds)
-    #
-    # # Download and add the states, coastlines, and lakes
-    # states = cfeature.NaturalEarthFeature(category="cultural", scale="50m",
-    #                                       facecolor="none",
-    #                                       name="admin_1_states_provinces_shp")
-    #
-    # # Add features to the maps
-    # ax.add_feature(states, linewidth=.5, edgecolor="black")
-    # ax.add_feature(cfeature.LAKES.with_scale('50m'), alpha=0.9)
-    # ax.add_feature(cfeature.OCEAN.with_scale('50m'))
-
-    # Make the countour lines for filled contours for the GHI
+    # Make the countour lines for filled contours
     if hourly:
         if var in ['ghi', 'ghi_error']:
             contour_levels = np.linspace(0, 0.75, 22)
@@ -387,12 +297,6 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
 
     # Format the plot
     format_cnplot_axis(ax, cn, proj_bounds, title_str=title_str)
-
-    # # Add a color bar
-    # plt.colorbar(cn, ax=ax, shrink=.98)
-    #
-    # # Add the axis title
-    # ax.set_title(title_str)
 
     # Save the figure(s)
     if save_fig:
@@ -434,30 +338,7 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
     # This makes it easy to get the latitude and longitude coordinates with the wrf-python function below
     lats, lons = wrfpy.latlon_coords(wrfdat[wrf_var])
 
-    # I have to do this tedious string parsing below to get the projection from the processed wrfout file.
-    try:
-        wrf_proj_params = wrfdat.dni.attrs['projection']
-    except AttributeError:
-        raise ValueError('Variable does not contain projection information')
-    wrf_proj_params = wrf_proj_params.replace('(', ', ')
-    wrf_proj_params = wrf_proj_params.replace(')', '')
-    wrf_proj_params = wrf_proj_params.split(',')
-    wrf_proj = wrf_proj_params[0]
-    stand_lon = float(wrf_proj_params[1].split('=')[1])
-    moad_cen_lat = float(wrf_proj_params[2].split('=')[1])
-    truelat1 = float(wrf_proj_params[3].split('=')[1])
-    truelat2 = float(wrf_proj_params[4].split('=')[1])
-    pole_lat = float(wrf_proj_params[5].split('=')[1])
-    pole_lon = float(wrf_proj_params[6].split('=')[1])
-
-    # Fortunately, it still apppears to work.
-    if wrf_proj == 'LambertConformal':
-        wrf_cartopy_proj = ccrs.LambertConformal(central_longitude=stand_lon,
-                                                 central_latitude=moad_cen_lat,
-                                                 standard_parallels=[truelat1, truelat2])
-    else:
-        print('Your WRF projection is not the expected Lambert Conformal.')
-        raise ValueError
+    wrf_cartopy_proj = get_wrf_proj(wrfdat, 'dni')
 
     # We can use a basic Plate Carree projection for ERA5
     era5_cartopy_proj = ccrs.PlateCarree()
@@ -579,7 +460,7 @@ def wrf_errorandfitness_plot(wrfdata, save_fig=False, wrf_dir='./', era_dir='./'
     # and find the domain boundaries in this projection.
     # NOTE: this task MUST occurr before we regrid the WRF variables or the coordinates change and become incompatible.
     wrf_cartopy_proj = get_wrf_proj(wrfdata, 'dni')
-    proj_bounds = get_domain_boundary(wrfdata, 'ghi', wrf_cartopy_proj)
+    proj_bounds = get_domain_boundary(wrfdata, wrf_cartopy_proj)
     if verbose:
         print(f'WRF Projection:\n{wrf_cartopy_proj}')
         print(f'\nDomain Boundaries:\n{proj_bounds}')
@@ -632,5 +513,3 @@ def wrf_errorandfitness_plot(wrfdata, save_fig=False, wrf_dir='./', era_dir='./'
         plt.savefig(fig_path + '.pdf', transparent=True, bbox_inches='tight')
 
     plt.show()
-
-
