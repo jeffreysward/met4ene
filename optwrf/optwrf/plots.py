@@ -128,6 +128,48 @@ def specify_clormap(variable):
     return colormap
 
 
+def specify_contour_levels(variable, hourly=False, **kwargs):
+    """
+    Returns an array with the contour levels.
+
+    :param variable:
+    :param hourly:
+    :param kwargs:
+    :return contourlevels: numpy array
+    """
+    # First, set the minimum and number of bins based on kwargs
+    minimum = kwargs.get('min', 0)
+    n_bins = kwargs.get('n', 22)
+    # Now, determine the maximum based upon which varible will be plotted
+    if hourly:
+        if variable in ['ghi', 'ghi_error']:
+            maximum = kwargs.get('max', 0.75)
+            contourlevels = np.linspace(minimum, maximum, n_bins)
+        elif variable in ['wpd', 'wpd_error']:
+            maximum = kwargs.get('max', 2500)
+            contourlevels = np.linspace(minimum, maximum, n_bins)
+        elif variable == 'fitness':
+            maximum = kwargs.get('max', 1.5)
+            contourlevels = np.linspace(minimum, maximum, n_bins)
+        else:
+            print(f'{variable} is not supported')
+            raise ValueError
+    else:
+        if variable in ['ghi', 'ghi_error']:
+            maximum = kwargs.get('max', 5)
+            contourlevels = np.linspace(minimum, maximum, n_bins)
+        elif variable in ['wpd', 'wpd_error']:
+            maximum = kwargs.get('max', 50000)
+            contourlevels = np.linspace(minimum, maximum, n_bins)
+        elif variable == 'fitness':
+            maximum = kwargs.get('max', 10)
+            contourlevels = np.linspace(minimum, maximum, n_bins)
+        else:
+            print(f'{variable} is not supported')
+            raise ValueError
+    return contourlevels
+
+
 def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fig=False,
                   wrf_dir='./', era_dir='./', short_title_str='Title', fig_path='./'):
     """
@@ -236,20 +278,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
             ax = fig.add_subplot(1, 1, 1, projection=wrf_cartopy_proj)
 
             # Make the countour lines for filled contours for the GHI
-            if hourly:
-                if var in ['ghi', 'ghi_error']:
-                    contour_levels = np.linspace(0, 0.75, 22)
-                elif var in ['wpd', 'wpd_error']:
-                    contour_levels = np.linspace(0, 2500, 22)
-                elif var == 'fitness':
-                    contour_levels = np.linspace(0, 1.5, 22)
-            else:
-                if var in ['ghi', 'ghi_error']:
-                    contour_levels = np.linspace(0, 5, 22)
-                elif var in ['wpd', 'wpd_error']:
-                    contour_levels = np.linspace(0, np.amax(wrfpy.to_np(plot_var)), 22)
-                elif var == 'fitness':
-                    contour_levels = np.linspace(0, 10, 22)
+            contour_levels = specify_contour_levels(var, hourly=True)
 
             # Add the filled contour levels
             color_map = specify_clormap(var)
@@ -277,20 +306,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
     ax = fig.add_subplot(1, 1, 1, projection=wrf_cartopy_proj)
 
     # Make the countour lines for filled contours
-    if hourly:
-        if var in ['ghi', 'ghi_error']:
-            contour_levels = np.linspace(0, 0.75, 22)
-        elif var in ['wpd', 'wpd_error']:
-            contour_levels = np.linspace(0, 25000, 22)
-        elif var == 'fitness':
-            contour_levels = np.linspace(0, 1.5, 22)
-    else:
-        if var in ['ghi', 'ghi_error']:
-            contour_levels = np.linspace(0, 5, 22)
-        elif var in ['wpd', 'wpd_error']:
-            contour_levels = np.linspace(0, np.amax(wrfpy.to_np(plot_var)), 22)
-        elif var == 'fitness':
-            contour_levels = np.linspace(0, 10, 22)
+    contour_levels = specify_contour_levels(var, hourly=False)
 
     # Add the filled contour levels
     color_map = specify_clormap(var)
@@ -414,16 +430,7 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
     ax_era5.add_feature(cfeature.OCEAN.with_scale('50m'))
 
     # Make the countour lines for filled contours for the GHI
-    if hourly:
-        if var == 'ghi':
-            contour_levels = np.linspace(0, 0.75, 22)
-        elif var == 'wpd':
-            contour_levels = np.linspace(0, 10000, 22)
-    else:
-        if var == 'ghi':
-            contour_levels = np.linspace(0, 5, 22)
-        elif var == 'wpd':
-            contour_levels = np.linspace(0, 35000, 22)
+    contour_levels = specify_contour_levels(var, hourly=False)
 
     # Add the filled contour levels
     color_map = specify_clormap(var)
