@@ -4,6 +4,7 @@ Plotting functions
 
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
+from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 import cartopy.feature as cfeature
 import cartopy.crs as ccrs
 import numpy as np
@@ -77,7 +78,7 @@ def get_domain_boundary(wrfda, cartopy_crs):
     return projected_bounds
 
 
-def format_cnplot_axis(axis, cn, proj_bounds, title_str='Contour Plot'):
+def format_cnplot_axis(axis, cn, proj_bounds, title_str='Contour Plot', add_colorbar=True):
     """
     Formats a contour plot axis.
 
@@ -106,7 +107,8 @@ def format_cnplot_axis(axis, cn, proj_bounds, title_str='Contour Plot'):
     axis.add_feature(cfeature.OCEAN.with_scale('50m'))
 
     # Add color bars
-    plt.colorbar(cn, ax=axis, shrink=.7)
+    if add_colorbar is True:
+        plt.colorbar(cn, ax=axis, shrink=0.7, pad=0.04)
 
     # Add the axis title
     axis.set_title(title_str)
@@ -167,6 +169,7 @@ def specify_contour_levels(variable, hourly=False, **kwargs):
         else:
             print(f'{variable} is not supported')
             raise ValueError
+    contourlevels = np.round(contourlevels, 1)
     return contourlevels
 
 
@@ -299,32 +302,33 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
 
             plt.show()
 
-    # Create a figure
-    fig = plt.figure(figsize=(4, 4))
+    if not hourly:
+        # Create a figure
+        fig = plt.figure(figsize=(4, 4))
 
-    # Set the GeoAxes to the projection used by WRF
-    ax = fig.add_subplot(1, 1, 1, projection=wrf_cartopy_proj)
+        # Set the GeoAxes to the projection used by WRF
+        ax = fig.add_subplot(1, 1, 1, projection=wrf_cartopy_proj)
 
-    # Make the countour lines for filled contours
-    contour_levels = specify_contour_levels(var, hourly=False)
+        # Make the countour lines for filled contours
+        contour_levels = specify_contour_levels(var, hourly=False)
 
-    # Add the filled contour levels
-    color_map = specify_clormap(var)
-    if src == 'wrf' and var in ['ghi', 'wpd']:
-        cn = ax.contourf(wrfpy.to_np(wrfdat.lon), wrfpy.to_np(wrfdat.lat), wrfpy.to_np(plot_var),
-                         contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
-    else:
-        cn = ax.contourf(wrfpy.to_np(eradat.longitude), wrfpy.to_np(eradat.latitude), wrfpy.to_np(plot_var),
-                         contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
+        # Add the filled contour levels
+        color_map = specify_clormap(var)
+        if src == 'wrf' and var in ['ghi', 'wpd']:
+            cn = ax.contourf(wrfpy.to_np(wrfdat.lon), wrfpy.to_np(wrfdat.lat), wrfpy.to_np(plot_var),
+                             contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
+        else:
+            cn = ax.contourf(wrfpy.to_np(eradat.longitude), wrfpy.to_np(eradat.latitude), wrfpy.to_np(plot_var),
+                             contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
 
-    # Format the plot
-    format_cnplot_axis(ax, cn, proj_bounds, title_str=title_str)
+        # Format the plot
+        format_cnplot_axis(ax, cn, proj_bounds, title_str=title_str)
 
-    # Save the figure(s)
-    if save_fig:
-        plt.savefig(fig_path + '.pdf', transparent=True, bbox_inches='tight')
+        # Save the figure(s)
+        if save_fig:
+            plt.savefig(fig_path + '.pdf', transparent=True, bbox_inches='tight')
 
-    plt.show()
+        plt.show()
 
 
 def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig_path='./'):
@@ -348,19 +352,11 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
         print(f'Variable {var} is not supported.')
         raise KeyError
 
-    # Rename the lat-lon corrdinates to get wrf-python to recognize them
-    variables = {'lat': 'XLAT',
-                 'lon': 'XLONG'}
-    try:
-        wrfdat = xr.Dataset.rename(wrfdat, variables)
-    except ValueError:
-        print(f'Variables {variables} cannot be renamed, '
-              f'those on the left are not in this dataset.')
-
-    # This makes it easy to get the latitude and longitude coordinates with the wrf-python function below
-    lats, lons = wrfpy.latlon_coords(wrfdat[wrf_var])
-
+    # To start, we need to get the WRF map projection information (a Lambert Conformal grid),
+    # and find the domain boundaries in this projection.
+    # NOTE: this task MUST occurr before we regrid the WRF variables or the coordinates change and become incompatible.
     wrf_cartopy_proj = get_wrf_proj(wrfdat, 'dni')
+    proj_bounds = get_domain_boundary(wrfdat, wrf_cartopy_proj)
 
     # We can use a basic Plate Carree projection for ERA5
     era5_cartopy_proj = ccrs.PlateCarree()
@@ -392,67 +388,79 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
         else:
             plot_era5var = eradat[era_var].sel(Time=timestr_f) / 1000
 
-    # Create a figure
-    fig = plt.figure(figsize=(6.5, 2.4))
-
-    # Set the GeoAxes to the projection used by WRF
-    ax_wrf = fig.add_subplot(1, 2, 1, projection=wrf_cartopy_proj)
-    ax_era5 = fig.add_subplot(1, 2, 2, projection=wrf_cartopy_proj, sharey=ax_wrf)
-
-    # Get, format, and set the map bounds
-    # I need to manually convert the boundaries of the WRF domain into Plate Carree to set the limits.
-    # Get the raw map bounds using a wrf-python utility
-    raw_bounds = wrfpy.util.geo_bounds(wrfdat[wrf_var])
-    # Get the projected bounds telling cartopy that the input coordinates are lat/lon (Plate Carree)
-    proj_bounds = wrf_cartopy_proj.transform_points(ccrs.PlateCarree(),
-                                                    np.array([raw_bounds.bottom_left.lon, raw_bounds.top_right.lon]),
-                                                    np.array([raw_bounds.bottom_left.lat, raw_bounds.top_right.lat]))
-    # Format the projected bounds so they can be used in the xlim and ylim attributes
-    proj_xbounds = [proj_bounds[0, 0], proj_bounds[1, 0]]
-    proj_ybounds = [proj_bounds[0, 1], proj_bounds[1, 1]]
-    # Finally, set the x and y limits
-    ax_wrf.set_xlim(proj_xbounds)
-    ax_wrf.set_ylim(proj_ybounds)
-    ax_era5.set_xlim(proj_xbounds)
-    ax_era5.set_ylim(proj_ybounds)
-
-    # Download and add the states, coastlines, and lakes
-    states = cfeature.NaturalEarthFeature(category="cultural", scale="50m",
-                                          facecolor="none",
-                                          name="admin_1_states_provinces_shp")
-
-    # Add features to the maps
-    ax_wrf.add_feature(states, linewidth=.5, edgecolor="black")
-    ax_wrf.add_feature(cfeature.LAKES.with_scale('50m'), alpha=0.9)
-    ax_wrf.add_feature(cfeature.OCEAN.with_scale('50m'))
-    ax_era5.add_feature(states, linewidth=.5, edgecolor="black")
-    ax_era5.add_feature(cfeature.LAKES.with_scale('50m'), alpha=0.9)
-    ax_era5.add_feature(cfeature.OCEAN.with_scale('50m'))
-
-    # Make the countour lines for filled contours for the GHI
-    contour_levels = specify_contour_levels(var, hourly=False)
-
-    # Add the filled contour levels
-    color_map = specify_clormap(var)
-    wrf_cn = ax_wrf.contourf(wrfpy.to_np(lons), wrfpy.to_np(lats), wrfpy.to_np(plot_wrfvar),
-                             contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
-    era5_cn = ax_era5.contourf(wrfpy.to_np(eradat.longitude), wrfpy.to_np(eradat.latitude), wrfpy.to_np(plot_era5var),
-                               contour_levels, transform=era5_cartopy_proj, cmap=color_map)
-
-    # Add a color bar
-    plt.colorbar(era5_cn, ax=ax_era5, shrink=.98)
-
-    # Add the axis title
-    ax_wrf.set_title('OptWRF ' + title_str)
-    ax_era5.set_title('ERA5 ' + title_str)
-
-    # Save the figure(s)
-    if save_fig:
+        # Create hourly plots
         if hourly:
-            plt.savefig(fig_path + '.png', dpi=300, transparent=True, bbox_inches='tight')
-        else:
+            # Create a figure
+            # fig, (ax_wrf, ax_era5, cax) = plt.subplots(ncols=3, figsize=(6.5, 2.4),
+            #                                            gridspec_kw={"width_ratios": [1, 1, 0.05]})
+            fig = plt.figure(figsize=(6.5, 2.4))
+
+            # Set the GeoAxes to the projection used by WRF
+            ax_wrf = fig.add_subplot(1, 2, 1, projection=wrf_cartopy_proj)
+            ax_era5 = fig.add_subplot(1, 2, 2, projection=wrf_cartopy_proj, sharey=ax_wrf)
+
+            # Make the countour lines for filled contours for the GHI
+            contour_levels = specify_contour_levels(var, hourly=True)
+
+            # Add the filled contour levels
+            color_map = specify_clormap(var)
+            wrf_cn = ax_wrf.contourf(wrfpy.to_np(wrfdat.lon), wrfpy.to_np(wrfdat.lat), wrfpy.to_np(plot_wrfvar),
+                                     contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
+            era5_cn = ax_era5.contourf(wrfpy.to_np(eradat.longitude), wrfpy.to_np(eradat.latitude),
+                                       wrfpy.to_np(plot_era5var),
+                                       contour_levels, transform=era5_cartopy_proj, cmap=color_map)
+
+            # Format the plots
+            format_cnplot_axis(ax_wrf, wrf_cn, proj_bounds,
+                               title_str=f'OptWRF {title_str}', add_colorbar=False)
+            format_cnplot_axis(ax_era5, era5_cn, proj_bounds,
+                               title_str=f'ERA5 {title_str}', add_colorbar=False)
+
+            # Add a color bar to the full plot
+            fig.subplots_adjust(right=0.85)
+            cbar_ax = fig.add_axes([0.90, 0.2, 0.03, 0.6])
+            fig.colorbar(era5_cn, cax=cbar_ax)
+
+            # Save the figures
+            if save_fig:
+                fig_path_temp = fig_path + str(tidx).zfill(2)
+                plt.savefig(fig_path_temp + '.png', dpi=300, transparent=True, bbox_inches='tight')
+
+            plt.show()
+
+    if not hourly:
+        # Create a figure
+        fig = plt.figure(figsize=(6.5, 2.4))
+
+        # Set the GeoAxes to the projection used by WRF
+        ax_wrf = fig.add_subplot(1, 2, 1, projection=wrf_cartopy_proj)
+        ax_era5 = fig.add_subplot(1, 2, 2, projection=wrf_cartopy_proj, sharey=ax_wrf)
+
+        # Make the countour lines for filled contours for the GHI
+        contour_levels = specify_contour_levels(var, hourly=False)
+
+        # Add the filled contour levels
+        color_map = specify_clormap(var)
+        wrf_cn = ax_wrf.contourf(wrfpy.to_np(wrfdat.lon), wrfpy.to_np(wrfdat.lat), wrfpy.to_np(plot_wrfvar),
+                                 contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
+        era5_cn = ax_era5.contourf(wrfpy.to_np(eradat.longitude), wrfpy.to_np(eradat.latitude), wrfpy.to_np(plot_era5var),
+                                   contour_levels, transform=era5_cartopy_proj, cmap=color_map)
+
+        # Format the plots
+        format_cnplot_axis(ax_wrf, wrf_cn, proj_bounds,
+                           title_str=f'OptWRF {title_str}', add_colorbar=False)
+        format_cnplot_axis(ax_era5, era5_cn, proj_bounds,
+                           title_str=f'ERA5 {title_str}', add_colorbar=False)
+
+        # Add a color bar to the full plot
+        fig.subplots_adjust(right=0.85)
+        cbar_ax = fig.add_axes([0.90, 0.2, 0.03, 0.6])
+        fig.colorbar(era5_cn, cax=cbar_ax)
+
+        # Save the figure
+        if save_fig:
             plt.savefig(fig_path + '.pdf', transparent=True, bbox_inches='tight')
-    plt.show()
+        plt.show()
 
 
 def wrf_errorandfitness_plot(wrfdata, save_fig=False, wrf_dir='./', era_dir='./',
