@@ -112,6 +112,22 @@ def format_cnplot_axis(axis, cn, proj_bounds, title_str='Contour Plot'):
     axis.set_title(title_str)
 
 
+def specify_clormap(variable):
+    """
+    Retruns a color map based on the user-specified variable
+
+    :param variable: string
+    :return color_map: object
+    """
+    if variable in ['ghi', 'ghi_error']:
+        colormap = get_cmap("hot_r")
+    elif variable in ['wpd', 'wpd_error']:
+        colormap = get_cmap("Greens")
+    elif variable == 'fitness':
+        colormap = get_cmap("Greys")
+    return colormap
+
+
 def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fig=False,
                   wrf_dir='./', era_dir='./', short_title_str='Title', fig_path='./'):
     """
@@ -236,12 +252,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
                     contour_levels = np.linspace(0, 10, 22)
 
             # Add the filled contour levels
-            if var in ['ghi', 'ghi_error']:
-                color_map = get_cmap("hot_r")
-            elif var in ['wpd', 'wpd_error']:
-                color_map = get_cmap("Greens")
-            elif var == 'fitness':
-                color_map = get_cmap("Greys")
+            color_map = specify_clormap(var)
             if src == 'wrf' and var in ['ghi', 'wpd']:
                 cn = ax.contourf(wrfpy.to_np(wrfdat.lon), wrfpy.to_np(wrfdat.lat), wrfpy.to_np(plot_var),
                                  contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
@@ -282,14 +293,9 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
             contour_levels = np.linspace(0, 10, 22)
 
     # Add the filled contour levels
-    if var in ['ghi', 'ghi_error']:
-        color_map = get_cmap("hot_r")
-    elif var in ['wpd', 'wpd_error']:
-        color_map = get_cmap("Greens")
-    elif var == 'fitness':
-        color_map = get_cmap("Greys")
+    color_map = specify_clormap(var)
     if src == 'wrf' and var in ['ghi', 'wpd']:
-        cn = ax.contourf(wrfpy.to_np(wrfdat.lat), wrfpy.to_np(wrfdat.lat), wrfpy.to_np(plot_var),
+        cn = ax.contourf(wrfpy.to_np(wrfdat.lon), wrfpy.to_np(wrfdat.lat), wrfpy.to_np(plot_var),
                          contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
     else:
         cn = ax.contourf(wrfpy.to_np(eradat.longitude), wrfpy.to_np(eradat.latitude), wrfpy.to_np(plot_var),
@@ -420,10 +426,7 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
             contour_levels = np.linspace(0, 35000, 22)
 
     # Add the filled contour levels
-    if var == 'ghi':
-        color_map = get_cmap("hot_r")
-    elif var == 'wpd':
-        color_map = get_cmap("Greens")
+    color_map = specify_clormap(var)
     wrf_cn = ax_wrf.contourf(wrfpy.to_np(lons), wrfpy.to_np(lats), wrfpy.to_np(plot_wrfvar),
                              contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
     era5_cn = ax_era5.contourf(wrfpy.to_np(eradat.longitude), wrfpy.to_np(eradat.latitude), wrfpy.to_np(plot_era5var),
