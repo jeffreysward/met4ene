@@ -108,7 +108,7 @@ def format_cnplot_axis(axis, cn, proj_bounds, title_str='Contour Plot', add_colo
 
     # Add color bars
     if add_colorbar is True:
-        plt.colorbar(cn, ax=axis, shrink=0.7, pad=0.04)
+        plt.colorbar(cn, ax=axis, shrink=0.6, pad=0.04)
 
     # Add the axis title
     axis.set_title(title_str)
@@ -169,12 +169,12 @@ def specify_contour_levels(variable, hourly=False, **kwargs):
         else:
             print(f'{variable} is not supported')
             raise ValueError
-    contourlevels = np.round(contourlevels, 1)
+    contourlevels = np.round(contourlevels, 2)
     return contourlevels
 
 
 def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fig=False,
-                  wrf_dir='./', era_dir='./', short_title_str='Title', fig_path='./'):
+                  wrf_dir='./', era_dir='./', short_title_str='Title', fig_path='./', verbose=False, **kwargs):
     """
     Creates a single WRF or ERA5 plot, using the WRF bounds, producing either a plot every hour
     or a single plot for the day.
@@ -224,8 +224,8 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
 
         # Calculate the error in GHI and WPD
         wrfdat_proc = optwrf.regridding.wrf_era5_error(wrfdat_proc, eradat_proc)
-
-        print(wrfdat_proc)
+        if verbose:
+            print(wrfdat_proc)
 
         # Calculate the fitness
         correction_factor = 0.0004218304553577255
@@ -281,7 +281,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
             ax = fig.add_subplot(1, 1, 1, projection=wrf_cartopy_proj)
 
             # Make the countour lines for filled contours for the GHI
-            contour_levels = specify_contour_levels(var, hourly=True)
+            contour_levels = specify_contour_levels(var, hourly=True, **kwargs)
 
             # Add the filled contour levels
             color_map = specify_clormap(var)
@@ -310,7 +310,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
         ax = fig.add_subplot(1, 1, 1, projection=wrf_cartopy_proj)
 
         # Make the countour lines for filled contours
-        contour_levels = specify_contour_levels(var, hourly=False)
+        contour_levels = specify_contour_levels(var, hourly=False, **kwargs)
 
         # Add the filled contour levels
         color_map = specify_clormap(var)
@@ -331,7 +331,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
         plt.show()
 
 
-def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig_path='./'):
+def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig_path='./', **kwargs):
     """
     Creates a side-by-side comparison plot of WRF and ERA5 producing either a plot every hour
     or a single plot for the day.
@@ -400,7 +400,7 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
             ax_era5 = fig.add_subplot(1, 2, 2, projection=wrf_cartopy_proj, sharey=ax_wrf)
 
             # Make the countour lines for filled contours for the GHI
-            contour_levels = specify_contour_levels(var, hourly=True)
+            contour_levels = specify_contour_levels(var, hourly=True, **kwargs)
 
             # Add the filled contour levels
             color_map = specify_clormap(var)
@@ -437,7 +437,7 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
         ax_era5 = fig.add_subplot(1, 2, 2, projection=wrf_cartopy_proj, sharey=ax_wrf)
 
         # Make the countour lines for filled contours for the GHI
-        contour_levels = specify_contour_levels(var, hourly=False)
+        contour_levels = specify_contour_levels(var, hourly=False, **kwargs)
 
         # Add the filled contour levels
         color_map = specify_clormap(var)
