@@ -20,7 +20,7 @@ There are numerous other arguments that you can inclue to control how WRF runs:
 -e : string specifying the end date of the simulaiton.
 -par : path to a yaml file containing WRF
        physics parameterization options.
--p : specify True or False for random physics parameter generation.
+-p : bool specifying True or False for random physics parameter generation.
 -su : path to a yaml file containing your directory setup info.
 -b : string specifying your boundary condition data source
      (only 'ERA' is supportted currently).
@@ -38,6 +38,8 @@ There are numerous other arguments that you can inclue to control how WRF runs:
       your paramterization yaml file.
 -cu : string identifying a cumulus parameterization scheme in
       your paramterization yaml file.
+-nr : bool specifying if the WRF model (real & wrf) should be run or if just
+      setup and WPS should be run. False indicates that real & wrf will run.
 
 By default, timeout of WPS, Real, and WRF have been disabled in this script.
 
@@ -46,7 +48,6 @@ By default, timeout of WPS, Real, and WRF have been disabled in this script.
 from argparse import ArgumentParser
 from optwrf.wrfparams import flexible_generate
 from optwrf.runwrf import WRFModel
-
 
 # Define command line input options
 arg = ArgumentParser()
@@ -64,6 +65,7 @@ arg.add_argument('-sw', help="Shortwave radiation scheme", type=str)
 arg.add_argument('-lsm', help="Land surface model", type=str)
 arg.add_argument('-pbl', help="Planetary boundary layer scheme", type=str)
 arg.add_argument('-cu', help="Cumulus scheme", type=str)
+arg.add_argument('-nr', help="Don't run WRF -- setup only", type=bool)
 args = arg.parse_args()
 bc_data = args.b
 generate_params = args.p
@@ -74,18 +76,34 @@ if args.par is not None:
     in_yaml = args.par
 else:
     in_yaml = 'params.yml'
-if args.mp is not None: mp = args.mp
-else: mp = None
-if args.lw is not None: lw = args.lw
-else: lw = None
-if args.sw is not None: sw = args.sw
-else: sw = None
-if args.lsm is not None: lsm = args.lsm
-else: lsm = None
-if args.pbl is not None: pbl = args.pbl
-else: pbl = None
-if args.cu is not None: cu = args.cu
-else: cu = None
+if args.mp is not None:
+    mp = args.mp
+else:
+    mp = None
+if args.lw is not None:
+    lw = args.lw
+else:
+    lw = None
+if args.sw is not None:
+    sw = args.sw
+else:
+    sw = None
+if args.lsm is not None:
+    lsm = args.lsm
+else:
+    lsm = None
+if args.pbl is not None:
+    pbl = args.pbl
+else:
+    pbl = None
+if args.cu is not None:
+    cu = args.cu
+else:
+    cu = None
+if args.nr is not None:
+    no_run = args.nr
+else:
+    no_run = False
 
 # Set the setup yaml file to user specification, or default to dirpath.yml.
 if args.su is not None:
@@ -97,7 +115,7 @@ else:
 if args.d is not None and args.d > 0:
     n_domains = int(args.d)
 else:
-    n_domains = 3
+    n_domains = 1
 
 # Format the forecast start/end and determine the total time.
 start_date = args.s
@@ -123,6 +141,10 @@ wrf_sim.prepare_namelists()
 # Run WPS
 success = wrf_sim.run_wps(disable_timeout=True)
 print(f'WPS ran successfully? {success}')
+
+# Exit if the "no run" option is specified
+if no_run:
+    exit()
 
 # RUN REAL
 if success:
