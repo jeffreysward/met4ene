@@ -10,7 +10,7 @@ import optwrf.postwrf as postwrf
 
 # Identify which variables you want to extract from the wrfout file.
 query_variables = [
-        'POWER'
+        'POWER',
         'height_agl',
         'wspd',
         'wdir',
@@ -18,7 +18,7 @@ query_variables = [
 
 # Specify which directory the wrfout file is located in
 # (Note that the processed file will automaticlly be saved to this directory).
-DIR_WRFOUT = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2010-07-01_19mp4lw4sw7lsm8pbl99cu'
+DIR_WRFOUT = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2010-07-01_19mp4lw4sw7lsm8pbl99cu/'
 
 # Identify the WRF output file to be processed
 wrfout_file = 'wrfout_d03_2010-07-01_00:00:00'
