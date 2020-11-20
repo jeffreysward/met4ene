@@ -48,3 +48,4 @@ optNYpvw*
 ei.oper.an*
 */ei.oper.an*
 *.db
+**/.pytest_cache/
