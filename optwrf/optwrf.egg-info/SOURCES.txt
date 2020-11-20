@@ -8,6 +8,7 @@ optwrf/postwrf.py
 optwrf/regridding.py
 optwrf/runwrf.py
 optwrf/simplega.py
+optwrf/util.py
 optwrf/wrfparams.py
 optwrf.egg-info/PKG-INFO
 optwrf.egg-info/SOURCES.txt
@@ -28,4 +29,5 @@ optwrf/test/test_optimize_wrf_physics.py
 optwrf/test/test_postwrf.py
 optwrf/test/test_runwrf_postwrf.py
 optwrf/test/test_runwrf_setup.py
+optwrf/test/test_util.py
 optwrf/test/test_wrfparams.py
