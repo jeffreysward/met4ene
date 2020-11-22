@@ -326,7 +326,8 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
 
         # Save the figure(s)
         if save_fig:
-            plt.savefig(fig_path + '.pdf', transparent=True, bbox_inches='tight')
+            file_type = kwargs.get('file_type', '.pdf')
+            plt.savefig(fig_path + file_type, dpi=300, transparent=True, bbox_inches='tight')
 
         plt.show()
 
@@ -459,14 +460,15 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
 
         # Save the figure
         if save_fig:
-            plt.savefig(fig_path + '.pdf', transparent=True, bbox_inches='tight')
+            file_type = kwargs.get('file_type', '.pdf')
+            plt.savefig(fig_path + file_type, dpi=300, transparent=True, bbox_inches='tight')
         plt.show()
 
 
 def wrf_errorandfitness_plot(wrfdata, save_fig=False, wrf_dir='./', era_dir='./',
                              fig_path='./', verbose=False, fitness_short_title='Model Fitness',
                              ghi_error_short_title='GHI Error (kWh m-2 day-1)',
-                             wpd_error_short_title='WPD Error (kWh m-2 day-1)'):
+                             wpd_error_short_title='WPD Error (kWh m-2 day-1)', **kwargs):
     """
 
     :return:
@@ -527,7 +529,7 @@ def wrf_errorandfitness_plot(wrfdata, save_fig=False, wrf_dir='./', era_dir='./'
     format_cnplot_axis(ax_wpderr, wpderr_cn, proj_bounds,
                        title_str=f'{wpd_error_short_title}\n{time_string_f.values}')
     if save_fig:
-        print('Saving figure...')
-        plt.savefig(fig_path + '.pdf', transparent=True, bbox_inches='tight')
+        file_type = kwargs.get('file_type', '.pdf')
+        plt.savefig(fig_path + file_type, dpi=300, transparent=True, bbox_inches='tight')
 
     plt.show()
