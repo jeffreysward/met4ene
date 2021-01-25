@@ -15,17 +15,17 @@ import optwrf.regridding
 from optwrf import runwrf, postwrf, helper_functions
 
 
-def get_wrf_proj(wrfdata, var):
+def get_wrf_proj(wrfds, var):
     """
     Extracts the WRF projection information from the variable string attribute.
 
-    :param wrfdata:
+    :param wrfds:
     :param var:
     :return:
     """
     # I have to do this tedious string parsing below to get the projection from the processed wrfout file.
     try:
-        wrf_proj_params = wrfdata[var].attrs['projection']
+        wrf_proj_params = wrfds[var].attrs['projection']
     except AttributeError:
         raise ValueError('Variable does not contain projection information')
     wrf_proj_params = wrf_proj_params.replace('(', ', ')
@@ -50,11 +50,11 @@ def get_wrf_proj(wrfdata, var):
         raise ValueError
 
 
-def get_domain_boundary(wrfda, cartopy_crs):
+def get_domain_boundary(wrfds, cartopy_crs):
     """
     Finds the boundary of the WRF domain.
 
-    :param wrfda:
+    :param wrfds:
     :param cartopy_crs:
     :return:
     """
@@ -62,14 +62,14 @@ def get_domain_boundary(wrfda, cartopy_crs):
     variables = {'lat': 'XLAT',
                  'lon': 'XLONG'}
     try:
-        wrfda = xr.Dataset.rename(wrfda, variables)
+        wrfds = xr.Dataset.rename(wrfds, variables)
     except ValueError:
         print(f'Variables {variables} cannot be renamed, '
               f'those on the left are not in this dataset.')
 
     # I need to manually convert the boundaries of the WRF domain into Plate Carree to set the limits.
     # Get the raw map bounds using a wrf-python utility
-    raw_bounds = wrfpy.util.geo_bounds(wrfda)
+    raw_bounds = wrfpy.util.geo_bounds(wrfds)
 
     # Get the projected bounds telling cartopy that the input coordinates are lat/lon (Plate Carree)
     projected_bounds = cartopy_crs.transform_points(ccrs.PlateCarree(),
@@ -173,7 +173,7 @@ def specify_contour_levels(variable, hourly=False, **kwargs):
     return contourlevels
 
 
-def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fig=False,
+def wrf_era5_plot(var, wrfds, erads, paramstr, src='wrf', hourly=False, save_fig=False,
                   wrf_dir='./', era_dir='./', short_title_str='Title', fig_path='./', verbose=False, **kwargs):
     """
     Creates a single WRF or ERA5 plot, using the WRF bounds, producing either a plot every hour
@@ -208,18 +208,27 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
         print(f'Variable {var} is not supported.')
         raise KeyError
 
+    # Get the start_date and create the date string
+    datestr = str(wrfds.Time.dt.strftime('%Y-%m-%d')[0].values)
+
     # To start, we need to get the WRF map projection information (a Lambert Conformal grid),
     # and find the domain boundaries in this projection.
     # NOTE: this task MUST occurr before we regrid the WRF variables or the coordinates change and become incompatible.
-    wrf_cartopy_proj = get_wrf_proj(wrfdat, 'dni')
-    proj_bounds = get_domain_boundary(wrfdat, wrf_cartopy_proj)
+    wrf_cartopy_proj = get_wrf_proj(wrfds, 'dni')
+    proj_bounds = get_domain_boundary(wrfds, wrf_cartopy_proj)
 
     # We can use a basic Plate Carree projection for ERA5
     era5_cartopy_proj = ccrs.PlateCarree()
 
     # Now, get the desired variables
     if var in ['ghi_error', 'wpd_error', 'fitness']:
-        wrfdat_proc, eradat_proc = optwrf.regridding.wrf_era5_regrid_xesmf(wrfdir=wrf_dir, eradir=era_dir)
+        # Due to some obnioxious xarry nuance, the easiest way to keep the regridding function from adding additional
+        # variables and coordinates to the xarray dataset in the outter scope, is just to open new datasets within
+        # wrf_era5_regrid_xesmf; so that's why we must again specify the wrf and era5 file names below.
+        wrf_file = f'wrfout_processed_d01_{datestr}_{paramstr}.nc'
+        era_file = f'ERA5_EastUS_WPD-GHI_{datestr.split("-")[0]}-{datestr.split("-")[1]}.nc'
+        wrfdat_proc, eradat_proc = optwrf.regridding.wrf_era5_regrid_xesmf(wrfdir=wrf_dir, wrffile=wrf_file,
+                                                                           eradir=era_dir, erafile=era_file)
 
         # Calculate the error in GHI and WPD
         wrfdat_proc = optwrf.regridding.wrf_era5_error(wrfdat_proc, eradat_proc)
@@ -233,41 +242,41 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
                                  + correction_factor * wrfdat_proc.wpd_error
 
     # Define the time indicies from the times variable
-    time_indicies = range(0, len(wrfdat.Time))
+    time_indicies = range(0, len(wrfds.Time))
     # Format the times for title slides
-    times_strings_f = wrfdat.Time.dt.strftime('%b %d, %Y %H:%M')
+    times_strings_f = wrfds.Time.dt.strftime('%b %d, %Y %H:%M')
     # Get the desired variable(s)
     for tidx in time_indicies:
-        timestr = wrfdat.Time[tidx].values
+        timestr = wrfds.Time[tidx].values
         timestr_f = times_strings_f[tidx].values
         if hourly:
             title_str = f'{short_title_str}\n{timestr_f} (UTC)'
         else:
-            time_string_f = wrfdat.Time[0].dt.strftime('%b %d, %Y')
+            time_string_f = wrfds.Time[0].dt.strftime('%b %d, %Y')
             title_str = f'{short_title_str}\n{time_string_f.values}'
 
         # WRF Variable (divide by 1000 to convert from W to kW or Wh to kWh)
         if not hourly and tidx != 0:
             if src == 'wrf':
                 if var in ['ghi', 'wpd']:
-                    plot_var = plot_var + (wrfdat[wrf_var].sel(Time=np.datetime_as_string(timestr)) / 1000)
+                    plot_var = plot_var + (wrfds[wrf_var].sel(Time=np.datetime_as_string(timestr)) / 1000)
                 else:
                     plot_var = plot_var + wrfdat_proc[wrf_var].sel(Time=np.datetime_as_string(timestr))
             elif src == 'era5':
                 if var in ['ghi', 'wpd']:
-                    plot_var = plot_var + (eradat[era_var].sel(Time=np.datetime_as_string(timestr)) / 1000)
+                    plot_var = plot_var + (erads[era_var].sel(Time=np.datetime_as_string(timestr)) / 1000)
                 else:
                     print(f'Variable {var} is not provided by {src}')
                     raise ValueError
         else:
             if src == 'wrf':
                 if var in ['ghi', 'wpd']:
-                    plot_var = wrfdat[wrf_var].sel(Time=np.datetime_as_string(timestr)) / 1000
+                    plot_var = wrfds[wrf_var].sel(Time=np.datetime_as_string(timestr)) / 1000
                 else:
                     plot_var = wrfdat_proc[wrf_var].sel(Time=np.datetime_as_string(timestr))
             elif src == 'era5':
                 if var in ['ghi', 'wpd']:
-                    plot_var = eradat[era_var].sel(Time=np.datetime_as_string(timestr)) / 1000
+                    plot_var = erads[era_var].sel(Time=np.datetime_as_string(timestr)) / 1000
                 else:
                     print(f'Variable {var} is not provided by {src}')
                     raise ValueError
@@ -285,10 +294,10 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
             # Add the filled contour levels
             color_map = specify_clormap(var)
             if src == 'wrf' and var in ['ghi', 'wpd']:
-                cn = ax.contourf(wrfpy.to_np(wrfdat.lon), wrfpy.to_np(wrfdat.lat), wrfpy.to_np(plot_var),
+                cn = ax.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat), wrfpy.to_np(plot_var),
                                  contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
             else:
-                cn = ax.contourf(wrfpy.to_np(eradat.longitude), wrfpy.to_np(eradat.latitude), wrfpy.to_np(plot_var),
+                cn = ax.contourf(wrfpy.to_np(erads.longitude), wrfpy.to_np(erads.latitude), wrfpy.to_np(plot_var),
                                  contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
 
             # Format the plot
@@ -314,10 +323,10 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
         # Add the filled contour levels
         color_map = specify_clormap(var)
         if src == 'wrf' and var in ['ghi', 'wpd']:
-            cn = ax.contourf(wrfpy.to_np(wrfdat.lon), wrfpy.to_np(wrfdat.lat), wrfpy.to_np(plot_var),
+            cn = ax.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat), wrfpy.to_np(plot_var),
                              contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
         else:
-            cn = ax.contourf(wrfpy.to_np(eradat.longitude), wrfpy.to_np(eradat.latitude), wrfpy.to_np(plot_var),
+            cn = ax.contourf(wrfpy.to_np(erads.longitude), wrfpy.to_np(erads.latitude), wrfpy.to_np(plot_var),
                              contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
 
         # Format the plot
@@ -331,7 +340,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
         plt.show()
 
 
-def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig_path='./', **kwargs):
+def compare_wrf_era5_plot(var, wrfds, erads, hourly=False, save_fig=False, fig_path='./', **kwargs):
     """
     Creates a side-by-side comparison plot of WRF and ERA5 producing either a plot every hour
     or a single plot for the day.
@@ -355,38 +364,38 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
     # To start, we need to get the WRF map projection information (a Lambert Conformal grid),
     # and find the domain boundaries in this projection.
     # NOTE: this task MUST occurr before we regrid the WRF variables or the coordinates change and become incompatible.
-    wrf_cartopy_proj = get_wrf_proj(wrfdat, 'dni')
-    proj_bounds = get_domain_boundary(wrfdat, wrf_cartopy_proj)
+    wrf_cartopy_proj = get_wrf_proj(wrfds, 'dni')
+    proj_bounds = get_domain_boundary(wrfds, wrf_cartopy_proj)
 
     # We can use a basic Plate Carree projection for ERA5
     era5_cartopy_proj = ccrs.PlateCarree()
 
     # Now, get the desired variables
     # Define the time indicies from the times variable
-    time_indicies = range(0, len(wrfdat.Time))
+    time_indicies = range(0, len(wrfds.Time))
     # Format the times for title slides
-    times_strings_f = wrfdat.Time.dt.strftime('%b %d, %Y %H:%M')
+    times_strings_f = wrfds.Time.dt.strftime('%b %d, %Y %H:%M')
     # Get the desired variable(s)
     for tidx in time_indicies:
-        timestr = wrfdat.Time[tidx].values
+        timestr = wrfds.Time[tidx].values
         timestr_f = times_strings_f[tidx].values
         if hourly:
             title_str = f'{era_var} (kW m-2)\n{timestr_f} (UTC)'
         else:
-            time_string_f = wrfdat.Time[0].dt.strftime('%b %d, %Y')
+            time_string_f = wrfds.Time[0].dt.strftime('%b %d, %Y')
             title_str = f'{era_var} (kWh m-2 day-1) \n{time_string_f.values}'
 
         # WRF Variable (divide by 1000 to convert from W to kW or Wh to kWh)
         if not hourly and tidx != 0:
-            plot_wrfvar = plot_wrfvar + (wrfdat[wrf_var].sel(Time=np.datetime_as_string(timestr)) / 1000)
+            plot_wrfvar = plot_wrfvar + (wrfds[wrf_var].sel(Time=np.datetime_as_string(timestr)) / 1000)
         else:
-            plot_wrfvar = wrfdat[wrf_var].sel(Time=np.datetime_as_string(timestr)) / 1000
+            plot_wrfvar = wrfds[wrf_var].sel(Time=np.datetime_as_string(timestr)) / 1000
 
         # ERA5 GHI (divide by 1000 to convert from W to kW or Wh to kWh)
         if not hourly and tidx != 0:
-            plot_era5var = plot_era5var + (eradat[era_var].sel(Time=timestr_f) / 1000)
+            plot_era5var = plot_era5var + (erads[era_var].sel(Time=timestr_f) / 1000)
         else:
-            plot_era5var = eradat[era_var].sel(Time=timestr_f) / 1000
+            plot_era5var = erads[era_var].sel(Time=timestr_f) / 1000
 
         # Create hourly plots
         if hourly:
@@ -404,9 +413,9 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
 
             # Add the filled contour levels
             color_map = specify_clormap(var)
-            wrf_cn = ax_wrf.contourf(wrfpy.to_np(wrfdat.lon), wrfpy.to_np(wrfdat.lat), wrfpy.to_np(plot_wrfvar),
+            wrf_cn = ax_wrf.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat), wrfpy.to_np(plot_wrfvar),
                                      contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
-            era5_cn = ax_era5.contourf(wrfpy.to_np(eradat.longitude), wrfpy.to_np(eradat.latitude),
+            era5_cn = ax_era5.contourf(wrfpy.to_np(erads.longitude), wrfpy.to_np(erads.latitude),
                                        wrfpy.to_np(plot_era5var),
                                        contour_levels, transform=era5_cartopy_proj, cmap=color_map)
 
@@ -441,9 +450,9 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
 
         # Add the filled contour levels
         color_map = specify_clormap(var)
-        wrf_cn = ax_wrf.contourf(wrfpy.to_np(wrfdat.lon), wrfpy.to_np(wrfdat.lat), wrfpy.to_np(plot_wrfvar),
+        wrf_cn = ax_wrf.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat), wrfpy.to_np(plot_wrfvar),
                                  contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
-        era5_cn = ax_era5.contourf(wrfpy.to_np(eradat.longitude), wrfpy.to_np(eradat.latitude), wrfpy.to_np(plot_era5var),
+        era5_cn = ax_era5.contourf(wrfpy.to_np(erads.longitude), wrfpy.to_np(erads.latitude), wrfpy.to_np(plot_era5var),
                                    contour_levels, transform=era5_cartopy_proj, cmap=color_map)
 
         # Format the plots
@@ -464,40 +473,56 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
         plt.show()
 
 
-def wrf_errorandfitness_plot(wrfdata, eradata, save_fig=False, wrf_dir='./', era_dir='./',
+def wrf_errorandfitness_plot(wrfds, paramstr, save_fig=False, wrf_dir='./', era_dir='./',
                              fig_path='./', verbose=False, fitness_short_title='Model Fitness',
                              ghi_error_short_title='GHI Error (kWh m-2 day-1)',
                              wpd_error_short_title='WPD Error (kWh m-2 day-1)', **kwargs):
     """
+    Plots the GHI error, WPD error, and fitness maps all within one 3-panel plot.
+
+    :param wrfds:
+    :param paramstr:
+    :param save_fig:
+    :param wrf_dir:
+    :param era_dir:
+    :param fig_path:
+    :param verbose:
+    :param fitness_short_title:
+    :param ghi_error_short_title:
+    :param wpd_error_short_title:
+    :param kwargs:
 
     :return:
     """
     # Get the start_date and create the date string
-    start_date = str(wrfdata.Time.dt.strftime('%b %d %Y')[0].values)
+    start_date = str(wrfds.Time.dt.strftime('%b %d %Y')[0].values)
+    datestr = str(wrfds.Time.dt.strftime('%Y-%m-%d')[0].values)
 
     # To start, we need to get the WRF map projection information (a Lambert Conformal grid),
     # and find the domain boundaries in this projection.
     # NOTE: this task MUST occurr before we regrid the WRF variables or the coordinates change and become incompatible.
-    wrf_cartopy_proj = get_wrf_proj(wrfdata, 'dni')
-    proj_bounds = get_domain_boundary(wrfdata, wrf_cartopy_proj)
+    wrf_cartopy_proj = get_wrf_proj(wrfds, 'dni')
+    proj_bounds = get_domain_boundary(wrfds, wrf_cartopy_proj)
     if verbose:
         print(f'WRF Projection:\n{wrf_cartopy_proj}')
         print(f'\nDomain Boundaries:\n{proj_bounds}')
 
     # Regrid the wrf GHI and WPD
-    # The following works fine
-    # wrfdata, eradata = optwrf.regridding.wrf_era5_regrid_xesmf(wrfdir=wrf_dir, eradir=era_dir)
-    # The following changes wrfdata, eradata in the larger scope...
-    wrfdata, eradata = optwrf.regridding.wrf_era5_regrid_xesmf(wrfdata=wrfdata, eradata=eradata)
-
+    # Due to some obnioxious xarry nuance, the easiest way to keep the regridding function from adding additional
+    # variables and coordinates to the xarray dataset in the outter scope, is just to open new datasets within
+    # wrf_era5_regrid_xesmf; so that's why we must again specify the wrf and era5 file names below.
+    wrf_file = f'wrfout_processed_d01_{datestr}_{paramstr}.nc'
+    era_file = f'ERA5_EastUS_WPD-GHI_{datestr.split("-")[0]}-{datestr.split("-")[1]}.nc'
+    wrfds, eradata = optwrf.regridding.wrf_era5_regrid_xesmf(wrfdir=wrf_dir, wrffile=wrf_file,
+                                                             eradir=era_dir, erafile=era_file)
 
     # Calculate the error in GHI and WPD
-    wrfdata = optwrf.regridding.wrf_era5_error(wrfdata, eradata)
+    wrfds = optwrf.regridding.wrf_era5_error(wrfds, eradata)
 
     # Calculate the fitness
     correction_factor = 0.0004218304553577255
     daylight_factor = helper_functions.daylight_frac(start_date)  # daylight fraction
-    wrfdata['fitness'] = daylight_factor * wrfdata.total_ghi_error + correction_factor * wrfdata.total_wpd_error
+    wrfds['fitness'] = daylight_factor * wrfds.total_ghi_error + correction_factor * wrfds.total_wpd_error
 
     # Create a figure
     fig = plt.figure(figsize=(9.5, 3))
@@ -508,21 +533,21 @@ def wrf_errorandfitness_plot(wrfdata, eradata, save_fig=False, wrf_dir='./', era
     ax_wpderr = fig.add_subplot(1, 3, 3, projection=wrf_cartopy_proj, sharey=ax_ghierr)
 
     # Create the filled contour levels
-    fitness_cn = ax_fitness.contourf(wrfpy.to_np(wrfdata.lon), wrfpy.to_np(wrfdata.lat),
-                                     wrfpy.to_np(wrfdata['fitness']),
-                                     np.linspace(0, np.amax(wrfdata['fitness']), 22),
+    fitness_cn = ax_fitness.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat),
+                                     wrfpy.to_np(wrfds['fitness']),
+                                     np.linspace(0, np.amax(wrfds['fitness']), 22),
                                      transform=ccrs.PlateCarree(), cmap=get_cmap("Greys"))
-    ghierr_cn = ax_ghierr.contourf(wrfpy.to_np(wrfdata.lon), wrfpy.to_np(wrfdata.lat),
-                                   wrfpy.to_np(wrfdata['total_ghi_error']),
-                                   np.linspace(0, np.amax(wrfdata['total_ghi_error']), 22),
+    ghierr_cn = ax_ghierr.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat),
+                                   wrfpy.to_np(wrfds['total_ghi_error']),
+                                   np.linspace(0, np.amax(wrfds['total_ghi_error']), 22),
                                    transform=ccrs.PlateCarree(), cmap=get_cmap("hot_r"))
-    wpderr_cn = ax_wpderr.contourf(wrfpy.to_np(wrfdata.lon), wrfpy.to_np(wrfdata.lat),
-                                   wrfpy.to_np(wrfdata['total_wpd_error']),
-                                   np.linspace(0, np.amax(wrfdata['total_wpd_error']), 22),
+    wpderr_cn = ax_wpderr.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat),
+                                   wrfpy.to_np(wrfds['total_wpd_error']),
+                                   np.linspace(0, np.amax(wrfds['total_wpd_error']), 22),
                                    transform=ccrs.PlateCarree(), cmap=get_cmap("Greens"))
 
     # Format the axes
-    time_string_f = wrfdata.Time[0].dt.strftime('%b %d, %Y')
+    time_string_f = wrfds.Time[0].dt.strftime('%b %d, %Y')
     format_cnplot_axis(ax_fitness, fitness_cn, proj_bounds,
                        title_str=f'{fitness_short_title}\n{time_string_f.values}')
     format_cnplot_axis(ax_ghierr, ghierr_cn, proj_bounds,
