@@ -94,17 +94,19 @@ def wrf_era5_regrid_ncl(in_yr, in_mo, in_da, paramstr, wrfdir='./', eradir='/sha
     return error
 
 
-def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas983/wrf_data/data/ERA5/'):
+def wrf_era5_regrid_xesmf(wrfdir='./', wrffile='wrfout_processed_d01_2011-12-13_19mp4lw4sw7lsm8pbl99cu.nc',
+                          eradir='/share/mzhang/jas983/wrf_data/data/ERA5/', erafile='ERA5_EastUS_WPD-GHI_2011-12.nc',
+                          keep_weights=False):
     """
     CONSIDER MOVING THIS WITHIN THE WRFModel METHOD?
 
     Converts (regrids) the WRF grid to the ERA5 grid and calculates the total absolute error
     between the global horizonal irradiance (GHI) and wind power density (WPD) in kW -m -2.
 
-    :param in_yr:
-    :param in_mo:
     :param wrfdir:
+    :param wrffile:
     :param eradir:
+    :param erafile:
     :param keep_weights:
     :return:
 
@@ -120,11 +122,14 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
         return regrid
 
     # WRF file containing source grid
-    wrffile = 'wrfout_processed_d01.nc'
+    # The following block allows the function to succeed even if the wrffile is not found.
+    # I think I did this so that this function wouldn't create problems in optimize_wrf_physics.py,
+    # but I don't think this function was ever used there, so it should probably be changed.
     try:
         wrfdata = xr.open_dataset(wrfdir + wrffile)
     except FileNotFoundError:
-        print(f'The wrfout file {wrfdir + wrffile} does not exist. Check that your path.')
+        print(f'ERROR: The wrfout file {wrfdir + wrffile} does not exist. Check that your path.'
+              f'\nThis function will not fail!')
         wrfdata = None
         eradata = None
         return wrfdata, eradata
@@ -139,11 +144,12 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     wpd = wpd / 1000
 
     # ERA data file(s)
-    erafile = f'ERA5_EastUS_WPD-GHI_{str(in_yr).zfill(4)}-{str(in_mo).zfill(2)}.nc'
+    # Should change/remove this try/except clause also.
     try:
         eradata = xr.open_dataset(eradir + erafile)
     except FileNotFoundError:
-        print(f'The wrfout file {eradir + erafile} does not exist. Check that your path.')
+        print(f'ERROR: The era5 file {eradir + erafile} does not exist. Check that your path.'
+              f'\nThis function will not fail!')
         eradata = None
         return wrfdata, eradata
 
@@ -173,11 +179,12 @@ def wrf_era5_regrid_xesmf(in_yr, in_mo, wrfdir='./', eradir='/share/mzhang/jas98
     wrfdata['ghi_regrid'] = wrf_ghi_regrid
     wrfdata['wpd_regrid'] = wrf_wpd_regrid
 
-    # Clean up regridding files if necessary
-    try:
-        regridder.clean_weight_file()
-    except AttributeError:
-        pass
+    # Clean up regridding files if specified
+    if not keep_weights:
+        try:
+            regridder.clean_weight_file()
+        except AttributeError:
+            pass
 
     return wrfdata, eradata
 

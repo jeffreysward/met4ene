@@ -178,6 +178,10 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
     """
     Creates a single WRF or ERA5 plot, using the WRF bounds, producing either a plot every hour
     or a single plot for the day.
+
+    Would be nice to
+    - Make both wrfdat and eradat optional (ofc one of them is necessary)
+    - M
     """
     # Format the var input
     if type(var) is not str:
@@ -215,12 +219,7 @@ def wrf_era5_plot(var, wrfdat, eradat, datestr, src='wrf', hourly=False, save_fi
 
     # Now, get the desired variables
     if var in ['ghi_error', 'wpd_error', 'fitness']:
-        input_year = helper_functions.format_date(datestr).strftime('%Y')
-        input_month = helper_functions.format_date(datestr).strftime('%m')
-        wrfdat_proc, eradat_proc = optwrf.regridding.wrf_era5_regrid_xesmf(input_year,
-                                                                           input_month,
-                                                                           wrfdir=wrf_dir,
-                                                                           eradir=era_dir)
+        wrfdat_proc, eradat_proc = optwrf.regridding.wrf_era5_regrid_xesmf(wrfdir=wrf_dir, eradir=era_dir)
 
         # Calculate the error in GHI and WPD
         wrfdat_proc = optwrf.regridding.wrf_era5_error(wrfdat_proc, eradat_proc)
