@@ -179,9 +179,21 @@ def wrf_era5_plot(var, wrfds, erads, paramstr, src='wrf', hourly=False, save_fig
     Creates a single WRF or ERA5 plot, using the WRF bounds, producing either a plot every hour
     or a single plot for the day.
 
-    Would be nice to
-    - Make both wrfdat and eradat optional (ofc one of them is necessary)
-    - M
+    :param var:
+    :param wrfds:
+    :param erads:
+    :param paramstr:
+    :param src:
+    :param hourly:
+    :param save_fig:
+    :param wrf_dir:
+    :param era_dir:
+    :param short_title_str:
+    :param fig_path:
+    :param verbose:
+    :param kwargs:
+
+    :return: None
     """
     # Format the var input
     if type(var) is not str:
@@ -344,6 +356,16 @@ def compare_wrf_era5_plot(var, wrfds, erads, hourly=False, save_fig=False, fig_p
     """
     Creates a side-by-side comparison plot of WRF and ERA5 producing either a plot every hour
     or a single plot for the day.
+
+    :param var:
+    :param wrfds:
+    :param erads:
+    :param hourly:
+    :param save_fig:
+    :param fig_path:
+    :param kwargs:
+
+    :return: None
     """
     # Format the var input
     if type(var) is not str:
@@ -492,7 +514,7 @@ def wrf_errorandfitness_plot(wrfds, paramstr, save_fig=False, wrf_dir='./', era_
     :param wpd_error_short_title:
     :param kwargs:
 
-    :return:
+    :return: None
     """
     # Get the start_date and create the date string
     start_date = str(wrfds.Time.dt.strftime('%b %d %Y')[0].values)
