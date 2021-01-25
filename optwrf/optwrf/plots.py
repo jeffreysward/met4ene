@@ -464,7 +464,7 @@ def compare_wrf_era5_plot(var, wrfdat, eradat, hourly=False, save_fig=False, fig
         plt.show()
 
 
-def wrf_errorandfitness_plot(wrfdata, save_fig=False, wrf_dir='./', era_dir='./',
+def wrf_errorandfitness_plot(wrfdata, eradata, save_fig=False, wrf_dir='./', era_dir='./',
                              fig_path='./', verbose=False, fitness_short_title='Model Fitness',
                              ghi_error_short_title='GHI Error (kWh m-2 day-1)',
                              wpd_error_short_title='WPD Error (kWh m-2 day-1)', **kwargs):
@@ -485,10 +485,12 @@ def wrf_errorandfitness_plot(wrfdata, save_fig=False, wrf_dir='./', era_dir='./'
         print(f'\nDomain Boundaries:\n{proj_bounds}')
 
     # Regrid the wrf GHI and WPD
-    input_year = helper_functions.format_date(start_date).strftime('%Y')
-    input_month = helper_functions.format_date(start_date).strftime('%m')
-    wrfdata, eradata = optwrf.regridding.wrf_era5_regrid_xesmf(input_year, input_month,
-                                                               wrfdir=wrf_dir, eradir=era_dir)
+    # The following works fine
+    # wrfdata, eradata = optwrf.regridding.wrf_era5_regrid_xesmf(wrfdir=wrf_dir, eradir=era_dir)
+    # The following changes wrfdata, eradata in the larger scope...
+    wrfdata, eradata = optwrf.regridding.wrf_era5_regrid_xesmf(wrfdata=wrfdata, eradata=eradata)
+
+
     # Calculate the error in GHI and WPD
     wrfdata = optwrf.regridding.wrf_era5_error(wrfdata, eradata)
 
