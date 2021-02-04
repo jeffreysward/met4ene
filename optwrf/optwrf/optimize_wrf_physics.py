@@ -293,7 +293,7 @@ def get_fitness(param_ids, verbose=False):
     return fitness, error1, error2, runtime
 
 
-def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
+def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011', method='both',
                     bc_data='ERA', n_domains=1, correction_factor=0.0004218304553577255,
                     setup_yaml='dirpath.yml', disable_timeout=False, verbose=False):
     """
@@ -306,6 +306,8 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         specifying a desired start date.
     :param end_date: string
         specifying a desired end date.
+    :param method: string
+        specifying what the fitness function judges -- wind, solar, or both.
     :param bc_data: string
         specifying the boundary condition data to be used for the WRF forecast.
         Currently, only ERA data (ds627.0) is supported.

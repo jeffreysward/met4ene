@@ -2,6 +2,7 @@
 *.png
 *.pdf
 *.nc
+*.grb
 *.grb2
 *GRIBFILE*
 *PFILE*

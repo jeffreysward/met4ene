@@ -1,5 +1,6 @@
 from math import pi
 
+import cdsapi
 import numpy as np
 import wrf
 import xarray as xr
@@ -159,27 +160,72 @@ def ll_to_xy(met_data, latitude, longitude):
     return result
 
 
+def get_data_cdsapi(product, variables, product_type='reanalysis', fmt='grib', pressure_level=None,
+                    area='55/-130/20/-60', date='20110101/20110101', time='00/to/23/by/1',
+                    output_file_name='cds_data.grb'):
+    """
+
+    :param product:
+    :param variables:
+    :param product_type:
+    :param fmt:
+    :param pressure_level:
+    :param area:
+    :param date:
+    :param time:
+    :param output_file_name:
+    :return:
+    """
+    # Create the CDS API Client object
+    c = cdsapi.Client()
+
+    # Download the pressure level data
+    if pressure_level is None:
+        c.retrieve(product,
+                   {
+                       'product_type': product_type,
+                       'format': fmt,
+                       'variable': variables,
+                       'area': area,
+                       'date': date,
+                       'time': time,
+                   },
+                   output_file_name)
+    else:
+        c.retrieve(product,
+                   {
+                       'product_type': product_type,
+                       'format': fmt,
+                       'variable': variables,
+                       'pressure_level': pressure_level,
+                       'area': area,
+                       'date': date,
+                       'time': time,
+                   },
+                   output_file_name)
+
+
 class Kdtree_ll_to_xy(object):
     def __init__(self, met_ds, latvarname, lonvarname):
         self.met_ds = met_ds
         self.latvar = self.met_ds[latvarname]
         self.lonvar = self.met_ds[lonvarname]
         # Read latitude and longitude from file into numpy arrays
-        rad_factor = pi/180.0  # for trignometry, need angles in radians
+        rad_factor = pi / 180.0  # for trignometry, need angles in radians
         self.latvals = self.latvar[:] * rad_factor
         self.lonvals = self.lonvar[:] * rad_factor
         self.shape = self.latvals.shape
         clat, clon = cos(self.latvals), cos(self.lonvals)
         slat, slon = sin(self.latvals), sin(self.lonvals)
-        triples = list(zip(np.ravel(clat*clon), np.ravel(clat*slon), np.ravel(slat)))
+        triples = list(zip(np.ravel(clat * clon), np.ravel(clat * slon), np.ravel(slat)))
         self.kdt = cKDTree(triples)
 
     def query(self, lat0, lon0):
-        rad_factor = pi/180.0
+        rad_factor = pi / 180.0
         lat0_rad = lat0 * rad_factor
         lon0_rad = lon0 * rad_factor
         clat0, clon0 = cos(lat0_rad), cos(lon0_rad)
         slat0, slon0 = sin(lat0_rad), sin(lon0_rad)
-        dist_sq_min, minindex_1d = self.kdt.query([clat0*clon0, clat0*slon0, slat0])
+        dist_sq_min, minindex_1d = self.kdt.query([clat0 * clon0, clat0 * slon0, slat0])
         iy_min, ix_min = np.unravel_index(minindex_1d, self.shape)
         return iy_min, ix_min

@@ -198,14 +198,28 @@ class WRFModel:
         easier to link all the files in the temporary data directory than to link
         indidivdual files out of the central data directory.
 
-        NOTE Currently, only ERA data (ds627.0) is supported!
+        NOTE Currently, only ERA5 data (ds633.0) and the old ERA-interim data (ds627.0) are supported!
 
         :return vtable_sfx: string
             WPS variable table suffix -- tells subsequent methods which boundary condidtion data is being used
             so that ungrib can successfully unpack data.
 
         """
-        if self.bc_data == 'ERA':
+        if self.bc_data == 'ERA5':
+            if self.on_cheyenne:
+                # The following variables define the path where ERA is located within the Cheyenne RDA
+                DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds633.0/e5.oper.an.pl/'
+                DATA_ROOT2 = '/gpfs/fs1/collections/rda/data/ds633.0/e5.oper.an.sfc/'
+            else:
+                # The following define paths to the ERA data on the RDA site
+                dspath = 'http://rda.ucar.edu/data/ds633.0/'
+                DATA_ROOT1 = 'e5.oper.an.pl/'
+                DATA_ROOT2 = 'e5.oper.an.sfc/'
+            datpfx1 = 'e5.oper.an.pl.regn128sc.'
+            datpfx2 = 'e5.oper.an.pl.regn128uv.'
+            datpfx3 = 'e5.oper.an.sfc.regn128sc.'
+            vtable_sfx = 'ERA-interim.pl'
+        elif self.bc_data == 'ERA':
             if self.on_cheyenne:
                 # The following variables define the path where ERA is located within the Cheyenne RDA
                 DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds627.0/ei.oper.an.pl/'
@@ -220,7 +234,7 @@ class WRFModel:
             datpfx3 = 'ei.oper.an.sfc.regn128sc.'
             vtable_sfx = 'ERA-interim.pl'
         else:
-            print(f'Currently {self.bc_data} is not supported; please use ERA for boundary condition data.')
+            print(f'Currently {self.bc_data} is not supported; please use ERA or ERA5 for boundary condition data.')
             raise ValueError
 
         if self.verbose:
@@ -681,7 +695,7 @@ class WRFModel:
         os.system(self.CMD_RM % (self.DIR_WRFOUT + 'rsl.*'))
         return True
 
-    def run_wrf(self, disable_timeout=False, timeout_hours=8, save_wps_files=False):
+    def run_wrf(self, disable_timeout=False, timeout_hours=16, save_wps_files=False):
         """
         Runs wrf.exe and checks to see if it was successful.
 

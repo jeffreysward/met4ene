@@ -25,3 +25,4 @@ dependencies:
   - xarray=0.16.0
   - pip:
     - git+https://github.com/pangeo-data/xESMF.git
+    - cdsapi

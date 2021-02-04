@@ -11,4 +11,4 @@ import optwrf.optimize_wrf_physics as owp
 
 # Specify the population size and number of generations
 # to run the simple genetic algorithm for optimizing WRF physics.
-owp.run_simplega(pop_size=365, n_generations=0, initial_pop_file='6mp3lw3sw1lsm1pbl1cu_2011_sims.csv')
+owp.run_simplega(pop_size=61, n_generations=0, initial_pop_file='8mp4lw4sw2lsm2pbl6cu_2011_sims_repeat.csv')
