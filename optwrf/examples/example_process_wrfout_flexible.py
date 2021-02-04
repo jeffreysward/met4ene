@@ -12,16 +12,17 @@ import optwrf.postwrf as postwrf
 query_variables = [
         'POWER',
         'height_agl',
-        'wspd',
-        'wdir',
+        #'wspd',
+        #'wdir',
     ]
 
 # Specify which directory the wrfout file is located in
-# (Note that the processed file will automaticlly be saved to this directory).
-DIR_WRFOUT = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2010-07-01_19mp4lw4sw7lsm8pbl99cu/'
+# Note that the processed file will automaticlly be saved to this directory.
+# Also the directory MUST have a "/" at the end.
+DIR_WRFOUT = '/share/mzhang/jas983/wrf_data/met4ene/wrfout/ARW/2016-08-06_2mp1lw4sw4lsm5pbl3cu/'
 
 # Identify the WRF output file to be processed
-wrfout_file = 'wrfout_d03_2010-07-01_00:00:00'
+wrfout_file = 'wrfout_d03_2016-08-11_01:00:00'
 
 # Call the function that processes the data
 postwrf.process_wrfout_flexible(DIR_WRFOUT, wrfout_file, query_variables,
