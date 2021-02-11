@@ -209,6 +209,8 @@ class WRFModel:
 
         """
         if self.bc_data == 'ERA5':
+            # Reset the boundary condition data source to the CDS api
+            self.bc_src = 'CDS'
             if self.on_cheyenne:
                 # The following variables define the path where ERA is located within the Cheyenne RDA
                 DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds633.0/e5.oper.an.pl/'
@@ -799,7 +801,7 @@ class WRFModel:
         os.system(self.CMD_RM % (self.DIR_WRFOUT + 'rsl.*'))
         return True
 
-    def run_wrf(self, disable_timeout=False, timeout_hours=16, save_wps_files=False):
+    def run_wrf(self, disable_timeout=False, timeout_hours=8, save_wps_files=False):
         """
         Runs wrf.exe and checks to see if it was successful.
 

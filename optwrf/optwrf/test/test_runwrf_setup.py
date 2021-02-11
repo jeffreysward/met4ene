@@ -48,17 +48,47 @@ def test_WRFModel():
 
 
 def test_get_bc_data(setup_yaml='mac_dirpath.yml'):
-    """Checks if WRF boundary condition data can be downloaded from the RDA.
+    """
+    Checks if WRF boundary condition data can be downloaded from the RDA.
+
     This definitely works best if done on Magma using setup_yaml='dirpath.yml',
     but if you do want to run it on your local machine make sure that you change
     setup_yaml='local_dirpath.yml', where local_dirpath.yml is a yaml file where
-    you specify root directory paths. Note: this test only works on linux."""
+    you specify root directory paths.
+
+    Note to self: this test only works on the linux not the Mac.
+    I think the spaces in the "Box Sync" folder cause problems.
+    """
     if on_magma:
         wrf_sim = WRFModel(param_ids, start_date, end_date)
     else:
         print(f'WARNING: this test requires you to manually provide setup_yaml!\n'
               f'You have specified {setup_yaml}.')
         wrf_sim = WRFModel(param_ids, start_date, end_date, setup_yaml=setup_yaml)
+    vtable_sfx = wrf_sim.get_bc_data()
+    print(f'The following data files are in {wrf_sim.DIR_DATA_TMP}:\n')
+    [print(name) for name in os.listdir(wrf_sim.DIR_DATA_TMP)]
+    assert vtable_sfx == 'ERA-interim.pl'
+    assert len([name for name in os.listdir(wrf_sim.DIR_DATA_TMP)]) > 0
+
+
+def test_get_bc_data_w_csdapi(setup_yaml='mac_dirpath.yml'):
+    """
+    Checks if WRF boundary condition data can be downloaded using the CDS api.
+
+    This definitely works best if done on Magma using setup_yaml='dirpath.yml',
+    but if you do want to run it on your local machine make sure that you change
+    setup_yaml='local_dirpath.yml', where local_dirpath.yml is a yaml file where
+    you specify root directory paths.
+
+    Note to self: this test only works on the linux pc.
+    """
+    if on_magma:
+        wrf_sim = WRFModel(param_ids, start_date, end_date, bc_data='ERA5')
+    else:
+        print(f'WARNING: this test requires you to manually provide setup_yaml!\n'
+              f'You have specified {setup_yaml}.')
+        wrf_sim = WRFModel(param_ids, start_date, end_date, bc_data='ERA5', setup_yaml=setup_yaml)
     vtable_sfx = wrf_sim.get_bc_data()
     print(f'The following data files are in {wrf_sim.DIR_DATA_TMP}:\n')
     [print(name) for name in os.listdir(wrf_sim.DIR_DATA_TMP)]
