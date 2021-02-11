@@ -164,6 +164,7 @@ def get_data_cdsapi(product, variables, product_type='reanalysis', fmt='grib', p
                     area='55/-130/20/-60', date='20110101/20110101', time='00/to/23/by/1',
                     output_file_name='cds_data.grb'):
     """
+    Downloads data using the Climate Data Store (CDS) API.
 
     :param product:
     :param variables:

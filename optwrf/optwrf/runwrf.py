@@ -29,6 +29,7 @@ import yaml
 
 from pvlib.wrfcast import WRF
 import optwrf.helper_functions as hf
+import optwrf.util as util
 from optwrf.helper_functions import determine_computer, read_last_line, print_last_3lines, \
     rda_download
 from optwrf.regridding import wrf_era5_regrid_ncl, wrf_era5_regrid_xesmf, wrf_era5_regrid_pyresample, wrf_era5_error
@@ -41,12 +42,14 @@ class WRFModel:
     This class provides a framework for running the WRF model
 
     """
-    def __init__(self, param_ids, start_date, end_date, bc_data='ERA',
+
+    def __init__(self, param_ids, start_date, end_date, bc_data='ERA', bc_src='RDA',
                  n_domains=1, setup_yaml='dirpath.yml', verbose=True):
         self.param_ids = param_ids
         self.start_date = start_date
         self.end_date = end_date
         self.bc_data = bc_data
+        self.bc_src = bc_src
         self.n_domains = n_domains
         self.verbose = verbose
 
@@ -90,7 +93,7 @@ class WRFModel:
         self.DIR_DATA_TMP = f'{self.DIR_DATA_ROOT}data/{self.forecast_start.strftime("%Y-%m-%d")}_{self.paramstr}/'
         self.DIR_MET4ENE = dirpaths.get('DIR_MET4ENE')
         self.DIR_WRFOUT = self.DIR_MET4ENE + 'wrfout/ARW/%s_' % \
-                         (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
+                          (self.forecast_start.strftime('%Y-%m-%d')) + self.paramstr + '/'
         self.DIR_RUNWRF = self.DIR_MET4ENE + 'optwrf/optwrf/'
         self.DIR_TEMPLATES = dirpaths.get('DIR_TEMPLATES')
         self.DIR_ERA5_ROOT = dirpaths.get('DIR_ERA5_ROOT')
@@ -106,9 +109,9 @@ class WRFModel:
                                    + self.forecast_start.strftime('%d') + '_00:00:00'
         if self.n_domains > 2:
             self.FILE_WRFOUT_d03 = 'wrfout_d03' + '_' \
-                           + self.forecast_start.strftime('%Y') + '-' \
-                           + self.forecast_start.strftime('%m') + '-' \
-                           + self.forecast_start.strftime('%d') + '_00:00:00'
+                                   + self.forecast_start.strftime('%Y') + '-' \
+                                   + self.forecast_start.strftime('%m') + '-' \
+                                   + self.forecast_start.strftime('%d') + '_00:00:00'
 
         # Define linux command aliai
         self.CMD_LN = 'ln -sf %s %s'
@@ -210,14 +213,68 @@ class WRFModel:
                 # The following variables define the path where ERA is located within the Cheyenne RDA
                 DATA_ROOT1 = '/gpfs/fs1/collections/rda/data/ds633.0/e5.oper.an.pl/'
                 DATA_ROOT2 = '/gpfs/fs1/collections/rda/data/ds633.0/e5.oper.an.sfc/'
+                print(f'{self.bc_data} is not ready for use on Cheyenne')
+                raise NotImplementedError
             else:
-                # The following define paths to the ERA data on the RDA site
-                dspath = 'http://rda.ucar.edu/data/ds633.0/'
-                DATA_ROOT1 = 'e5.oper.an.pl/'
-                DATA_ROOT2 = 'e5.oper.an.sfc/'
-            datpfx1 = 'e5.oper.an.pl.regn128sc.'
-            datpfx2 = 'e5.oper.an.pl.regn128uv.'
-            datpfx3 = 'e5.oper.an.sfc.regn128sc.'
+                # Prefixes for the output file names
+                pl_pfx = 'ei.oper.an.pl.'
+                sfc_pfx = 'ei.oper.an.sfc.'
+                # CDS pressure level and surface product names and type
+                cds_pl_product = 'reanalysis-era5-pressure-levels'
+                cds_sfc_product = 'reanalysis-era5-single-levels'
+                cds_product_type = 'reanalysis'
+                # Specify the spatial extent of the data you wish to download
+                # (the ones below are for the Continential US)
+                north_lat = 55
+                south_lat = 20
+                west_lon = -130
+                east_lon = -60
+                cds_area_str = f'{north_lat}/{west_lon}/{south_lat}/{east_lon}'
+                cds_times = '00/to/23/by/1'
+                cds_pls = [
+                    '1', '2', '3',
+                    '5', '7', '10',
+                    '20', '30', '50',
+                    '70', '100', '125',
+                    '150', '175', '200',
+                    '225', '250', '300',
+                    '350', '400', '450',
+                    '500', '550', '600',
+                    '650', '700', '750',
+                    '775', '800', '825',
+                    '850', '875', '900',
+                    '925', '950', '975',
+                    '1000'
+                ]
+                cds_pl_vars = [
+                    'geopotential',
+                    'relative_humidity',
+                    'specific_humidity',
+                    'temperature',
+                    'u_component_of_wind',
+                    'v_component_of_wind'
+                ]
+                cds_sfc_vars = [
+                    'surface_pressure',
+                    'mean_sea_level_pressure',
+                    'skin_temperature',
+                    'sea_surface_temperature',
+                    'sea_ice_cover',
+                    '2m_temperature',
+                    '2m_dewpoint_temperature',
+                    '10m_u_component_of_wind',
+                    '10m_v_component_of_wind',
+                    'land_sea_mask',
+                    'snow_depth',
+                    'soil_temperature_level_1',
+                    'soil_temperature_level_2',
+                    'soil_temperature_level_3',
+                    'soil_temperature_level_4',
+                    'volumetric_soil_water_layer_1',
+                    'volumetric_soil_water_layer_2',
+                    'volumetric_soil_water_layer_3',
+                    'volumetric_soil_water_layer_4'
+                ]
             vtable_sfx = 'ERA-interim.pl'
         elif self.bc_data == 'ERA':
             if self.on_cheyenne:
@@ -238,10 +295,11 @@ class WRFModel:
             raise ValueError
 
         if self.verbose:
-            print('Using {} data for boundary conditions'.format(self.bc_data))
-            print('The corresponding Vtable is: {}'.format(vtable_sfx))
+            print(f'Using {self.bc_data} data for boundary conditions')
+            print(f'The corresponding Vtable is: {vtable_sfx}')
             print(f'--> Data Directory:\n{self.DIR_DATA}')
 
+        # ----- Code shared by all boundary condition data begins here -----
         # If no data directory exists, create one
         if not os.path.exists(self.DIR_DATA):
             os.makedirs(self.DIR_DATA, 0o755)
@@ -274,21 +332,36 @@ class WRFModel:
                                                   + datpfx3 + year_mo_day + '*', self.DIR_DATA_TMP)
                 os.system(cmd)
         else:
-            # Build the complete RDA path to required files (filelist),
+            # Build the complete path to required files (filelist(s)),
             # and a list of the file names themselves (file_check)
-            hrs = ['00', '06', '12', '18']
-            filelist = []
             file_check = []
-            for date in date_list:
-                for hr in hrs:
-                    year_mo = date.strftime('%Y') + date.strftime('%m')
-                    year_mo_day_hr = date.strftime('%Y') + date.strftime('%m') + date.strftime('%d') + hr
-                    filelist.append(DATA_ROOT1 + year_mo + '/' + datpfx1 + year_mo_day_hr)
-                    filelist.append(DATA_ROOT1 + year_mo + '/' + datpfx2 + year_mo_day_hr)
-                    filelist.append(DATA_ROOT2 + year_mo + '/' + datpfx3 + year_mo_day_hr)
-                    file_check.append(datpfx1 + year_mo_day_hr)
-                    file_check.append(datpfx2 + year_mo_day_hr)
-                    file_check.append(datpfx3 + year_mo_day_hr)
+            if self.bc_src == 'RDA':
+                # For the RDA, we download data every 6h for initialization,
+                # and we build this filelist manually using the hrs list below.
+                hrs = ['00', '06', '12', '18']
+                filelist = []
+                for date in date_list:
+                    for hr in hrs:
+                        year_mo = date.strftime('%Y') + date.strftime('%m')
+                        year_mo_day_hr = date.strftime('%Y') + date.strftime('%m') + date.strftime('%d') + hr
+                        filelist.append(DATA_ROOT1 + year_mo + '/' + datpfx1 + year_mo_day_hr)
+                        filelist.append(DATA_ROOT1 + year_mo + '/' + datpfx2 + year_mo_day_hr)
+                        filelist.append(DATA_ROOT2 + year_mo + '/' + datpfx3 + year_mo_day_hr)
+                        file_check.append(datpfx1 + year_mo_day_hr)
+                        file_check.append(datpfx2 + year_mo_day_hr)
+                        file_check.append(datpfx3 + year_mo_day_hr)
+
+            elif self.bc_src == 'CDS':
+                # For the CDS API, we simply download one pressure levels file and one surface file
+                # for each day. However, the command we will use to download the pressure level data
+                # and the surfce data will be different, so we need three file
+                pl_filelist = []
+                sfc_filelist = []
+                for date in date_list:
+                    year_mo_day = date.strftime('%Y') + date.strftime('%m') + date.strftime('%d')
+                    # Add the files to the lists
+                    file_check.append(f'{pl_pfx}{year_mo_day}_{year_mo_day}.grb')
+                    file_check.append(f'{sfc_pfx}{year_mo_day}_{year_mo_day}.grb')
 
             # Check to see if all these files already exist in the data directory
             data_exists = []
@@ -296,16 +369,47 @@ class WRFModel:
                 data_exists.append(os.path.exists(self.DIR_DATA + data_file))
             if self.verbose:
                 print(f'This simulation requires {len(file_check)} files, '
-                      f'{data_exists.count(True)} are already in your data directory.')
+                      f'{data_exists.count(True)} are already in your data directory.\n'
+                      f'The files are:')
+                print(file_check)
+
             if data_exists.count(True) == len(file_check):
                 if self.verbose:
                     print('Boundary condition data was previously downloaded from RDA.')
             else:
-                # Download the data from the online RDA (requires password and connection)
-                success = rda_download(filelist, dspath)
-                if not success:
-                    print(f'{self.bc_data} data was not successfully downloaded from RDA.')
-                    raise RuntimeError
+                if self.bc_src == 'RDA':
+                    # Download the data from the online RDA (requires password and connection)
+                    success = rda_download(filelist, dspath)
+                    if not success:
+                        print(f'{self.bc_data} data was not successfully downloaded from RDA.')
+                        raise RuntimeError
+                elif self.bc_src == 'CDS':
+                    # Download the data using the CDS API
+                    for date in date_list:
+                        dates_str = f'{date}/{date}'
+                        pl_file_name = f'{pl_pfx}{date}_{date}.grb'
+                        sfc_file_name = f'{sfc_pfx}{date}_{date}.grb'
+                        # Download the pressure level data
+                        util.get_data_cdsapi(cds_pl_product, cds_pl_vars,
+                                             product_type=cds_product_type,
+                                             fmt='grib',
+                                             pressure_level=cds_pls,
+                                             area=cds_area_str,
+                                             date=dates_str,
+                                             time=cds_times,
+                                             output_file_name=pl_file_name)
+
+                        # Download the surface data
+                        util.get_data_cdsapi(cds_sfc_product, cds_sfc_vars,
+                                             product_type=cds_product_type,
+                                             fmt='grib',
+                                             area=cds_area_str,
+                                             date=dates_str,
+                                             time=cds_times,
+                                             output_file_name=sfc_file_name)
+                else:
+                    print(f'Boundary condidion data source {self.bc_data} is not supportted.')
+                    raise NotImplementedError
 
                 # Move the data files to the data directory
                 for file in file_check:
@@ -1092,7 +1196,8 @@ class WRFModel:
             for timestr in era_ssrd_raw.forecast_initial_time:
                 ssrd_slice = era_ssrd_raw.sel(forecast_initial_time=timestr.dt.strftime('%Y-%m-%d %H'))
                 ssrd_slice = ssrd_slice.assign_coords(forecast_hour=pd.date_range(start=timestr.values, freq='H',
-                                                                                  periods=(len(ssrd_slice.forecast_hour))))
+                                                                                  periods=(
+                                                                                      len(ssrd_slice.forecast_hour))))
                 ssrd_slice = ssrd_slice.rename({'forecast_hour': 'Time'})
                 ssrd_slice = ssrd_slice.reset_coords('forecast_initial_time', drop=True)
                 if first is True:
