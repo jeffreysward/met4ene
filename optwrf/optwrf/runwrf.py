@@ -388,9 +388,10 @@ class WRFModel:
                 elif self.bc_src == 'CDS':
                     # Download the data using the CDS API
                     for date in date_list:
-                        dates_str = f'{date}/{date}'
-                        pl_file_name = f'{pl_pfx}{date}_{date}.grb'
-                        sfc_file_name = f'{sfc_pfx}{date}_{date}.grb'
+                        year_mo_day = date.strftime('%Y') + date.strftime('%m') + date.strftime('%d')
+                        dates_str = f'{year_mo_day}/{year_mo_day}'
+                        pl_file_name = f'{pl_pfx}{year_mo_day}_{year_mo_day}.grb'
+                        sfc_file_name = f'{sfc_pfx}{year_mo_day}_{year_mo_day}.grb'
                         # Download the pressure level data
                         util.get_data_cdsapi(cds_pl_product, cds_pl_vars,
                                              product_type=cds_product_type,
