@@ -219,8 +219,8 @@ class WRFModel:
                 raise NotImplementedError
             else:
                 # Prefixes for the output file names
-                pl_pfx = 'ei.oper.an.pl.'
-                sfc_pfx = 'ei.oper.an.sfc.'
+                pl_pfx = 'e5.oper.an.pl.'
+                sfc_pfx = 'e5.oper.an.sfc.'
                 # CDS pressure level and surface product names and type
                 cds_pl_product = 'reanalysis-era5-pressure-levels'
                 cds_sfc_product = 'reanalysis-era5-single-levels'
@@ -373,7 +373,7 @@ class WRFModel:
                 print(f'This simulation requires {len(file_check)} files, '
                       f'{data_exists.count(True)} are already in your data directory.\n'
                       f'The files are:')
-                print(file_check)
+                [print(name) for name in file_check]
 
             if data_exists.count(True) == len(file_check):
                 if self.verbose:
