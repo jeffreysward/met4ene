@@ -31,21 +31,37 @@ def process_wrfout_flexible(DIR_WRFOUT, wrfout_file, query_variables,
                             start=None, end=None,
                             outfile_prefix='processed_', save_file=True):
     """
-    Processes the wrfout file -- calculates GHI and wind power denity (WPD) and writes these variables
-    to wrfout_processed_d01.nc data file to be used by the regridding script (wrf2era_error.ncl) in
-    wrf_era5_diff().
+    Processes any wrfout file, i.e., this function extracts specified query_variables from the
+    specified wrfout file.
 
-    This method makes use of two different packages that are not endogeneous to optwrf. The first is
-    pvlib.wrfcast, which is a module for processing WRF output data that I have customized based on the
-    pvlib.forecast model. The purpose of this is to eventually be able to use this method to calculate
-    PV output from systems installed at any arbitrary location within your WRF model domain (this
-    is not yet implemented). I have use this wrfcast module to calculate the GHI from WRF output data
-    The second package is the wrf module maintained by NCAR, which reproduces some of the funcionality
-    of NCL in Python. I use this to interpolate the wind speed to 100m.
+    This function makes use of the wrf module maintained by NCAR, which reproduces some of the funcionality
+    of NCL in Python. Specifically, the _wrf2xarray() function uses the wrf.getvar() function to extract
+    variables from the NetCDF file. All you need to do in this function is specify those variables either
+        a) as they appear in the wrfout file, or
+        b) by the wrf-python diagnostic variable name
+           (https://wrf-python.readthedocs.io/en/latest/user_api/generated/wrf.getvar.html#wrf.getvar).
+    Here's an example:
 
-    With the help of these two packages, the remaineder of the methods claculates the WPD, formats the
-    data to be easily compatible with other methods, and writes the data to a NetCDF file.
+        query_variables = [
+            'U',                # x-wind component
+            'V',                # y-wind component
+            'W',                # z-wind component
+            'height_agl',       # Height above ground level
+            'wspd',             # Wind speed
+            'wdir',             # Wind direction
+            'UST',              # U* IN SIMILARITY THEORY (friction velocity)
+            'HFX_FORCE',        # SCM ideal surface sensible heat flux
+            'PBLH',             # PBL Height
+            'EL_PBL',           # Length scale from PBL
+            'theta',            # Potential Temperature
+            'theta_e',          # Equivalent Potential Temperature
+            'tv',               # Virtual Temperature
+        ]
 
+    Some of these (U, V, W, UST, HFX_FORCE, PBLH, and EL_PBL) are the variables names in the wrfout file,
+    while the others (height_agl, wspd, wdir, theta, theta_e, and tv) are variables calculated by wrf.getvar().
+    Note that the variables available in the wrfout file will depend on your choice of physics parameterizations,
+    while the ones available in wrf.getvar() do not.
     """
 
     # Absolute path to wrfout data file
@@ -76,7 +92,7 @@ def process_wrfout_manual(DIR_WRFOUT, wrfout_file, start=None, end=None, save_fi
     to wrfout_processed_d01.nc data file to be used by the regridding script (wrf2era_error.ncl) in
     wrf_era5_diff().
 
-    This method makes use of two different packages that are not endogeneous to optwrf. The first is
+    This function makes use of two different packages that are not endogeneous to optwrf. The first is
     pvlib.wrfcast, which is a module for processing WRF output data that I have customized based on the
     pvlib.forecast model. The purpose of this is to eventually be able to use this method to calculate
     PV output from systems installed at any arbitrary location within your WRF model domain (this
@@ -84,8 +100,8 @@ def process_wrfout_manual(DIR_WRFOUT, wrfout_file, start=None, end=None, save_fi
     The second package is the wrf module maintained by NCAR, which reproduces some of the funcionality
     of NCL in Python. I use this to interpolate the wind speed to 100m.
 
-    With the help of these two packages, the remaineder of the methods claculates the WPD, formats the
-    data to be easily compatible with other methods, and writes the data to a NetCDF file.
+    With the help of these two packages, the remaineder of the function claculates the WPD, formats the
+    data to be easily compatible with other functions, and writes the data to a NetCDF file.
 
     """
 
