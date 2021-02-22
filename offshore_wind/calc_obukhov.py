@@ -32,7 +32,7 @@ def slope_sat_specific_humidity(T, dT, p):
 
 
 def bowen_ratio(T, p, dT=0.1, c_p=1.006*10**3, lam=2.4535*10**6, alpha=1.28):
-    B = (1 + (c_p/lam)*slope_sat_specific_humidity(T, dT, p))/alpha - 1
+    B = (1 + (c_p/lam)/slope_sat_specific_humidity(T, dT, p))/alpha - 1
     return B
 
 
@@ -81,5 +81,16 @@ if __name__ == "__main__":
     qsat = sat_specific_humidity(T_in_K, pres)
     print(f'The saturation specific humidity at {T_in_K} K, {pres} Pa is {qsat}')
     print(f'The correct value should be ~ 0.02 for 25 degrees C.')
+
+    dqsat_dT1 = slope_sat_specific_humidity(T_in_K, 0.1, pres)
+    dqsat_dT2 = slope_sat_specific_humidity(T_in_K, 1, pres)
+    dqsat_dT3 = slope_sat_specific_humidity(T_in_K, 10, pres)
+    print(f'The slope of the saturation specif humidity curve is:\n'
+          f'{dqsat_dT1} for dT=0.1 K,\n'
+          f'{dqsat_dT2} for dT=1 K,\n'
+          f'{dqsat_dT3} for dT=10 K,')
+
+    Br = bowen_ratio(T_in_K, pres)
+    print(f'The bowen ratio is: {Br}')
 
     # clac_obukhov_iter(L_initial, z0_initial, tolerance=0.05)
