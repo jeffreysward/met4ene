@@ -1,0 +1,29 @@
+# Important: you have to manually delete mpi* from the /envs/optwrf/bin dir
+name: oshwind
+channels:
+  - conda-forge
+dependencies:
+  - cartopy
+  - esmf=8.0.1
+  - esmpy=8.0.1
+  - jupyter
+  - ncl
+  - nco
+  - netCDF4
+  - pip
+  - pyomo
+  - pyresample
+  - python=3.8
+  - pytest
+  - pyyaml
+  - requests
+  - scikit-learn
+  - scipy
+  - seaborn
+  - shap
+  - siphon
+  - wrf-python
+  - xarray
+  - pip:
+    - git+https://github.com/pangeo-data/xESMF.git
+    - cdsapi
