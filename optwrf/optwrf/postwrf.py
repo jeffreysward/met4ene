@@ -122,7 +122,7 @@ def process_wrfout_manual(DIR_WRFOUT, wrfout_file, start=None, end=None, save_fi
         'wspd',
         'wdir',
         'rh',
-        'pres',
+        'pressure',
         'geopotential',
     ]
 
@@ -140,7 +140,7 @@ def process_wrfout_manual(DIR_WRFOUT, wrfout_file, start=None, end=None, save_fi
         'wspd': 'wspd',
         'wdir': 'wdir',
         'rh': 'rel_humidity',
-        'pres': 'pressure',
+        'pressure': 'pressure',
         'geopotential': 'geopotential',
     }
 
