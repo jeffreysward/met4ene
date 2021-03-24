@@ -141,7 +141,7 @@ def process_wrfout_manual(DIR_WRFOUT, wrfout_file, start=None, end=None, save_fi
         'wdir': 'wdir',
         'rh': 'rel_humidity',
         'pressure': 'pressure',
-        'geopotential': 'geopotential',
+        'geopt': 'geopotential',
     }
 
     # Rename the variables
