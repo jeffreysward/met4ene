@@ -127,6 +127,8 @@ def specify_clormap(variable):
         colormap = get_cmap("Greens")
     elif variable == 'fitness':
         colormap = get_cmap("Greys")
+    else:
+        colormap = get_cmap("YlGnBu")
     return colormap
 
 
@@ -154,8 +156,8 @@ def specify_contour_levels(variable, hourly=False, **kwargs):
             maximum = kwargs.get('max', 1.5)
             contourlevels = np.linspace(minimum, maximum, n_bins)
         else:
-            print(f'{variable} is not supported')
-            raise ValueError
+            maximum = kwargs.get('max', 100)
+            contourlevels = np.linspace(minimum, maximum, n_bins)
     else:
         if variable in ['ghi', 'ghi_error']:
             maximum = kwargs.get('max', 5)
@@ -167,8 +169,8 @@ def specify_contour_levels(variable, hourly=False, **kwargs):
             maximum = kwargs.get('max', 10)
             contourlevels = np.linspace(minimum, maximum, n_bins)
         else:
-            print(f'{variable} is not supported')
-            raise ValueError
+            maximum = kwargs.get('max', 1000)
+            contourlevels = np.linspace(minimum, maximum, n_bins)
     contourlevels = np.round(contourlevels, 2)
     return contourlevels
 
@@ -581,3 +583,108 @@ def wrf_errorandfitness_plot(wrfds, paramstr, save_fig=False, wrf_dir='./', era_
         plt.savefig(fig_path + file_type, dpi=300, transparent=True, bbox_inches='tight')
 
     plt.show()
+
+
+def wrf_plot(var, wrfds, hourly=False, save_fig=False, manual_color_map=None,
+             short_title_str='Title', fig_path='./', verbose=False, **kwargs):
+    """
+    Creates a single WRF or ERA5 plot, using the WRF bounds, producing either a plot every hour
+    or a single plot for the day.
+
+    :param var:
+    :param wrfds:
+    :param hourly:
+    :param save_fig:
+    :param short_title_str:
+    :param fig_path:
+    :param verbose:
+    :param kwargs:
+
+    :return: None
+    """
+    # Get the start_date and create the date string
+    datestr = str(wrfds.Time.dt.strftime('%Y-%m-%d')[0].values)
+
+    # To start, we need to get the WRF map projection information (a Lambert Conformal grid),
+    # and find the domain boundaries in this projection.
+    # NOTE: this task MUST occurr before we regrid the WRF variables or the coordinates change and become incompatible.
+    wrf_cartopy_proj = get_wrf_proj(wrfds, 'temp')
+    proj_bounds = get_domain_boundary(wrfds, wrf_cartopy_proj)
+
+    # Now, get the desired variables
+    # Define the time indicies from the times variable
+    time_indicies = range(0, len(wrfds.Time))
+    # Format the times for title slides
+    times_strings_f = wrfds.Time.dt.strftime('%b %d, %Y %H:%M')
+    # Get the desired variable(s)
+    for tidx in time_indicies:
+        timestr = wrfds.Time[tidx].values
+        timestr_f = times_strings_f[tidx].values
+        if hourly:
+            title_str = f'{short_title_str}\n{timestr_f} (UTC)'
+        else:
+            time_string_f = wrfds.Time[0].dt.strftime('%b %d, %Y')
+            title_str = f'{short_title_str}\n{time_string_f.values}'
+
+        # WRF Variable
+        if not hourly and tidx != 0:
+            plot_var = plot_var + wrfds[var].sel(Time=np.datetime_as_string(timestr))
+
+        else:
+            plot_var = wrfds[var].sel(Time=np.datetime_as_string(timestr))
+
+        if hourly:
+            # Create a figure
+            fig = plt.figure(figsize=(4, 4))
+
+            # Set the GeoAxes to the projection used by WRF
+            ax = fig.add_subplot(1, 1, 1, projection=wrf_cartopy_proj)
+
+            # Make the countour lines for filled contours
+            contour_levels = specify_contour_levels(var, hourly=True, **kwargs)
+
+            # Add the filled contour levels
+            if manual_color_map is not None:
+                color_map = get_cmap(manual_color_map)
+            else:
+                color_map = specify_clormap(var)
+            cn = ax.contourf(wrfpy.to_np(wrfds.XLONG), wrfpy.to_np(wrfds.XLAT), wrfpy.to_np(plot_var),
+                             contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
+
+            # Format the plot
+            format_cnplot_axis(ax, cn, proj_bounds, title_str=title_str)
+
+            # Save the figure(s)
+            if save_fig:
+                fig_path_temp = fig_path + str(tidx).zfill(2)
+                plt.savefig(fig_path_temp + '.png', dpi=300, transparent=True, bbox_inches='tight')
+
+            plt.show()
+
+    if not hourly:
+        # Create a figure
+        fig = plt.figure(figsize=(4, 4))
+
+        # Set the GeoAxes to the projection used by WRF
+        ax = fig.add_subplot(1, 1, 1, projection=wrf_cartopy_proj)
+
+        # Make the countour lines for filled contours
+        contour_levels = specify_contour_levels(var, hourly=False, **kwargs)
+
+        # Add the filled contour levels
+        if manual_color_map is not None:
+            color_map = get_cmap(manual_color_map)
+        else:
+            color_map = specify_clormap(var)
+        cn = ax.contourf(wrfpy.to_np(wrfds.XLONG), wrfpy.to_np(wrfds.XLAT), wrfpy.to_np(plot_var),
+                         contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
+
+        # Format the plot
+        format_cnplot_axis(ax, cn, proj_bounds, title_str=title_str)
+
+        # Save the figure(s)
+        if save_fig:
+            file_type = kwargs.get('file_type', '.pdf')
+            plt.savefig(fig_path + file_type, dpi=300, transparent=True, bbox_inches='tight')
+
+        plt.show()

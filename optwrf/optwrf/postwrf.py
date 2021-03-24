@@ -121,6 +121,9 @@ def process_wrfout_manual(DIR_WRFOUT, wrfout_file, start=None, end=None, save_fi
         'height_agl',
         'wspd',
         'wdir',
+        'rh',
+        'pres',
+        'geopotential',
     ]
 
     met_data = _wrf2xarray(netcdf_data, query_variables)
@@ -136,6 +139,9 @@ def process_wrfout_manual(DIR_WRFOUT, wrfout_file, start=None, end=None, save_fi
         'height_agl': 'height_agl',
         'wspd': 'wspd',
         'wdir': 'wdir',
+        'rh': 'rel_humidity',
+        'pres': 'pressure',
+        'geopotential': 'geopotential',
     }
 
     # Rename the variables
