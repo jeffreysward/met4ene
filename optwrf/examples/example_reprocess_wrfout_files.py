@@ -12,9 +12,9 @@ for wrfdir in os.scandir(rootdir):
         print(wrfdir.path)
         try:
             # Run the process_wrfout_manual() function in each directory
-            postwrf.process_wrfout_manual(wrfdir.path, 'wrfout_d01.nc', start=None, end=None, save_file=True)
+            postwrf.process_wrfout_manual(wrfdir.path + '/', 'wrfout_d01.nc', start=None, end=None, save_file=True)
             # Delete the old wrfout file
             CMD_RM = 'rm %s'
-            os.system(CMD_RM % (wrfdir.path + 'wrfout_d01.nc'))
-        except:
+            os.system(CMD_RM % (wrfdir.path + '/' + 'wrfout_d01.nc'))
+        except FileNotFoundError:
             pass
