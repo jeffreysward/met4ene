@@ -42,7 +42,7 @@ PySocks==1.7.1
 pytest==6.0.1
 python-dateutil==2.8.1
 pytz==2020.1
-PyYAML==5.3.1
+PyYAML==5.4
 requests @ file:///home/conda/feedstock_root/build_artifacts/requests_1592425495151/work
 scipy @ file:///home/conda/feedstock_root/build_artifacts/scipy_1595583586868/work
 Shapely @ file:///home/conda/feedstock_root/build_artifacts/shapely_1597990519654/work
