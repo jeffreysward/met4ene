@@ -876,7 +876,7 @@ class WRFModel:
 
         return True, hf.strfdelta(elapsed)
 
-    def process_wrfout_data(self, domain=1):
+    def process_wrfout_data(self):
         """
         Processes the wrfout file -- calculates GHI and wind power denity (WPD) and writes these variables
         to wrfout_processed_d01.nc data file to be used by the regridding script (wrf2era_error.ncl) in
@@ -895,14 +895,14 @@ class WRFModel:
 
         """
         # Absolute path to wrfout data file
-        if domain == 1:
+        if self.n_domains == 1:
             datapath = self.DIR_WRFOUT + self.FILE_WRFOUT_d01
-        elif domain == 2:
+        elif self.n_domains == 2:
             datapath = self.DIR_WRFOUT + self.FILE_WRFOUT_d02
-        elif domain == 3:
+        elif self.n_domains == 3:
             datapath = self.DIR_WRFOUT + self.FILE_WRFOUT_d03
         else:
-            print(f'Domain {domain} does not exist for this WRF simlulation.')
+            print(f'Domain {self.n_domains} does not exist for this WRF simlulation.')
             raise ValueError
 
         try:
