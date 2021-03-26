@@ -17,31 +17,31 @@
  /
 
  &domains
- time_step                           = 30,
+ time_step                           = 45,
  time_step_fract_num                 = 0,
  time_step_fract_den                 = 1,
 %DOMAIN%
- e_we                                = 192,   232,  145,
- e_sn                                = 192,   256,  184,
- e_vert                              = 36, 36, 36,
+ e_we                                = 111, 148, 145,
+ e_sn                                =  83, 115, 199,
+ e_vert                              =  36,  36,  36,
  p_top_requested                     = 5000,
- eta_levels                          = 1.000, 0.9975, 0.995, 0.990, 0.985,
-                                       0.980, 0.970, 0.960, 0.950,
-                                       0.940, 0.930, 0.920, 0.910,
-                                       0.900, 0.880, 0.860, 0.840,
-                                       0.820, 0.800, 0.770, 0.740,
-                                       0.700, 0.650, 0.600, 0.550,
-                                       0.500, 0.450, 0.400, 0.350,
-                                       0.300, 0.250, 0.200, 0.150,
-                                       0.100, 0.050, 0.000,
+ eta_levels                          = 1.000, 0.9975, 0.995, 0.990,
+                                       0.985, 0.980, 0.970, 0.960,
+                                       0.950, 0.940, 0.930, 0.920,
+                                       0.910, 0.900, 0.880, 0.860,
+                                       0.840, 0.820, 0.800, 0.770,
+                                       0.740, 0.700, 0.650, 0.600,
+                                       0.550, 0.500, 0.450, 0.400,
+                                       0.350, 0.300, 0.250, 0.200,
+                                       0.150, 0.100, 0.050, 0.000,
  num_metgrid_levels                  = 38,
  num_metgrid_soil_levels             = 4,
  dx                                  = 12000, 4000,  1333.333,
  dy                                  = 12000, 4000,  1333.333,
  grid_id                             = 1,     2,     3,
  parent_id                           = 1,     1,     2,
- i_parent_start                      = 1,     95,   150,
- j_parent_start                      = 1,     69,    80,
+ i_parent_start                      = 1,     41,    81,
+ j_parent_start                      = 1,     10,    27,
  parent_grid_ratio                   = 1,     3,     3,
  parent_time_step_ratio              = 1,     3,     3,
  feedback                            = 1,
@@ -59,9 +59,9 @@
  cudt                                = 0,     0,     0,
  surface_input_source                = 1,
  num_soil_layers                     = 4,
- num_land_cat			     = 21,
- windfarm_opt			     = 0,     0,     0
- windfarm_ij			     = 0
+ num_land_cat			             = 21,
+ windfarm_opt			             = 0,     0,     1
+ windfarm_ij			             = 0
  /
 
  &fdda
