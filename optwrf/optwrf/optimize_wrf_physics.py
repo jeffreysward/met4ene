@@ -307,7 +307,8 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     :param end_date: string
         specifying a desired end date.
     :param method: string
-        specifying what the fitness function judges -- wind, solar, or both.
+        specifying what the fitness function judges -- wind_only, solar_only, or both.
+        Default is both.
     :param bc_data: string
         specifying the boundary condition data to be used for the WRF forecast.
         Currently, only ERA data (ds627.0) is supported.
