@@ -390,8 +390,18 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
         mae = wrf_sim.wrf_era5_diff()
         ghi_total_error = mae[1]
         wpd_total_error = mae[2]
-        daylight_factor = hf.daylight_frac(start_date)  # daylight fraction
-        fitness = daylight_factor * ghi_total_error + correction_factor * wpd_total_error
+        if method == 'both':
+            daylight_factor = hf.daylight_frac(start_date)  # daylight fraction
+            fitness = daylight_factor * ghi_total_error + correction_factor * wpd_total_error
+        elif method == 'solar_only':
+            daylight_factor = hf.daylight_frac(start_date)  # daylight fraction
+            fitness = daylight_factor * ghi_total_error
+        elif method == 'wind_only':
+            fitness = wpd_total_error
+        else:
+            print('Only "both", "solar_only", or "wind_only" are currently supportted.')
+            raise ValueError
+
         if verbose:
             print(f'!!! Physics options set {param_ids} has fitness {fitness}')
 
@@ -403,7 +413,7 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     return fitness, ghi_total_error, wpd_total_error, runtime
 
 
-def run_simplega(pop_size, n_generations, elite_pct=0.08, testing=False,
+def run_simplega(pop_size, n_generations, fitness_method='both', elite_pct=0.08, testing=False,
                  initial_pop_file=None, restart_file=True, verbose=False):
     """
     Runs the simple genetic algorithm specified in simplega either
@@ -464,7 +474,8 @@ def run_simplega(pop_size, n_generations, elite_pct=0.08, testing=False,
                         if past_individual is None:
                             if not testing:
                                 fitness_threads.append(executor.submit(get_wrf_fitness, creature.Genes,
-                                                                       creature.Start_date, creature.End_date))
+                                                                       creature.Start_date, creature.End_date,
+                                                                       method=fitness_method))
                             else:
                                 fitness_threads.append(executor.submit(get_fitness, creature.Genes))
                         else:

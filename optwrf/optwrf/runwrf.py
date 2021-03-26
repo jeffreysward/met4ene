@@ -1186,6 +1186,7 @@ class WRFModel:
 
             # Calculate the 100m wind speed
             wind_speed100 = np.sqrt(era_100wind['VAR_100U'] ** 2 + era_100wind['VAR_100V'] ** 2)
+            era_100wind['wspd_100'] = wind_speed100
 
             # Calculate wind power density (W * m -2)
             air_density = 1000
