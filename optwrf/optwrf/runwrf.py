@@ -480,7 +480,9 @@ class WRFModel:
             print(f'--> WRFOUT Directory:\n{self.DIR_WRFOUT}')
 
         # Copy over namelists and submission scripts
-        cmd = self.CMD_CP % (self.DIR_TEMPLATES + 'template_rungeogrid.csh', self.DIR_WRFOUT)
+        cmd = self.CMD_CP % (self.DIR_TEMPLATES + 'namelist.wps', self.DIR_WRFOUT)
+        cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'namelist.input', self.DIR_WRFOUT )
+        cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_rungeogrid.csh', self.DIR_WRFOUT)
         cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runungmetg.csh',
                                           self.DIR_WRFOUT + 'runungmetg.csh')
         cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runreal.csh',
