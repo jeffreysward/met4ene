@@ -44,13 +44,14 @@ class WRFModel:
     """
 
     def __init__(self, param_ids, start_date, end_date, bc_data='ERA', bc_src='RDA',
-                 n_domains=1, setup_yaml='dirpath.yml', verbose=True):
+                 n_domains=1, setup_yaml='dirpath.yml', wfp=False, verbose=True):
         self.param_ids = param_ids
         self.start_date = start_date
         self.end_date = end_date
         self.bc_data = bc_data
         self.bc_src = bc_src
         self.n_domains = n_domains
+        self.wfp = wfp
         self.verbose = verbose
 
         # Format the forecast start/end and determine the total time.
@@ -122,20 +123,20 @@ class WRFModel:
         self.CMD_LINK_GRIB = f'{self.DIR_RUNWRF}link_grib.csh {self.DIR_DATA_TMP} {self.DIR_WRFOUT}'
 
         if self.on_cheyenne:
-            self.CMD_GEOGRID = 'qsub ' + self.DIR_WRFOUT + 'template_rungeogrid.csh'
-            self.CMD_UNGMETG = 'qsub ' + self.DIR_WRFOUT + 'template_runungmetg.csh'
-            self.CMD_REAL = 'qsub ' + self.DIR_WRFOUT + 'template_runreal.csh'
-            self.CMD_WRF = 'qsub ' + self.DIR_WRFOUT + 'template_runwrf.csh'
+            self.CMD_GEOGRID = 'qsub ' + self.DIR_WRFOUT + 'rungeogrid.csh'
+            self.CMD_UNGMETG = 'qsub ' + self.DIR_WRFOUT + 'runungmetg.csh'
+            self.CMD_REAL = 'qsub ' + self.DIR_WRFOUT + 'runreal.csh'
+            self.CMD_WRF = 'qsub ' + self.DIR_WRFOUT + 'runwrf.csh'
         elif self.on_aws:
-            self.CMD_GEOGRID = './template_rungeogrid.csh'
-            self.CMD_UNGMETG = './template_runungmetg.csh'
-            self.CMD_REAL = './template_runreal.csh'
-            self.CMD_WRF = './template_runwrf.csh'
+            self.CMD_GEOGRID = './rungeogrid.csh'
+            self.CMD_UNGMETG = './runungmetg.csh'
+            self.CMD_REAL = './runreal.csh'
+            self.CMD_WRF = './runwrf.csh'
         else:
-            self.CMD_GEOGRID = 'sbatch --requeue ' + self.DIR_WRFOUT + 'template_rungeogrid.csh ' + self.DIR_WRFOUT
-            self.CMD_UNGMETG = 'sbatch --requeue ' + self.DIR_WRFOUT + 'template_runungmetg.csh ' + self.DIR_WRFOUT
-            self.CMD_REAL = 'sbatch --requeue ' + self.DIR_WRFOUT + 'template_runreal.csh ' + self.DIR_WRFOUT
-            self.CMD_WRF = 'sbatch --requeue ' + self.DIR_WRFOUT + 'template_runwrf.csh ' + self.DIR_WRFOUT
+            self.CMD_GEOGRID = 'sbatch --requeue ' + self.DIR_WRFOUT + 'rungeogrid.csh ' + self.DIR_WRFOUT
+            self.CMD_UNGMETG = 'sbatch --requeue ' + self.DIR_WRFOUT + 'runungmetg.csh ' + self.DIR_WRFOUT
+            self.CMD_REAL = 'sbatch --requeue ' + self.DIR_WRFOUT + 'runreal.csh ' + self.DIR_WRFOUT
+            self.CMD_WRF = 'sbatch --requeue ' + self.DIR_WRFOUT + 'runwrf.csh ' + self.DIR_WRFOUT
 
     def runwrf_finish_check(self, program, nprocs=8):
         """
@@ -479,13 +480,18 @@ class WRFModel:
             print(f'--> WRFOUT Directory:\n{self.DIR_WRFOUT}')
 
         # Copy over namelists and submission scripts
-        if self.on_cheyenne:
-            cmd = self.CMD_CP % (self.DIR_TEMPLATES + 'template_rungeogrid.csh', self.DIR_WRFOUT)
-            cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runungmetg.csh', self.DIR_WRFOUT)
-            cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runreal.csh', self.DIR_WRFOUT)
-            cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runwrf.csh', self.DIR_WRFOUT)
-        else:
-            cmd = self.CMD_CP % (self.DIR_TEMPLATES + '*', self.DIR_WRFOUT)
+        cmd = self.CMD_CP % (self.DIR_TEMPLATES + 'template_rungeogrid.csh', self.DIR_WRFOUT)
+        cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runungmetg.csh',
+                                          self.DIR_WRFOUT + 'runungmetg.csh')
+        cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runreal.csh',
+                                          self.DIR_WRFOUT + 'runreal.csh')
+        cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runwrf.csh',
+                                          self.DIR_WRFOUT + 'runwrf.csh')
+        if self.wfp:
+            cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'wind-turbine-1.tbl',
+                                              self.DIR_WRFOUT)
+            cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'windturbines*',
+                                              self.DIR_WRFOUT + 'windturbines.txt')
         os.system(cmd)
 
         # Link the metgrid and geogrid dirs and executables as well as the correct variable table for the BC/IC data.

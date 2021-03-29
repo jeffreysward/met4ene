@@ -21,6 +21,7 @@ fitness, ghi_mean_error, wpd_mean_error, runtime = owp.get_wrf_fitness(param_ids
                                                                        method='wind_only',
                                                                        bc_data='ERA',
                                                                        n_domains=1,
+                                                                       wfp=True,
                                                                        disable_timeout=True,
                                                                        verbose=True)
 print(f'==========================================================================')

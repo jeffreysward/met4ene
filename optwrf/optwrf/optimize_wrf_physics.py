@@ -295,7 +295,7 @@ def get_fitness(param_ids, verbose=False):
 
 def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011', method='both',
                     bc_data='ERA', n_domains=1, correction_factor=0.0004218304553577255,
-                    setup_yaml='dirpath.yml', disable_timeout=False, verbose=False):
+                    setup_yaml='dirpath.yml', wfp=False, disable_timeout=False, verbose=False):
     """
     Using the input physics parameters, date, boundary condition, and domain data,
     this function runs the WRF model and computes the error between WRF and ERA5.
@@ -334,7 +334,8 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
 
     # Create a WRFModel instance
     wrf_sim = WRFModel(param_ids, start_date, end_date,
-                       bc_data=bc_data, n_domains=n_domains, setup_yaml=setup_yaml, verbose=verbose)
+                       bc_data=bc_data, n_domains=n_domains,
+                       setup_yaml=setup_yaml, wfp=wfp, verbose=verbose)
 
     # Check to see if WRFModel instance exists; if not, run the WRF model.
     wrfout_file_path = wrf_sim.DIR_WRFOUT + 'wrfout_d01.nc'
@@ -414,8 +415,8 @@ def get_wrf_fitness(param_ids, start_date='Jan 15 2011', end_date='Jan 16 2011',
     return fitness, ghi_total_error, wpd_total_error, runtime
 
 
-def run_simplega(pop_size, n_generations, fitness_method='both', elite_pct=0.08, testing=False,
-                 initial_pop_file=None, restart_file=True, verbose=False):
+def run_simplega(pop_size, n_generations, fitness_method='both', run_wfp=False,
+                 elite_pct=0.08, testing=False, initial_pop_file=None, restart_file=True, verbose=False):
     """
     Runs the simple genetic algorithm specified in simplega either
     to optimize the WRF model physics or with a test fitness function
@@ -476,7 +477,7 @@ def run_simplega(pop_size, n_generations, fitness_method='both', elite_pct=0.08,
                             if not testing:
                                 fitness_threads.append(executor.submit(get_wrf_fitness, creature.Genes,
                                                                        creature.Start_date, creature.End_date,
-                                                                       method=fitness_method))
+                                                                       method=fitness_method, wfp=run_wfp))
                             else:
                                 fitness_threads.append(executor.submit(get_fitness, creature.Genes))
                         else:
