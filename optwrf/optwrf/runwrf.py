@@ -482,7 +482,8 @@ class WRFModel:
         # Copy over namelists and submission scripts
         cmd = self.CMD_CP % (self.DIR_TEMPLATES + 'namelist.wps', self.DIR_WRFOUT)
         cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'namelist.input', self.DIR_WRFOUT )
-        cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_rungeogrid.csh', self.DIR_WRFOUT)
+        cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_rungeogrid.csh',
+                                          self.DIR_WRFOUT + 'rungeogrid.csh')
         cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runungmetg.csh',
                                           self.DIR_WRFOUT + 'runungmetg.csh')
         cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runreal.csh',
@@ -490,8 +491,7 @@ class WRFModel:
         cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'template_runwrf.csh',
                                           self.DIR_WRFOUT + 'runwrf.csh')
         if self.wfp:
-            cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'wind-turbine-1.tbl',
-                                              self.DIR_WRFOUT)
+            cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'wind-turbine-1.tbl', self.DIR_WRFOUT)
             cmd = cmd + '; ' + self.CMD_CP % (self.DIR_TEMPLATES + 'windturbines*',
                                               self.DIR_WRFOUT + 'windturbines.txt')
         os.system(cmd)
