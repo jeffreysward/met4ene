@@ -12,9 +12,9 @@ begin
 
 ; We generate plots, but what kind do we prefer?
   type = "x11"
-; type = "pdf"
-; type = "ps"
-; type = "ncgm"
+;  type = "pdf"
+;  type = "ps"
+;  type = "ncgm"
   wks = gsn_open_wks(type,"wps_show_dom")
 
 ; Set the colors to be used
@@ -52,10 +52,10 @@ DX = 12.
 ;DX = 36.
 MAP = "lambert"
 ;MAP = "mercator"
-LAT1 = (/ 37., 38., 38.9 /)		; original lambert grids
-LAT2 = (/ 46., 42., 41.2 /)
+LAT1 = (/ 37., 38., 39.3 /)		; original lambert grids
+LAT2 = (/ 46., 42., 40.9 /)
 LON1 = (/ -82., -78., -74.5 /)
-LON2 = (/ -70., -71., -72.1 /)
+LON2 = (/ -70., -71., -72.3 /)
 ;LAT1 = (/ -50., -45., -27. /)		; modified mercator grids
 ;LAT2 = (/ -11., -20., -23. /)
 ;LON1 = (/ 113., 121., 125./)
