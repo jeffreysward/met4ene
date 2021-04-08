@@ -1,20 +1,6 @@
  &time_control
- run_days                            = 1,
- run_hours                           = 0,
- run_minutes                         = 0,
- run_seconds                         = 0,
- start_year                          = 2011, 
- start_month                         = 12, 
- start_day                           = 30, 
- start_hour                          = 00, 
- start_minute                        = 00, 
- start_second                        = 00, 
- end_year                            = 2011, 
- end_month                           = 12, 
- end_day                             = 31, 
- end_hour                            = 00, 
- end_minute                          = 00, 
- end_second                          = 00, 
+%RUNTIME%
+%DATES%
  interval_seconds                    = 10800
  input_from_file                     = .true.,.true.,.true.,
  history_interval                    = 60,  60,   60,
@@ -34,7 +20,7 @@
  time_step                           = 45,
  time_step_fract_num                 = 0,
  time_step_fract_den                 = 1,
- max_dom                             = 1,
+%DOMAIN%
  e_we                                = 192,   232,  145,
  e_sn                                = 192,   256,  184,
  e_vert                              = 36, 36, 36,
@@ -66,15 +52,7 @@
  /
 
  &physics
- mp_physics                          = 8, 
- ra_lw_physics                       = 5, 
- ra_sw_physics                       = 1, 
- sf_surface_physics                  = 7, 
- bl_pbl_physics                      = 8, 
- cu_physics                          = 1, 0, 0,
- sf_sfclay_physics                   = 1, 
- isfflx                              = 1, 
- ifsnow                              = 1, 
+%PARAMS%
  swint_opt                           = 1,
  radt                                = 15,    5,     1,
  bldt                                = 0,     0,     0,
