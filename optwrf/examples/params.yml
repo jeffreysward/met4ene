@@ -50,6 +50,14 @@ land surface:
   noah-mp: 4
   clm4: 5
   pleim-xiu: 7
+surface layer:
+  rev mm5: 1
+  eta sim: 2
+  qnse: 4
+  mynn: 5
+  pleim-xiu: 7
+  temf: 10
+  mm5 sim: 91
 PBL:
   ysu: 1
   myj: 2

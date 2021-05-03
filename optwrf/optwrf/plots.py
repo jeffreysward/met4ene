@@ -78,7 +78,10 @@ def get_domain_boundary(wrfds, cartopy_crs):
     return projected_bounds
 
 
-def format_cnplot_axis(axis, cn, proj_bounds, title_str='Contour Plot', add_colorbar=True):
+def format_cnplot_axis(axis, cn, proj_bounds, title_str='Contour Plot',
+                       add_colorbar=True,
+                       cbar_ticks=[0, 5000, 10000, 15000, 20000, 25000, 30000, 35000],
+                       cbar_tick_labels=['0', '5000', '10000', '15000', '20000', '25000', '30000', '35000']):
     """
     Formats a contour plot axis.
 
@@ -108,10 +111,16 @@ def format_cnplot_axis(axis, cn, proj_bounds, title_str='Contour Plot', add_colo
 
     # Add color bars
     if add_colorbar is True:
-        plt.colorbar(cn, ax=axis, shrink=0.6, pad=0.04)
+        cbar = plt.colorbar(cn,
+                            ax=axis,
+                            ticks=cbar_ticks,
+                            shrink=0.6,
+                            pad=0.05
+                            )
+        cbar.ax.set_yticklabels(cbar_tick_labels)  # vertically oriented colorbar
 
     # Add the axis title
-    axis.set_title(title_str)
+    axis.set_title(title_str, fontsize=10)
 
 
 def specify_clormap(variable):
@@ -143,7 +152,7 @@ def specify_contour_levels(variable, hourly=False, **kwargs):
     """
     # First, set the minimum and number of bins based on kwargs
     minimum = kwargs.get('min', 0)
-    n_bins = kwargs.get('n', 22)
+    n_bins = kwargs.get('n', 21)
     # Now, determine the maximum based upon which varible will be plotted
     if hourly:
         if variable in ['ghi', 'ghi_error']:
@@ -171,7 +180,7 @@ def specify_contour_levels(variable, hourly=False, **kwargs):
         else:
             maximum = kwargs.get('max', 1000)
             contourlevels = np.linspace(minimum, maximum, n_bins)
-    contourlevels = np.round(contourlevels, 2)
+    contourlevels = np.round(contourlevels, 1)
     return contourlevels
 
 
@@ -407,7 +416,7 @@ def compare_wrf_era5_plot(var, wrfds, erads, hourly=False, save_fig=False, fig_p
             title_str = f'{era_var} (kW m-2)\n{timestr_f} (UTC)'
         else:
             time_string_f = wrfds.Time[0].dt.strftime('%b %d, %Y')
-            title_str = f'{era_var} (kWh m-2 day-1) \n{time_string_f.values}'
+            title_str = f'{era_var} (kWh m$^{{-2}}$ day$^{{-1}}$) \n{time_string_f.values}'
 
         # WRF Variable (divide by 1000 to convert from W to kW or Wh to kWh)
         if not hourly and tidx != 0:
@@ -483,12 +492,16 @@ def compare_wrf_era5_plot(var, wrfds, erads, hourly=False, save_fig=False, fig_p
         format_cnplot_axis(ax_wrf, wrf_cn, proj_bounds,
                            title_str=f'OptWRF {title_str}', add_colorbar=False)
         format_cnplot_axis(ax_era5, era5_cn, proj_bounds,
-                           title_str=f'ERA5 {title_str}', add_colorbar=False)
+                           title_str=f'ERA5 {title_str}', add_colorbar=True)
 
         # Add a color bar to the full plot
-        fig.subplots_adjust(right=0.85)
-        cbar_ax = fig.add_axes([0.90, 0.2, 0.03, 0.6])
-        fig.colorbar(era5_cn, cax=cbar_ax)
+        # cbar_tick_labels = ['0', '1', '2', '3', '4', '5']
+        # fig.subplots_adjust(right=0.85)
+        # cbar_ax = fig.add_axes([0.90, 0.2, 0.03, 0.6])
+        # cbar = fig.colorbar(era5_cn, cax=cbar_ax,
+        #                     ticks=[0, 1, 2, 3, 4, 5],
+        #                     )
+        # cbar.ax.set_yticklabels(cbar_tick_labels)  # vertically oriented colorbar
 
         # Save the figure
         if save_fig:
@@ -559,25 +572,34 @@ def wrf_errorandfitness_plot(wrfds, paramstr, save_fig=False, wrf_dir='./', era_
     # Create the filled contour levels
     fitness_cn = ax_fitness.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat),
                                      wrfpy.to_np(wrfds['fitness']),
-                                     np.linspace(0, np.amax(wrfds['fitness']), 22),
+                                     # np.linspace(0, np.amax(wrfds['fitness']), 22),
+                                     np.linspace(0, 7, 22),
                                      transform=ccrs.PlateCarree(), cmap=get_cmap("Greys"))
     ghierr_cn = ax_ghierr.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat),
                                    wrfpy.to_np(wrfds['total_ghi_error']),
-                                   np.linspace(0, np.amax(wrfds['total_ghi_error']), 22),
+                                   # np.linspace(0, np.amax(wrfds['total_ghi_error']), 22),
+                                   np.linspace(0, 2.5, 22),
                                    transform=ccrs.PlateCarree(), cmap=get_cmap("hot_r"))
     wpderr_cn = ax_wpderr.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat),
                                    wrfpy.to_np(wrfds['total_wpd_error']),
-                                   np.linspace(0, np.amax(wrfds['total_wpd_error']), 22),
+                                   # np.linspace(0, np.amax(wrfds['total_wpd_error']), 22),
+                                   np.linspace(0, 5000, 22),
                                    transform=ccrs.PlateCarree(), cmap=get_cmap("Greens"))
 
     # Format the axes
     time_string_f = wrfds.Time[0].dt.strftime('%b %d, %Y')
     format_cnplot_axis(ax_fitness, fitness_cn, proj_bounds,
-                       title_str=f'{fitness_short_title}\n{time_string_f.values}')
+                       title_str=f'{fitness_short_title}\n{time_string_f.values}',
+                       cbar_ticks=[0, 1, 2, 3, 4, 5, 6, 7],
+                       cbar_tick_labels=['0', '1', '2', '3', '4', '5', '6', '7'])
     format_cnplot_axis(ax_ghierr, ghierr_cn, proj_bounds,
-                       title_str=f'{ghi_error_short_title}\n{time_string_f.values}')
+                       title_str=f'{ghi_error_short_title}\n{time_string_f.values}',
+                       cbar_ticks=[0, 0.5, 1.0, 1.5, 2.0, 2.5],
+                       cbar_tick_labels=['0', '0.5', '1.0', '1.5', '2.0', '2.5'])
     format_cnplot_axis(ax_wpderr, wpderr_cn, proj_bounds,
-                       title_str=f'{wpd_error_short_title}\n{time_string_f.values}')
+                       title_str=f'{wpd_error_short_title}\n{time_string_f.values}',
+                       cbar_ticks=[0, 1000, 2000, 3000, 4000, 5000],
+                       cbar_tick_labels=['0', '1000', '2000', '3000', '4000', '5000'])
     if save_fig:
         file_type = kwargs.get('file_type', '.pdf')
         plt.savefig(fig_path + file_type, dpi=300, transparent=True, bbox_inches='tight')
