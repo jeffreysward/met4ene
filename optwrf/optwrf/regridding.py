@@ -10,7 +10,10 @@ import os
 import time
 
 import numpy as np
-import pyresample as prs
+try:
+    import pyresample as prs
+except ModuleNotFoundError as err:
+    print(err)
 import scipy
 import xarray as xr
 import xesmf as xe
