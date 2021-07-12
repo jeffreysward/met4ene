@@ -4,6 +4,8 @@ Plotting functions
 
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
+from matplotlib import ticker
+from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 import cartopy.feature as cfeature
 import cartopy.crs as ccrs
@@ -80,11 +82,14 @@ def get_domain_boundary(wrfds, cartopy_crs):
 
 def format_cnplot_axis(axis, cn, proj_bounds, title_str='Contour Plot',
                        add_colorbar=True,
-                       cbar_ticks=[0, 5000, 10000, 15000, 20000, 25000, 30000, 35000],
-                       cbar_tick_labels=['0', '5000', '10000', '15000', '20000', '25000', '30000', '35000']):
+                       cbar_ticks=(0, 5000, 10000, 15000, 20000, 25000, 30000, 35000),
+                       cbar_tick_labels=None):
     """
     Formats a contour plot axis.
 
+    :param add_colorbar:
+    :param cbar_ticks:
+    :param cbar_tick_labels:
     :param axis:
     :param cn:
     :param proj_bounds:
@@ -114,10 +119,11 @@ def format_cnplot_axis(axis, cn, proj_bounds, title_str='Contour Plot',
         cbar = plt.colorbar(cn,
                             ax=axis,
                             ticks=cbar_ticks,
-                            shrink=0.6,
+                            shrink=0.46,
                             pad=0.05
                             )
-        cbar.ax.set_yticklabels(cbar_tick_labels)  # vertically oriented colorbar
+        if cbar_tick_labels is not None:
+            cbar.ax.set_yticklabels(cbar_tick_labels)  # vertically oriented colorbar
 
     # Add the axis title
     axis.set_title(title_str, fontsize=10)
@@ -379,6 +385,7 @@ def compare_wrf_era5_plot(var, wrfds, erads, hourly=False, save_fig=False, fig_p
     :return: None
     """
     # Format the var input
+    log_contour = False
     if type(var) is not str:
         print(f'The var input, {var}, must be a string.')
         raise TypeError
@@ -390,6 +397,7 @@ def compare_wrf_era5_plot(var, wrfds, erads, hourly=False, save_fig=False, fig_p
         var = 'wpd'
         wrf_var = 'wpd'
         era_var = 'WPD'
+        log_contour = True
     else:
         print(f'Variable {var} is not supported.')
         raise KeyError
@@ -478,29 +486,40 @@ def compare_wrf_era5_plot(var, wrfds, erads, hourly=False, save_fig=False, fig_p
         ax_wrf = fig.add_subplot(1, 2, 1, projection=wrf_cartopy_proj)
         ax_era5 = fig.add_subplot(1, 2, 2, projection=wrf_cartopy_proj, sharey=ax_wrf)
 
-        # Make the countour lines for filled contours for the GHI
-        contour_levels = specify_contour_levels(var, hourly=False, **kwargs)
-
         # Add the filled contour levels
         color_map = specify_clormap(var)
-        wrf_cn = ax_wrf.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat), wrfpy.to_np(plot_wrfvar),
-                                 contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
-        era5_cn = ax_era5.contourf(wrfpy.to_np(erads.longitude), wrfpy.to_np(erads.latitude), wrfpy.to_np(plot_era5var),
-                                   contour_levels, transform=era5_cartopy_proj, cmap=color_map)
+        if log_contour:
+            maximum = kwargs.get('max', 50000)
+            wrf_cn = ax_wrf.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat), wrfpy.to_np(plot_wrfvar),
+                                     locator=ticker.LogLocator(subs='all'), norm=LogNorm(vmax=maximum),
+                                     transform=ccrs.PlateCarree(), cmap=color_map)
+            era5_cn = ax_era5.contourf(wrfpy.to_np(erads.longitude), wrfpy.to_np(erads.latitude),
+                                       wrfpy.to_np(plot_era5var),
+                                       locator=ticker.LogLocator(subs='all'), norm=LogNorm(vmax=maximum),
+                                       transform=era5_cartopy_proj, cmap=color_map)
+        else:
+            # Make the countour lines for filled contours for the GHI
+            contour_levels = specify_contour_levels(var, hourly=False, **kwargs)
+
+            wrf_cn = ax_wrf.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat), wrfpy.to_np(plot_wrfvar),
+                                     contour_levels, transform=ccrs.PlateCarree(), cmap=color_map)
+            era5_cn = ax_era5.contourf(wrfpy.to_np(erads.longitude), wrfpy.to_np(erads.latitude), wrfpy.to_np(plot_era5var),
+                                       contour_levels, transform=era5_cartopy_proj, cmap=color_map)
 
         # Format the plots
         format_cnplot_axis(ax_wrf, wrf_cn, proj_bounds,
                            title_str=f'OptWRF {title_str}', add_colorbar=False)
         format_cnplot_axis(ax_era5, era5_cn, proj_bounds,
-                           title_str=f'ERA5 {title_str}', add_colorbar=True)
+                           title_str=f'ERA5 {title_str}', add_colorbar=False)
 
         # Add a color bar to the full plot
         # cbar_tick_labels = ['0', '1', '2', '3', '4', '5']
-        # fig.subplots_adjust(right=0.85)
-        # cbar_ax = fig.add_axes([0.90, 0.2, 0.03, 0.6])
-        # cbar = fig.colorbar(era5_cn, cax=cbar_ax,
-        #                     ticks=[0, 1, 2, 3, 4, 5],
-        #                     )
+        fig.subplots_adjust(right=0.85)
+        cbar_ax = fig.add_axes([0.85, 0.125, 0.02, 0.755])  # dimensions [left, bottom, width, height] of the new axes
+
+        cbar = fig.colorbar(era5_cn, cax=cbar_ax,
+                            ticks=ticker.LogLocator(),
+                            )
         # cbar.ax.set_yticklabels(cbar_tick_labels)  # vertically oriented colorbar
 
         # Save the figure
@@ -583,7 +602,8 @@ def wrf_errorandfitness_plot(wrfds, paramstr, save_fig=False, wrf_dir='./', era_
     wpderr_cn = ax_wpderr.contourf(wrfpy.to_np(wrfds.lon), wrfpy.to_np(wrfds.lat),
                                    wrfpy.to_np(wrfds['total_wpd_error']),
                                    # np.linspace(0, np.amax(wrfds['total_wpd_error']), 22),
-                                   np.linspace(0, 5000, 22),
+                                   # np.linspace(0, 5000, 22),
+                                   locator=ticker.LogLocator(subs='all'), norm=LogNorm(vmax=5000),
                                    transform=ccrs.PlateCarree(), cmap=get_cmap("Greens"))
 
     # Format the axes
@@ -598,8 +618,8 @@ def wrf_errorandfitness_plot(wrfds, paramstr, save_fig=False, wrf_dir='./', era_
                        cbar_tick_labels=['0', '0.5', '1.0', '1.5', '2.0', '2.5'])
     format_cnplot_axis(ax_wpderr, wpderr_cn, proj_bounds,
                        title_str=f'{wpd_error_short_title}\n{time_string_f.values}',
-                       cbar_ticks=[0, 1000, 2000, 3000, 4000, 5000],
-                       cbar_tick_labels=['0', '1000', '2000', '3000', '4000', '5000'])
+                       cbar_ticks=ticker.LogLocator()
+                       )
     if save_fig:
         file_type = kwargs.get('file_type', '.pdf')
         plt.savefig(fig_path + file_type, dpi=300, transparent=True, bbox_inches='tight')
