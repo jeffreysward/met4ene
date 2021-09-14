@@ -1,3 +1,5 @@
+AUTHORS.md
+LICENSE.txt
 README.rst
 setup.py
 optwrf/__init__.py

@@ -1,4 +1,4 @@
-Metadata-Version: 1.2
+Metadata-Version: 2.1
 Name: optwrf
 Version: 0.0.0
 Summary: Set up and run the WRF model from scratch
@@ -8,7 +8,6 @@ Author-email: jas983@cornell.edu
 Maintainer: Jeffrey Sward
 Maintainer-email: jas983@cornell.edu
 License: BSD License
-Description: UNKNOWN
 Keywords: WRF
 Platform: Any
 Classifier: Development Status :: 2 - Pre-Alpha
@@ -16,3 +15,8 @@ Classifier: Intended Audience :: Science/Research
 Classifier: Topic :: Scientific/Engineering
 Classifier: Programming Language :: Python :: 3 :: Only
 Requires-Python: >=3.6
+License-File: LICENSE.txt
+License-File: AUTHORS.md
+
+UNKNOWN
+
