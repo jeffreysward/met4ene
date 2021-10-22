@@ -28,7 +28,7 @@ PACKAGES = find_packages()
 # PACKAGES = find_packages(exclude=["old", "log_and_err"])
 SCRIPTS = []
 PACKAGE_DATA = {
-    "optwrf.test": ["optwrf/data/*"],
+    "optwrf": ["data/*.yml"],
 }
 INSTALL_REQUIRES = [
     "numpy",
@@ -54,6 +54,7 @@ if __name__ == "__main__":
         platforms=PLATFORMS,
         scripts=SCRIPTS,
         packages=PACKAGES,
+        include_package_data=True,
         package_data=PACKAGE_DATA,
         classifiers=CLASSIFIERS,
         keywords=KEYWORDS,
