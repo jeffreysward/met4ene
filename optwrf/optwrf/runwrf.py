@@ -1358,7 +1358,7 @@ def run_multiple(wrf_sims, disable_timeout=True, verbose=False):
             sim_threads = []
             for sim in wrf_sims:
                 # Execute a new thread to run the WRF simulation
-                sim_threads.append(executor.submit(run_all, disable_timeout=disable_timeout, verbose=verbose))
+                sim_threads.append(executor.submit(run_all, sim, disable_timeout=disable_timeout, verbose=verbose))
 
             # Get the results from the thread pool executor
             success_matrix = []
