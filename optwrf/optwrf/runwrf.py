@@ -674,7 +674,7 @@ class WRFModel:
         geogridfiles = [f'geo_em.d{str(domain).zfill(2)}.nc' for domain in range(1, self.n_domains + 1)]
         # Check to see if the geogrid files exist in the expected directory
         geogridfilesexist = [os.path.exists(self.DIR_DATA_ROOT + 'data/domain/' + file) for file in geogridfiles]
-        if geogridfilesexist.count(False) is not 0:
+        if geogridfilesexist.count(False) != 0:
             # Run geogrid
             os.system(self.CMD_GEOGRID)
             # Sleep until the geogrid.log file exists
@@ -687,8 +687,8 @@ class WRFModel:
                 print('Starting Geogrid at: ' + str(startTime))
                 sys.stdout.flush()
             geogrid_sim = self.runwrf_finish_check('geogrid')
-            while geogrid_sim is not 'complete':
-                if geogrid_sim is 'failed':
+            while geogrid_sim != 'complete':
+                if geogrid_sim == 'failed':
                     print_last_3lines(self.DIR_WRFOUT + 'geogrid.log')
                     return False
                 elif (int(time.time()) - startTimeInt) < 600:
@@ -726,7 +726,7 @@ class WRFModel:
                     for hr in hrs:
                         metfilelist.append(f'met_em.d{domain}.{day.strftime("%Y-%m-%d")}_{hr}:00:00.nc')
         metfileexist = [os.path.exists(self.DIR_DATA + 'met_em/' + file) for file in metfilelist]
-        if metfileexist.count(False) is not 0:
+        if metfileexist.count(False) != 0:
             # Run ungrib and metgrid; start by linking the grib files
             sys.stdout.flush()
             os.system(self.CMD_LINK_GRIB)
@@ -741,8 +741,8 @@ class WRFModel:
                 print('Starting Ungrib and Metgrid at: ' + str(startTime))
                 sys.stdout.flush()
             metgrid_sim = self.runwrf_finish_check('metgrid')
-            while metgrid_sim is not 'complete':
-                if metgrid_sim is 'failed':
+            while metgrid_sim != 'complete':
+                if metgrid_sim == 'failed':
                     print_last_3lines(self.DIR_WRFOUT + 'metgrid.log')
                     return False
                 elif (int(time.time()) - startTimeInt) < 600:
@@ -788,8 +788,8 @@ class WRFModel:
             print('Starting Real at: ' + str(startTime))
             sys.stdout.flush()
         real_sim = self.runwrf_finish_check('real')
-        while real_sim is not 'complete':
-            if real_sim is 'failed':
+        while real_sim != 'complete':
+            if real_sim == 'failed':
                 print_last_3lines(self.DIR_WRFOUT + 'rsl.out.0000')
                 return False
             elif (int(time.time()) - startTimeInt) < 600:
@@ -844,8 +844,8 @@ class WRFModel:
             print('Starting WRF at: ' + str(startTime))
             sys.stdout.flush()
         wrf_sim = self.runwrf_finish_check('wrf')
-        while wrf_sim is not 'complete':
-            if wrf_sim is 'failed':
+        while wrf_sim != 'complete':
+            if wrf_sim == 'failed':
                 print_last_3lines(self.DIR_WRFOUT + 'rsl.out.0000')
                 elapsed = datetime.datetime.now() - startTime
                 return False, hf.strfdelta(elapsed)
@@ -1112,7 +1112,7 @@ class WRFModel:
                                    'EastUS_e5.oper.fc.sfc.accumu.128_169_ssrd.ll025sc.' + date_suffix_16_01]
 
                 # Download data from RDA if necessary
-                if [os.path.exists(file) for file in local_filelist].count(False) is not 0:
+                if [os.path.exists(file) for file in local_filelist].count(False) != 0:
                     # Define the rda file prefixes for the wind data
                     rda_datpfxs_sfc = ['e5.oper.an.sfc.228_246_100u.ll025sc.',
                                        'e5.oper.an.sfc.228_247_100v.ll025sc.']
@@ -1309,7 +1309,7 @@ def run_all(wrf_sim, disable_timeout=True, verbose=False):
                        + wrf_sim.forecast_start.strftime('%Y') + '-' \
                        + wrf_sim.forecast_start.strftime('%m') + '-' \
                        + wrf_sim.forecast_start.strftime('%d') + '_00:00:00'
-    if [os.path.exists(file) for file in [wrfout_file_path, orig_wrfout_file_path]].count(True) is 0:
+    if [os.path.exists(file) for file in [wrfout_file_path, orig_wrfout_file_path]].count(True) == 0:
         # Next, get boundary condition data for the simulation
         # ERA is the only supported data type right now.
         vtable_sfx = wrf_sim.get_bc_data()
