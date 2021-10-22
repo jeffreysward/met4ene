@@ -15,6 +15,7 @@ check_file_status() as well.
 
 """
 import calendar
+import concurrent.futures
 import datetime
 import dateutil
 import netCDF4
@@ -35,6 +36,7 @@ from optwrf.helper_functions import determine_computer, read_last_line, print_la
 from optwrf.regridding import wrf_era5_regrid_ncl, wrf_era5_regrid_xesmf, wrf_era5_regrid_pyresample, wrf_era5_error
 from optwrf.wrfparams import ids2str
 from optwrf.wrfparams import flexible_generate
+from optwrf.data.fetch_data import fetch_yaml
 
 
 class WRFModel:
@@ -79,11 +81,7 @@ class WRFModel:
         self.on_magma = on_magma
 
         # Set working and WRF model directory names
-        with open(setup_yaml, 'r') as dirpath_file:
-            try:
-                dirs = yaml.safe_load(dirpath_file)
-            except yaml.YAMLError as exc:
-                print(exc)
+        dirs = fetch_yaml(setup_yaml)
         dirpaths = dirs.get('directory_paths')
         self.DIR_WRF_ROOT = dirpaths.get('DIR_WRF_ROOT')
         self.DIR_WPS = self.DIR_WRF_ROOT + 'WPS/'
@@ -1285,3 +1283,99 @@ class WRFModel:
                   f'\tghi error {error[1]} and wpd error {error[2]} kW m-2 day-1')
 
         return error
+
+
+def run_all(wrf_sim, disable_timeout=True, verbose=False):
+    """
+    Using the input physics parameters, date, boundary condition, and domain data,
+    this function runs the WRF model.
+
+    :param wrf_sim: `WRFModel` object
+        containing all the necessary information for running the WRF model.
+    :param disable_timeout: boolean (default = False)
+        telling runwrf if subprogram timeouts are allowed or not.
+    :param verbose: boolean (default = False)
+        instructing the program to print everything or just key information to the screen.
+    :return success, runtime: bool, str
+        indicating if the simulation finished running successfully and how long it took.
+    """
+    if verbose:
+        print('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -')
+        print(f'\nRunning: {wrf_sim.param_ids} from {wrf_sim.forecast_start} to {wrf_sim.forecast_end}')
+
+    # Check to see if WRFModel instance exists; if not, run the WRF model.
+    wrfout_file_path = wrf_sim.DIR_WRFOUT + 'wrfout_d01.nc'
+    orig_wrfout_file_path = wrf_sim.DIR_WRFOUT + 'wrfout_d01_' \
+                       + wrf_sim.forecast_start.strftime('%Y') + '-' \
+                       + wrf_sim.forecast_start.strftime('%m') + '-' \
+                       + wrf_sim.forecast_start.strftime('%d') + '_00:00:00'
+    if [os.path.exists(file) for file in [wrfout_file_path, orig_wrfout_file_path]].count(True) is 0:
+        # Next, get boundary condition data for the simulation
+        # ERA is the only supported data type right now.
+        vtable_sfx = wrf_sim.get_bc_data()
+
+        # Setup the working directory to run the simulation
+        success = wrf_sim.wrfdir_setup(vtable_sfx)
+
+        # Prepare the namelists
+        if success:
+            success = wrf_sim.prepare_namelists()
+
+        # Run WPS
+        if success:
+            success = wrf_sim.run_wps(disable_timeout)
+            if verbose:
+                print(f'WPS ran successfully? {success}')
+
+        # Run REAL
+        if success:
+            success = wrf_sim.run_real(disable_timeout)
+            if verbose:
+                print(f'Real ran successfully? {success}')
+
+        # RUN WRF
+        if success:
+            success, runtime = wrf_sim.run_wrf(disable_timeout)
+            if verbose:
+                print(f'WRF ran successfully? {success}')
+        else:
+            runtime = '00h 00m 00s'
+    else:
+        success = True
+        runtime = '00h 00m 00s'
+    
+    return success, runtime
+
+
+def run_multiple(wrf_sims, disable_timeout=True, verbose=False):
+    """
+    Runs the simulations specified by the wrf_sims argument.
+
+    """
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        # Start running all the fitness functions that need to be calculated
+        try:
+            sim_threads = []
+            for sim in wrf_sims:
+                # Execute a new thread to run the WRF simulation
+                sim_threads.append(executor.submit(run_all, disable_timeout=disable_timeout, verbose=verbose))
+
+            # Get the results from the thread pool executor
+            success_matrix = []
+            runtime_matrix = []
+            for thread in sim_threads:
+                try:
+                    success_value, runtime_value = thread.result()
+                except AttributeError:
+                    success_value = None
+                    runtime_value = None
+                success_matrix.append(success_value)
+                runtime_matrix.append(runtime_value)
+
+        except KeyboardInterrupt:
+            # cancel() returns False if it's already done and True if was able to cancel it;
+            # we don't need that return value, so we ignore it with the underscore.
+            for future in sim_threads:
+                _ = future.cancel()
+    for ii in len(success_matrix):
+        print(f'Success: {success_matrix[ii]}, Runtime: {runtime_matrix[ii]}')
