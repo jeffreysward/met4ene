@@ -12,6 +12,7 @@ functions in the same module work.
 
 import random
 import yaml
+from optwrf.data.fetch_data import fetch_yaml
 
 
 def generate(in_yaml='params.yml'):
@@ -31,12 +32,7 @@ def generate(in_yaml='params.yml'):
         specifying the integer assoicated with each parameter option.
 
     """
-    with open(in_yaml, 'r') as params_file:
-        try:
-            params = yaml.safe_load(params_file)
-
-        except yaml.YAMLError as exc:
-            print(exc)
+    params = fetch_yaml(in_yaml)
 
     mp = params.get("microphysics")
     lw = params.get("lw radiation")
@@ -197,47 +193,41 @@ def name2num(in_yaml='params.yml', use_defaults=True, mp_in="morrison2mom", lw_i
         corresponding to the namelist.input values of each input parameterization.
 
     """
-    with open(in_yaml, 'r') as params_file:
-        try:
-            params = yaml.safe_load(params_file)
+    params = fetch_yaml(in_yaml)
 
-            mp = params.get("microphysics")
-            lw = params.get("lw radiation")
-            sw = params.get("sw radiation")
-            lsm = params.get("land surface")
-            pbl = params.get("PBL")
-            clo = params.get("cumulus")
+    mp = params.get("microphysics")
+    lw = params.get("lw radiation")
+    sw = params.get("sw radiation")
+    lsm = params.get("land surface")
+    pbl = params.get("PBL")
+    clo = params.get("cumulus")
 
-            if not use_defaults and mp_in is "None":
-                id_mp = None
-            else:
-                id_mp = mp.get(mp_in)
-            if not use_defaults and lw_in is "None":
-                id_lw = None
-            else:
-                id_lw = lw.get(lw_in)
-            if not use_defaults and sw_in is "None":
-                id_sw = None
-            else:
-                id_sw = sw.get(sw_in)
-            if not use_defaults and lsm_in is "None":
-                id_lsm = None
-            else:
-                id_lsm = lsm.get(lsm_in)
-            if not use_defaults and pbl_in is "None":
-                id_pbl = None
-            else:
-                id_pbl = pbl.get(pbl_in)
-            if not use_defaults and clo_in is "None":
-                id_clo = None
-            else:
-                id_clo = clo.get(clo_in)
+    if not use_defaults and mp_in == "None":
+        id_mp = None
+    else:
+        id_mp = mp.get(mp_in)
+    if not use_defaults and lw_in == "None":
+        id_lw = None
+    else:
+        id_lw = lw.get(lw_in)
+    if not use_defaults and sw_in == "None":
+        id_sw = None
+    else:
+        id_sw = sw.get(sw_in)
+    if not use_defaults and lsm_in == "None":
+        id_lsm = None
+    else:
+        id_lsm = lsm.get(lsm_in)
+    if not use_defaults and pbl_in == "None":
+        id_pbl = None
+    else:
+        id_pbl = pbl.get(pbl_in)
+    if not use_defaults and clo_in == "None":
+        id_clo = None
+    else:
+        id_clo = clo.get(clo_in)
 
-            param_ids = [id_mp, id_lw, id_sw, id_lsm, id_pbl, id_clo]
-
-        except yaml.YAMLError as exc:
-            print(exc)
-            param_ids = []
+    param_ids = [id_mp, id_lw, id_sw, id_lsm, id_pbl, id_clo]
 
     return param_ids
 
@@ -260,18 +250,13 @@ def num2name(param_ids, physics_type, in_yaml='params.yml'):
         corresponding to the physical parameterization names.
 
     """
-    with open(in_yaml, 'r') as params_file:
-        try:
-            params = yaml.safe_load(params_file)
-            physics = params.get(physics_type)
-            # list out keys and values separately
-            key_list = list(physics.keys())
-            val_list = list(physics.values())
-            # get the param names using the list index method
-            param_names = [key_list[val_list.index(param)] for param in param_ids]
-        except yaml.YAMLError as exc:
-            print(exc)
-            param_names = []
+    params = fetch_yaml(in_yaml)
+    physics = params.get(physics_type)
+    # list out keys and values separately
+    key_list = list(physics.keys())
+    val_list = list(physics.values())
+    # get the param names using the list index method
+    param_names = [key_list[val_list.index(param)] for param in param_ids]
 
     return param_names
 
@@ -402,11 +387,11 @@ def apply_dependencies(param_ids):
     """
     # The following exception takes care of the error:
     # CAMZMSCHEME requires MYJPBLSCHEME or CAMUWPBLSCHEME
-    if param_ids[5] is 7 and param_ids[4] not in [2, 9]:
+    if param_ids[5] == 7 and param_ids[4] not in [2, 9]:
         param_ids[4] = random.choice([2, 9])
     # The following exception takes care of the error:
     # bl_pbl_physics must be set to 1 for cu_physics = 11
-    if param_ids[5] is 11:
+    if param_ids[5] == 11:
         param_ids[4] = 1
     return param_ids
 
