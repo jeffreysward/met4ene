@@ -422,7 +422,7 @@ def wrfout_file_name(wrf_sim, domain=1):
     """
     Returns the full path to the wrfout file based on the domain. 
     """
-    # Process the wrfout file
+
     if domain == 1:
         wrfout_file = wrf_sim.FILE_WRFOUT_d01
     elif domain == 2:
