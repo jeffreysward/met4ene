@@ -7,6 +7,7 @@ Known Issues/Wishlist:
 
 """
 import netCDF4
+import os
 import wrf
 import xarray as xr
 from pvlib.wrfcast import WRF
@@ -27,9 +28,9 @@ def calc_wpd(wind_speed, air_density=1000):
     return wpd
 
 
-def process_wrfout_flexible(DIR_WRFOUT, wrfout_file, query_variables,
-                            start=None, end=None,
-                            outfile_prefix='processed_', save_file=True):
+def process_wrfout_flexible(wrf_sim, query_variables,
+                            start=None, end=None, 
+                            outfile_prefix='processed_', delete_original=False):
     """
     Processes any wrfout file, i.e., this function extracts specified query_variables from the
     specified wrfout file.
@@ -63,27 +64,35 @@ def process_wrfout_flexible(DIR_WRFOUT, wrfout_file, query_variables,
     Note that the variables available in the wrfout file will depend on your choice of physics parameterizations,
     while the ones available in wrf.getvar() do not.
     """
+    # Process each wrfout file
+    for ii in range(0, wrf_sim.n_domains):
+        if ii == 0:
+            wrfout_file = wrf_sim.FILE_WRFOUT_d01
+        elif ii == 1:
+            wrfout_file = wrf_sim.FILE_WRFOUT_d02
+        elif ii == 2:
+            wrfout_file = wrf_sim.FILE_WRFOUT_d03
 
-    # Absolute path to wrfout data file
-    datapath = DIR_WRFOUT + wrfout_file
+        # Absolute path to wrfout data file
+        full_wrfout_path = wrf_sim.DIR_WRFOUT + wrfout_file
 
-    # Read in the wrfout file using the netCDF4.Dataset method (I think you can also do this with an xarray method)
-    netcdf_data = netCDF4.Dataset(datapath)
+        # Read in the wrfout file using the netCDF4.Dataset method (I think you can also do this with an xarray method)
+        wrf_nc = netCDF4.Dataset(full_wrfout_path)
 
-    # Create an xarray.Dataset from the wrf qurery_variables.
-    met_data = _wrf2xarray(netcdf_data, query_variables)
+        # Create an xarray.Dataset from the wrf qurery_variables.
+        wrf_ds = _wrf2xarray(wrf_nc, query_variables)
 
-    # Slice the wrfout data if start and end times ares specified
-    if start and end is not None:
-        met_data = met_data.sel(Time=slice(start, end))
+        # Slice the wrfout data if start and end times ares specified
+        if start and end is not None:
+            wrf_ds = wrf_ds.sel(Time=slice(start, end))
 
-    # Save the output file if specified.
-    if save_file:
         # Write the processed data to a wrfout NetCDF file
-        new_filename = DIR_WRFOUT + outfile_prefix + wrfout_file
-        met_data.to_netcdf(path=new_filename)
-    else:
-        return met_data
+        new_file_path = wrf_sim.DIR_WRFOUT + outfile_prefix + wrfout_file
+        wrf_ds.to_netcdf(path=new_file_path)
+
+        # Delete the original file if specified:
+        if delete_original:
+            os.system(wrf_sim.CMD_RM % (full_wrfout_path))
 
 
 def process_wrfout_manual(DIR_WRFOUT, wrfout_file, start=None, end=None, save_file=True):
