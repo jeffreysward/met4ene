@@ -432,9 +432,5 @@ def wrfout_file_path(wrf_sim, domain=1):
     else:
         print(f'Domain {domain} is not a valid option. Choose 1 - 3')
         raise ValueError
-
-    # Absolute path to wrfout data file
-    full_wrfout_path = wrf_sim.DIR_WRFOUT + wrfout_file
     
-    return full_wrfout_path
-    
+    return wrfout_file
