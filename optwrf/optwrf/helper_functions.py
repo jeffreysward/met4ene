@@ -418,7 +418,7 @@ def gen_daily_sims_csv(param_ids, start='Jan 01 2011', end='Jan 01 2012', csv_na
             csv_writer.writerow(csv_data)
 
 
-def wrfout_file_path(wrf_sim, domain=1):
+def wrfout_file_name(wrf_sim, domain=1):
     """
     Returns the full path to the wrfout file based on the domain. 
     """
