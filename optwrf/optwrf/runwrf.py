@@ -1351,6 +1351,13 @@ def run_multiple(wrf_sims, disable_timeout=True, verbose=False):
     """
     Runs the simulations specified by the wrf_sims argument.
 
+    :param wrf_sim: `WRFModel` object
+        containing all the necessary information for running the WRF model.
+    :param disable_timeout: boolean (default = False)
+        telling runwrf if subprogram timeouts are allowed or not.
+    :param verbose: boolean (default = False)
+        instructing the program to print everything or just key information to the screen.
+
     """
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Start running all the fitness functions that need to be calculated
