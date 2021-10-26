@@ -96,11 +96,10 @@ class WRFModel:
         self.DIR_RUNWRF = self.DIR_MET4ENE + 'optwrf/optwrf/'
         self.DIR_TEMPLATES = dirpaths.get('DIR_TEMPLATES')
         self.DIR_ERA5_ROOT = dirpaths.get('DIR_ERA5_ROOT')
-        if self.n_domains == 1:
-            self.FILE_WRFOUT_d01 = 'wrfout_d01' + '_' \
-                                   + self.forecast_start.strftime('%Y') + '-' \
-                                   + self.forecast_start.strftime('%m') + '-' \
-                                   + self.forecast_start.strftime('%d') + '_00:00:00'
+        self.FILE_WRFOUT_d01 = 'wrfout_d01' + '_' \
+                                + self.forecast_start.strftime('%Y') + '-' \
+                                + self.forecast_start.strftime('%m') + '-' \
+                                + self.forecast_start.strftime('%d') + '_00:00:00'
         if self.n_domains > 1:
             self.FILE_WRFOUT_d02 = 'wrfout_d02' + '_' \
                                    + self.forecast_start.strftime('%Y') + '-' \
