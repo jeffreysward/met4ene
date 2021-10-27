@@ -90,8 +90,8 @@ def process_wrfout_flexible(wrf_sim, query_variables, domain=1,
         # Write the processed data to a wrfout NetCDF file
         new_file_path = wrf_sim.DIR_WRFOUT + outfile_prefix + wrfout_file
         wrf_ds.to_netcdf(path=new_file_path)
-    else:
-        return wrf_ds
+
+    return wrf_ds
 
 
 
