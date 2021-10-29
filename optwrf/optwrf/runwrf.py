@@ -1014,6 +1014,71 @@ class WRFModel:
 
         return True
 
+    def process_wrfout_flexible(self, query_variables, domain=1,
+                                start=None, end=None, 
+                                outfile_prefix='processed_', delete_original=False, 
+                                save_file=False):
+        """
+        Processes any wrfout file, i.e., this function extracts specified query_variables from the
+        specified wrfout file.
+
+        This function makes use of the wrf module maintained by NCAR, which reproduces some of the funcionality
+        of NCL in Python. Specifically, the _wrf2xarray() function uses the wrf.getvar() function to extract
+        variables from the NetCDF file. All you need to do in this function is specify those variables either
+            a) as they appear in the wrfout file, or
+            b) by the wrf-python diagnostic variable name
+            (https://wrf-python.readthedocs.io/en/latest/user_api/generated/wrf.getvar.html#wrf.getvar).
+        Here's an example:
+
+            query_variables = [
+                'U',                # x-wind component
+                'V',                # y-wind component
+                'W',                # z-wind component
+                'height_agl',       # Height above ground level
+                'wspd',             # Wind speed
+                'wdir',             # Wind direction
+                'UST',              # U* IN SIMILARITY THEORY (friction velocity)
+                'HFX_FORCE',        # SCM ideal surface sensible heat flux
+                'PBLH',             # PBL Height
+                'EL_PBL',           # Length scale from PBL
+                'theta',            # Potential Temperature
+                'theta_e',          # Equivalent Potential Temperature
+                'tv',               # Virtual Temperature
+            ]
+
+        Some of these (U, V, W, UST, HFX_FORCE, PBLH, and EL_PBL) are the variables names in the wrfout file,
+        while the others (height_agl, wspd, wdir, theta, theta_e, and tv) are variables calculated by wrf.getvar().
+        Note that the variables available in the wrfout file will depend on your choice of physics parameterizations,
+        while the ones available in wrf.getvar() do not.
+        """
+        # Determine the wrfout file name
+        wrfout_file = self.wrfout_file_name(domain=domain)
+
+        # Absolute path to wrfout data file
+        full_wrfout_path = self.DIR_WRFOUT + wrfout_file
+
+        # Read in the wrfout file using the netCDF4.Dataset method (I think you can also do this with an xarray method)
+        wrf_nc = netCDF4.Dataset(full_wrfout_path)
+
+        # Create an xarray.Dataset from the wrf qurery_variables.
+        wrf_ds = util._wrf2xarray(wrf_nc, query_variables)
+
+        # Slice the wrfout data if start and end times ares specified
+        if start and end is not None:
+            wrf_ds = wrf_ds.sel(Time=slice(start, end))
+
+        # Delete the original file if specified:
+        if delete_original:
+            os.system(self.CMD_RM % (full_wrfout_path))
+
+        # Save the output file if specified.
+        if save_file:
+            # Write the processed data to a wrfout NetCDF file
+            new_file_path = self.DIR_WRFOUT + outfile_prefix + wrfout_file
+            wrf_ds.to_netcdf(path=new_file_path)
+
+        return wrf_ds
+
     def process_era5_data(self):
         """
         Downloads ERA5 data from the Research Data Archive if it doesn't already exist in self.DIR_ERA5_ROOT,
