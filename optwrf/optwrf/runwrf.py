@@ -873,11 +873,7 @@ class WRFModel:
         #                              self.DIR_WRFOUT + 'wrfout_d0' + str(n) + '.nc'))
 
         if save_wps_files:
-            # Move the geo_em file(s) to a permanent location
-            os.system(self.CMD_MV % (self.DIR_WRFOUT + 'geo_em.*', self.DIR_DATA_ROOT + 'data/domain/'))
-
-            # Move the met_em files to a permanent location
-            os.system(self.CMD_MV % (self.DIR_WRFOUT + 'met_em.*', self.DIR_DATA + 'met_em/'))
+            self.archive_wps()
 
         return True, hf.strfdelta(elapsed)
 
@@ -1283,8 +1279,15 @@ class WRFModel:
 
         return error
 
+    def archive_wps(self):
+        # Move the geo_em file(s) to a permanent location
+        os.system(self.CMD_MV % (self.DIR_WRFOUT + 'geo_em.*', self.DIR_DATA_ROOT + 'data/domain/'))
 
-def run_all(wrf_sim, disable_timeout=True, verbose=False):
+        # Move the met_em files to a permanent location
+        os.system(self.CMD_MV % (self.DIR_WRFOUT + 'met_em.*', self.DIR_DATA + 'met_em/'))
+
+
+def run_all(wrf_sim, disable_timeout=True, verbose=False, save_wps_files=False):
     """
     Using the input physics parameters, date, boundary condition, and domain data,
     this function runs the WRF model.
@@ -1334,7 +1337,7 @@ def run_all(wrf_sim, disable_timeout=True, verbose=False):
 
         # RUN WRF
         if success:
-            success, runtime = wrf_sim.run_wrf(disable_timeout)
+            success, runtime = wrf_sim.run_wrf(disable_timeout, save_wps_files=False)
             if verbose:
                 print(f'WRF ran successfully? {success}')
         else:
@@ -1383,5 +1386,5 @@ def run_multiple(wrf_sims, disable_timeout=True, verbose=False):
             # we don't need that return value, so we ignore it with the underscore.
             for future in sim_threads:
                 _ = future.cancel()
-    for ii in len(success_matrix):
+    for ii in range(0, len(success_matrix)):
         print(f'Success: {success_matrix[ii]}, Runtime: {runtime_matrix[ii]}')
