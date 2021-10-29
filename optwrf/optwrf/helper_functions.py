@@ -416,21 +416,3 @@ def gen_daily_sims_csv(param_ids, start='Jan 01 2011', end='Jan 01 2012', csv_na
             csv_data = [date.strftime('%b %d %Y'), param_ids[0], param_ids[1], param_ids[2],
                         param_ids[3], param_ids[4], param_ids[5], param_ids[6]]
             csv_writer.writerow(csv_data)
-
-
-def wrfout_file_name(wrf_sim, domain=1):
-    """
-    Returns the full path to the wrfout file based on the domain. 
-    """
-
-    if domain == 1:
-        wrfout_file = wrf_sim.FILE_WRFOUT_d01
-    elif domain == 2:
-        wrfout_file = wrf_sim.FILE_WRFOUT_d02
-    elif domain == 3:
-        wrfout_file = wrf_sim.FILE_WRFOUT_d03
-    else:
-        print(f'Domain {domain} is not a valid option. Choose 1 - 3')
-        raise ValueError
-    
-    return wrfout_file

@@ -896,15 +896,8 @@ class WRFModel:
 
         """
         # Absolute path to wrfout data file
-        if self.n_domains == 1:
-            datapath = self.DIR_WRFOUT + self.FILE_WRFOUT_d01
-        elif self.n_domains == 2:
-            datapath = self.DIR_WRFOUT + self.FILE_WRFOUT_d02
-        elif self.n_domains == 3:
-            datapath = self.DIR_WRFOUT + self.FILE_WRFOUT_d03
-        else:
-            print(f'Domain {self.n_domains} does not exist for this WRF simlulation.')
-            raise ValueError
+        wrfout_file = self.wrfout_file_name(domain=self.n_domains)
+        datapath = self.DIR_WRFOUT + wrfout_file
 
         try:
             # Read in the wrfout file using the netCDF4.Dataset method
@@ -1285,6 +1278,23 @@ class WRFModel:
 
         # Move the met_em files to a permanent location
         os.system(self.CMD_MV % (self.DIR_WRFOUT + 'met_em.*', self.DIR_DATA + 'met_em/'))
+
+    def wrfout_file_name(self, domain=1):
+        """
+        Returns the full path to the wrfout file based on the domain. 
+        """
+
+        if domain == 1:
+            wrfout_file = self.FILE_WRFOUT_d01
+        elif domain == 2:
+            wrfout_file = self.FILE_WRFOUT_d02
+        elif domain == 3:
+            wrfout_file = self.FILE_WRFOUT_d03
+        else:
+            print(f'Domain {domain} is not a valid option. Choose 1 - 3')
+            raise ValueError
+        
+        return wrfout_file
 
 
 def run_all(wrf_sim, disable_timeout=True, verbose=False, save_wps_files=False):
