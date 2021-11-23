@@ -1014,8 +1014,8 @@ class WRFModel:
 
         return True
 
-    def process_wrfout_flexible(self, query_variables, domain=1,
-                                start=None, end=None, 
+    def process_wrfout_flexible(self, query_variables, wrfout_file=None, 
+                                domain=1, start=None, end=None, 
                                 outfile_prefix='processed_', delete_original=False, 
                                 save_file=False):
         """
@@ -1051,8 +1051,9 @@ class WRFModel:
         Note that the variables available in the wrfout file will depend on your choice of physics parameterizations,
         while the ones available in wrf.getvar() do not.
         """
-        # Determine the wrfout file name
-        wrfout_file = self.wrfout_file_name(domain=domain)
+        if wrfout_file is None:
+            # Determine the wrfout file name (i.e., based on the domain)
+            wrfout_file = self.wrfout_file_name(domain=domain)
 
         # Absolute path to wrfout data file
         full_wrfout_path = self.DIR_WRFOUT + wrfout_file

@@ -19,8 +19,10 @@ optwrf.egg-info/requires.txt
 optwrf.egg-info/top_level.txt
 optwrf/data/__init__.py
 optwrf/data/dirpath.yml
+optwrf/data/fetch_data.py
 optwrf/data/linux_dirpath.yml
 optwrf/data/mac_dirpath.yml
+optwrf/data/params.yml
 optwrf/test/__init__.py
 optwrf/test/dirpath.yml
 optwrf/test/linux_dirpath.yml
