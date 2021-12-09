@@ -9,6 +9,7 @@ from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 import cartopy.feature as cfeature
 import cartopy.crs as ccrs
+import cartopy.io.shapereader as shpreader
 import numpy as np
 import xarray as xr
 import wrf as wrfpy
@@ -105,14 +106,28 @@ def format_cnplot_axis(axis, cn, proj_bounds, title_str='Contour Plot',
     axis.set_ylim(proj_ybounds)
 
     # Download and add the states, coastlines, and lakes
-    states = cfeature.NaturalEarthFeature(category="cultural", scale="50m",
-                                          facecolor="none",
-                                          name="admin_1_states_provinces_shp")
+    shapename = 'admin_1_states_provinces_lakes'
+    states_shp = shpreader.natural_earth(resolution='10m',
+                                         category='cultural', 
+                                         name=shapename)
+    # Add features to the maps
+    axis.add_geometries(
+        shpreader.Reader(states_shp).geometries(),
+        ccrs.PlateCarree(),
+        facecolor='none',
+        linewidth=.5, 
+        edgecolor="black"
+        )
+
+    # # Download and add the states, coastlines, and lakes
+    # states = cfeature.NaturalEarthFeature(category="cultural", scale="50m",
+    #                                       facecolor="none",
+    #                                       name="admin_1_states_provinces_shp")
 
     # Add features to the maps
-    axis.add_feature(states, linewidth=.5, edgecolor="black")
-    axis.add_feature(cfeature.LAKES.with_scale('50m'), alpha=0.9)
-    axis.add_feature(cfeature.OCEAN.with_scale('50m'))
+    # axis.add_feature(states, linewidth=.5, edgecolor="black")
+    axis.add_feature(cfeature.LAKES)
+    axis.add_feature(cfeature.OCEAN)
 
     # Add color bars
     if add_colorbar is True:
