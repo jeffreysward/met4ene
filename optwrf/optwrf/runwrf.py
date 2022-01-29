@@ -225,10 +225,10 @@ class WRFModel:
                 cds_product_type = 'reanalysis'
                 # Specify the spatial extent of the data you wish to download
                 # (the ones below are for the Continential US)
-                north_lat = 55
+                north_lat = 60
                 south_lat = 20
-                west_lon = -130
-                east_lon = -60
+                west_lon = -140
+                east_lon = -50
                 cds_area_str = f'{north_lat}/{west_lon}/{south_lat}/{east_lon}'
                 cds_times = '00/to/23/by/1'
                 cds_pls = [
