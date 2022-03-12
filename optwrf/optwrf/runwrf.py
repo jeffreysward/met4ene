@@ -110,6 +110,11 @@ class WRFModel:
                                    + self.forecast_start.strftime('%Y') + '-' \
                                    + self.forecast_start.strftime('%m') + '-' \
                                    + self.forecast_start.strftime('%d') + '_00:00:00'
+        if self.n_domains > 3:
+            self.FILE_WRFOUT_d04 =  'wrfout_d04' + '_' \
+                                   + self.forecast_start.strftime('%Y') + '-' \
+                                   + self.forecast_start.strftime('%m') + '-' \
+                                   + self.forecast_start.strftime('%d') + '_00:00:00'
 
         # Define linux command aliai
         self.CMD_LN = 'ln -sf %s %s'
@@ -877,7 +882,7 @@ class WRFModel:
 
         return True, hf.strfdelta(elapsed)
 
-    def process_wrfout_data(self):
+    def process_wrfout_data(self, domain=3):
         """
         Processes the wrfout file -- calculates GHI and wind power denity (WPD) and writes these variables
         to wrfout_processed_d01.nc data file to be used by the regridding script (wrf2era_error.ncl) in
@@ -896,7 +901,7 @@ class WRFModel:
 
         """
         # Absolute path to wrfout data file
-        wrfout_file = self.wrfout_file_name(domain=self.n_domains)
+        wrfout_file = self.wrfout_file_name(domain=domain)
         datapath = self.DIR_WRFOUT + wrfout_file
 
         try:
@@ -1356,8 +1361,10 @@ class WRFModel:
             wrfout_file = self.FILE_WRFOUT_d02
         elif domain == 3:
             wrfout_file = self.FILE_WRFOUT_d03
+        elif domain == 4:
+            wrfout_file = self.FILE_WRFOUT_d04
         else:
-            print(f'Domain {domain} is not a valid option. Choose 1 - 3')
+            print(f'Domain {domain} is not a valid option. Choose 1 - 4')
             raise ValueError
         
         return wrfout_file
