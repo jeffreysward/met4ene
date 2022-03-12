@@ -628,7 +628,7 @@ class WRFModel:
         for i in range(0, self.n_domains):
             wrf_physics = wrf_physics + str(self.param_ids[4]) + ', '
         wrf_physics = wrf_physics + '\n cu_physics                          = '
-        wrf_physics = wrf_physics + str(self.param_ids[5]) + ', 0, 0,'
+        wrf_physics = wrf_physics + str(self.param_ids[5]) + ', ' + (self.n_domains - 1) * '0, '
         wrf_physics = wrf_physics + '\n sf_sfclay_physics                   = '
         for i in range(0, self.n_domains):
             wrf_physics = wrf_physics + str(self.param_ids[6]) + ', '

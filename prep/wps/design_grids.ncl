@@ -11,8 +11,8 @@ begin
 ;
 
 ; We generate plots, but what kind do we prefer?
-  type = "x11"
-;  type = "pdf"
+  ; type = "x11"
+ type = "pdf"
 ;  type = "ps"
 ;  type = "ncgm"
   wks = gsn_open_wks(type,"wps_show_dom")
@@ -53,10 +53,14 @@ DX = 9.
 ;DX = 36.
 MAP = "lambert"
 ;MAP = "mercator"
-LAT1 = (/ 37., 38., 39.3 /)		; original lambert grids
-LAT2 = (/ 46., 42., 40.9 /)
-LON1 = (/ -82., -78., -74.5 /)
-LON2 = (/ -70., -71., -72.3 /)
+; LAT1 = (/ 37., 38., 39.3, 40. /)		; original lambert grids
+; LAT2 = (/ 46., 42., 40.9, 41.2 /)
+; LON1 = (/ -82., -78., -74.5, -71.9 /)
+; LON2 = (/ -68.5, -69., -72., -69.5 /)
+LAT1 = (/ 37., 38., 40. /)		; original lambert grids
+LAT2 = (/ 46., 42., 41.2 /)
+LON1 = (/ -82., -78., -71.9 /)
+LON2 = (/ -68.5, -69., -69.5 /)
 ;LAT1 = (/ 37., 38., 39.3 /)		; original lambert grids
 ;LAT2 = (/ 46., 42., 40.9 /)
 ;LON1 = (/ -82., -78., -74.5 /)
@@ -73,8 +77,8 @@ LON2 = (/ -70., -71., -72.3 /)
 ;LAT2 = (/   5., -20., -23. /)
 ;LON1 = (/  95., 121., 125./)
 ;LON2 = (/ 179., 159., 131./)
-parent_id = (/ 0, 1, 2 /)
-parent_grid_ratio = (/ 1, 3, 3 /)
+parent_id = (/ 0, 1, 2, 2 /)
+parent_grid_ratio = (/ 1, 3, 3, 3 /)
 
 std_truelats = False
 

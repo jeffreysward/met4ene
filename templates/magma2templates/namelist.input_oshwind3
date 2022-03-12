@@ -59,7 +59,7 @@
  cudt                                = 0,     0,     0,     0,
  surface_input_source                = 1,
  num_soil_layers                     = 4,
- num_land_cat                        = 21,
+ num_land_cat			             = 21,
  windfarm_opt                        = 0,     0,     1,     1,
  windfarm_ij                         = 0
  /
