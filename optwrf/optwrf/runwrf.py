@@ -1413,7 +1413,7 @@ def run_all(wrf_sim, disable_timeout=True, verbose=False, save_wps_files=False):
 
         # RUN WRF
         if success:
-            success, runtime = wrf_sim.run_wrf(disable_timeout, save_wps_files=False)
+            success, runtime = wrf_sim.run_wrf(disable_timeout, save_wps_files=save_wps_files)
             if verbose:
                 print(f'WRF ran successfully? {success}')
         else:
@@ -1425,7 +1425,7 @@ def run_all(wrf_sim, disable_timeout=True, verbose=False, save_wps_files=False):
     return success, runtime
 
 
-def run_multiple(wrf_sims, disable_timeout=True, verbose=False):
+def run_multiple(wrf_sims, disable_timeout=True, verbose=False, save_wps_files=False):
     """
     Runs the simulations specified by the wrf_sims argument.
 
@@ -1443,7 +1443,8 @@ def run_multiple(wrf_sims, disable_timeout=True, verbose=False):
             sim_threads = []
             for sim in wrf_sims:
                 # Execute a new thread to run the WRF simulation
-                sim_threads.append(executor.submit(run_all, sim, disable_timeout=disable_timeout, verbose=verbose))
+                sim_threads.append(executor.submit(run_all, sim, disable_timeout=disable_timeout,
+                                   verbose=verbose, save_wps_files=save_wps_files))
 
             # Get the results from the thread pool executor
             success_matrix = []
