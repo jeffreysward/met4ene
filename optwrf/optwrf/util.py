@@ -1,5 +1,6 @@
 from math import pi
-
+import random
+import string
 import cdsapi
 import numpy as np
 import wrf
@@ -180,6 +181,10 @@ def get_data_cdsapi(product, variables, product_type='reanalysis', fmt='grib', p
     # Create the CDS API Client object
     c = cdsapi.Client()
 
+    # Generate a random string to reset the cache
+    digits = string.digits
+    rand_str = ''.join(random.choice(digits) for i in range(3))
+
     # Download the pressure level data
     if pressure_level is None:
         c.retrieve(product,
@@ -190,6 +195,7 @@ def get_data_cdsapi(product, variables, product_type='reanalysis', fmt='grib', p
                        'area': area,
                        'date': date,
                        'time': time,
+                    #    'nocache':rand_str,
                    },
                    output_file_name)
     else:
@@ -202,6 +208,7 @@ def get_data_cdsapi(product, variables, product_type='reanalysis', fmt='grib', p
                        'area': area,
                        'date': date,
                        'time': time,
+                    #    'nocache':rand_str,
                    },
                    output_file_name)
 
