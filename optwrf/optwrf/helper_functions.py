@@ -327,7 +327,7 @@ def print_last_3lines(file_name):
         return
 
 
-def rda_download(filelist, dspath):
+def rda_download(filelist, dspath, user_email, user_pswd):
     """
     Logs into the NCAR research data archive (RDA)
     and downloads specified files.
@@ -343,9 +343,8 @@ def rda_download(filelist, dspath):
 
     """
     # Specify login information and url for RDA
-    pswd = 'mkjmJ17'
     url = 'https://rda.ucar.edu/cgi-bin/login'
-    values = {'email': 'jas983@cornell.edu', 'passwd': pswd, 'action': 'login'}
+    values = {'email': user_email, 'passwd': user_pswd, 'action': 'login'}
 
     # RDA user authentication
     ret = requests.post(url, data=values)

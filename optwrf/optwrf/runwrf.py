@@ -4,7 +4,6 @@ and process WRF output data.
 
 
 Known Issues/Wishlist:
-- My username/password are currently hard-coded into rda_download(). I SHOULD CHAGE THIS!
 - In determine_computer(), only my user name identifies magma -- should generalize this.
 - Need to include in documentation:
     - A description of how to create the dirpath.yml file.
@@ -46,7 +45,7 @@ class WRFModel:
     """
 
     def __init__(self, param_ids, start_date, end_date, bc_data='ERA', bc_src='RDA',
-                 n_domains=1, setup_yaml='dirpath.yml', wfp=False, verbose=True):
+                 n_domains=1, setup_yaml='dirpath.yml', wfp=False, rda_email=None, rda_pswd=None, verbose=True):
         self.param_ids = param_ids
         self.start_date = start_date
         self.end_date = end_date
@@ -54,6 +53,8 @@ class WRFModel:
         self.bc_src = bc_src
         self.n_domains = n_domains
         self.wfp = wfp
+        self.rda_email = rda_email
+        self.rda_pswd = rda_pswd
         self.verbose = verbose
 
         # Format the forecast start/end and determine the total time.
@@ -384,7 +385,7 @@ class WRFModel:
             else:
                 if self.bc_src == 'RDA':
                     # Download the data from the online RDA (requires password and connection)
-                    success = rda_download(filelist, dspath)
+                    success = rda_download(filelist, dspath, self.rda_email, self.rda_pswd)
                     if not success:
                         print(f'{self.bc_data} data was not successfully downloaded from RDA.')
                         raise RuntimeError
