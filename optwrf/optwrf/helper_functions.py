@@ -332,13 +332,14 @@ def rda_download(filelist, dspath, user_email, user_pswd):
     Logs into the NCAR research data archive (RDA)
     and downloads specified files.
 
-    NOTE: My username/password are currently hard-coded into this function.
-    I SHOULD CHAGE THIS!
-
     :param filelist: list of strings
         List of all the files that you would like downloaded from the RDA.
-    :param dspath : string
-        Full path to file on the RDA. You can obtain this from
+    :param dspath: string
+        Full path to file on the RDA.
+    :param user_email: string
+        User's email correspondig to their RDA account.
+    :param user_pswd: string
+        User's RDA account password.
     :return: a boolean (True/False) success flag.
 
     """
