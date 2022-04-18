@@ -186,7 +186,8 @@ def format_date(in_date):
                 '%m-%d-%Y', '%m.%d.%Y', '%m/%d/%Y',
                 '%Y-%m-%d', '%Y.%m.%d', '%Y/%m/%d',
                 '%b %d %Y %H', '%B %d %Y %H', '%b %d, %Y %H', '%B %d, %Y %H',
-                '%m-%d-%Y %H', '%m.%d.%Y %H', '%m/%d/%Y %H'):
+                '%m-%d-%Y %H', '%m.%d.%Y %H', '%m/%d/%Y %H',
+                '%Y-%m-%d %H:%M:%S', '%Y-%m-%d_%H:%M:%S'):
         try:
             return datetime.datetime.strptime(in_date, fmt)
         except ValueError:
