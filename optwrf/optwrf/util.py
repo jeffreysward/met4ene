@@ -134,7 +134,7 @@ def ll_to_xy(met_data, latitude, longitude):
         to convert to x, y indicies.
     :param longitude :obj:`float`: Longitude coordinate
         to convert to x, y indicies.
-    :return:
+    :return result :obj:`list`: x, y indicies.
     """
     # Extract the projection parameters from the xarray global attributes
     (map_proj, truelat1, truelat2, stdlon, ref_lat, ref_lon,
@@ -163,23 +163,43 @@ def ll_to_xy(met_data, latitude, longitude):
 
 def get_data_cdsapi(product, variables, product_type='reanalysis', fmt='grib', pressure_level=None,
                     area='55/-130/20/-60', date='20110101/20110101', time='00/to/23/by/1',
-                    output_file_name='cds_data.grb'):
+                    output_file_name='cds_data.grb', verbose=False):
     """
     Downloads data using the Climate Data Store (CDS) API.
 
-    :param product:
-    :param variables:
-    :param product_type:
-    :param fmt:
-    :param pressure_level:
-    :param area:
-    :param date:
-    :param time:
-    :param output_file_name:
-    :return:
+    *NOTE that the CDS experiences issues from time to time and goes offline for about a day. 
+    When this happens the CDS API will just hang without any useful debug information, so 
+    I should probably include a timeout on this function with this information... 
+    But it might just be better to let the API hang until the issue is resolved at which 
+    point it resumes downloading data   
+
+    :param product: str
+        CDS data product name.
+    :param variables: list of str
+        Variables within the data product that you would like to download. 
+    :param product_type: str
+        Type of CDS data product (e.g., reanalysis)
+    :param fmt: string
+        Output data format (e.g., grib).
+    :param pressure_level: list of str
+        Pressure levels within the data product that you would like to download. 
+    :param area: str
+        Lat-lon values defining the data extent. The format is {north_lat}/{west_lon}/{south_lat}/{east_lon}.
+    :param date: str
+        Dates for which to download data. The format is {year_mo_day}/{year_mo_day}.
+    :param time: str
+        Time resolution information. The format is complicated, but for hourly data is '00/to/23/by/1'.
+        The final number controls the temporal resolution whereas the first two control the temporal range.
+    :param output_file_name: str
+        Name that will be assigned to the data file downloaded from CDS.
+    :param verbose: bool
+
     """
     # Create the CDS API Client object
-    c = cdsapi.Client()
+    if verbose:
+        c = cdsapi.Client(timeout=120, quiet=False,debug=True)
+    else:
+        c = cdsapi.Client()
 
     # Generate a random string to reset the cache
     digits = string.digits
@@ -214,6 +234,16 @@ def get_data_cdsapi(product, variables, product_type='reanalysis', fmt='grib', p
 
 
 class Kdtree_ll_to_xy(object):
+    """
+    This class provides a way to get the WRF grid cell index from a lat-lon pair.
+    
+    :param met_ds: `xarray.dataset`
+        WRF output data
+    :param latvarname: str
+        Name of the latitude variable in `met_ds`
+    :param lonvarname: str
+        Name of the longitude variable in `met_ds`
+    """
     def __init__(self, met_ds, latvarname, lonvarname):
         self.met_ds = met_ds
         self.latvar = self.met_ds[latvarname]
@@ -229,6 +259,21 @@ class Kdtree_ll_to_xy(object):
         self.kdt = cKDTree(triples)
 
     def query(self, lat0, lon0):
+        """
+        Function to query the `Kdtree_ll_to_xy` class with a specific lat-lon pair.
+        Once you create a `Kdtree_ll_to_xy` instance, you can query it multiple times
+        to get the x,y coordinates associated with different lat-lon pairs. This 
+        saves time. 
+
+        :param lat0: float
+            requested latitude
+        :param lon0: float
+            requested longitude
+        :return iy_min: int
+            y coordinate
+        :return ix_min: int
+            x coordinate
+        """
         rad_factor = pi / 180.0
         lat0_rad = lat0 * rad_factor
         lon0_rad = lon0 * rad_factor

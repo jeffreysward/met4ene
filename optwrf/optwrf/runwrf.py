@@ -4,7 +4,7 @@ and process WRF output data.
 
 
 Known Issues/Wishlist:
-- In determine_computer(), only my user name identifies magma -- should generalize this.
+- In determine_computer(), only my user name identifies magma -- could generalize this.
 - Need to include in documentation:
     - A description of how to create the dirpath.yml file.
     - A description of how to customize the templates directory.
@@ -195,7 +195,7 @@ class WRFModel:
 
     def get_bc_data(self):
         """
-        Downloads boundary condition data from the RDA
+        Downloads boundary condition data from the RDA or uses the CDS API
         if it does not already exist in the expected data directory (self.DIR_DATA).
         Then, it creates a temporary data directory (self.DIR_DATA_TMP) and copies
         data from the central data directory to the temporary data directory.
@@ -205,7 +205,11 @@ class WRFModel:
         easier to link all the files in the temporary data directory than to link
         indidivdual files out of the central data directory.
 
-        NOTE Currently, only ERA5 data (ds633.0) and the old ERA-interim data (ds627.0) are supported!
+        *NOTE: Currently, only ERA5 data (ds633.0) and the old ERA-interim data (ds627.0) are supported!
+
+        Also, it the CDS API method could use some work -- right now it just downloads 
+        all the files in the date list without checking if they are already downloaded.
+        In general, prints to the screen during both data downloads could be improved.
 
         :return vtable_sfx: string
             WPS variable table suffix -- tells subsequent methods which boundary condidtion data is being used
@@ -348,8 +352,8 @@ class WRFModel:
                 filelist = []
                 for date in date_list:
                     for hr in hrs:
-                        year_mo = date.strftime('%Y') + date.strftime('%m')
-                        year_mo_day_hr = date.strftime('%Y') + date.strftime('%m') + date.strftime('%d') + hr
+                        year_mo = date.strftime('%Y%m')
+                        year_mo_day_hr = date.strftime('%Y%m%d') + hr
                         filelist.append(DATA_ROOT1 + year_mo + '/' + datpfx1 + year_mo_day_hr)
                         filelist.append(DATA_ROOT1 + year_mo + '/' + datpfx2 + year_mo_day_hr)
                         filelist.append(DATA_ROOT2 + year_mo + '/' + datpfx3 + year_mo_day_hr)
@@ -361,11 +365,13 @@ class WRFModel:
                 # For the CDS API, we simply download one pressure levels file and one surface file
                 # for each day. However, the command we will use to download the pressure level data
                 # and the surfce data will be different, so we need three file
-                pl_filelist = []
-                sfc_filelist = []
+                # pl_filelist = []
+                # sfc_filelist = []
                 for date in date_list:
-                    year_mo_day = date.strftime('%Y') + date.strftime('%m') + date.strftime('%d')
+                    year_mo_day = date.strftime('%Y%m%d')
                     # Add the files to the lists
+                    # pl_filelist.append()
+                    # sfc_filelist.append()
                     file_check.append(f'{pl_pfx}{year_mo_day}_{year_mo_day}.grb')
                     file_check.append(f'{sfc_pfx}{year_mo_day}_{year_mo_day}.grb')
 
@@ -381,7 +387,7 @@ class WRFModel:
 
             if data_exists.count(True) == len(file_check):
                 if self.verbose:
-                    print('Boundary condition data was previously downloaded from RDA.')
+                    print('Boundary condition data was previously downloaded.')
             else:
                 if self.bc_src == 'RDA':
                     # Download the data from the online RDA (requires password and connection)
@@ -392,11 +398,13 @@ class WRFModel:
                 elif self.bc_src == 'CDS':
                     # Download the data using the CDS API
                     for date in date_list:
-                        year_mo_day = date.strftime('%Y') + date.strftime('%m') + date.strftime('%d')
+                        year_mo_day = date.strftime('%Y%m%d')
                         dates_str = f'{year_mo_day}/{year_mo_day}'
                         pl_file_name = f'{pl_pfx}{year_mo_day}_{year_mo_day}.grb'
                         sfc_file_name = f'{sfc_pfx}{year_mo_day}_{year_mo_day}.grb'
                         # Download the pressure level data
+                        if self.verbose:
+                            print(f'Downloading pressure level data for {date.strftime("%Y-%m-%d")} from CDS.')
                         util.get_data_cdsapi(cds_pl_product, cds_pl_vars,
                                              product_type=cds_product_type,
                                              fmt='grib',
@@ -404,16 +412,20 @@ class WRFModel:
                                              area=cds_area_str,
                                              date=dates_str,
                                              time=cds_times,
-                                             output_file_name=pl_file_name)
+                                             output_file_name=pl_file_name,
+                                             verbose=self.verbose)
 
                         # Download the surface data
+                        if self.verbose:
+                            print(f'Downloading surface data for {date.strftime("%Y-%m-%d")} from CDS.')
                         util.get_data_cdsapi(cds_sfc_product, cds_sfc_vars,
                                              product_type=cds_product_type,
                                              fmt='grib',
                                              area=cds_area_str,
                                              date=dates_str,
                                              time=cds_times,
-                                             output_file_name=sfc_file_name)
+                                             output_file_name=sfc_file_name,
+                                             verbose=self.verbose)
                 else:
                     print(f'Boundary condidion data source {self.bc_data} is not supportted.')
                     raise NotImplementedError
