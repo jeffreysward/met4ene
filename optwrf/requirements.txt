@@ -27,7 +27,7 @@ packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_15899252
 pandas @ file:///home/conda/feedstock_root/build_artifacts/pandas_1598294454723/work
 Pillow @ file:///home/conda/feedstock_root/build_artifacts/pillow_1594213010297/work
 pluggy @ file:///home/conda/feedstock_root/build_artifacts/pluggy_1592827471208/work
-protobuf==3.15.0
+protobuf==3.18.3
 -e git+git@github.com:jeffreysward/pvlib-python.git@920d39f1876748db773b579992efd9cd4c50cb0f#egg=pvlib
 py @ file:///home/conda/feedstock_root/build_artifacts/py_1593088446458/work
 pycparser @ file:///home/conda/feedstock_root/build_artifacts/pycparser_1593275161868/work
