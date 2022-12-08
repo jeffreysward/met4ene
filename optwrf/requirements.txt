@@ -2,7 +2,7 @@ attrs @ file:///home/conda/feedstock_root/build_artifacts/attrs_1597959372343/wo
 beautifulsoup4 @ file:///home/conda/feedstock_root/build_artifacts/beautifulsoup4_1597679909012/work
 brotlipy==0.7.0
 Cartopy @ file:///home/conda/feedstock_root/build_artifacts/cartopy_1596899864375/work
-certifi==2020.6.20
+certifi==2022.12.7
 cffi @ file:///home/conda/feedstock_root/build_artifacts/cffi_1595805535531/work
 cftime @ file:///home/conda/feedstock_root/build_artifacts/cftime_1595215618295/work
 chardet==3.0.4
